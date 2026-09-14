@@ -1,0 +1,315 @@
+<title>Agent Engineer Curriculum</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --paper:#EFF2F1;--surface:#FFFFFF;--ink:#141C1C;--muted:#5A6968;--faint:#8A9897;--rule:#D5DCDA;
+  --accent:#0E6455;--accent-soft:#DCEAE5;--clay:#A8481C;--clay-soft:#F4E3DA;--gold:#7E6110;--gold-soft:#F2EAD3;
+  --have:#0E6455;--partial:#7E6110;--gap:#A8481C;
+  --display:"Fraunces",Georgia,serif;--body:"Source Serif 4",Georgia,serif;--mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#0E1414;--surface:#161E1E;--ink:#E6ECEA;--muted:#9AA9A7;--faint:#6F7E7C;--rule:#273433;
+  --accent:#5FC4AC;--accent-soft:#12302A;--clay:#E0906A;--clay-soft:#2E1D14;--gold:#D6B65C;--gold-soft:#2B2410;
+  --have:#5FC4AC;--partial:#D6B65C;--gap:#E0906A;
+}}
+:root[data-theme="dark"]{
+  --paper:#0E1414;--surface:#161E1E;--ink:#E6ECEA;--muted:#9AA9A7;--faint:#6F7E7C;--rule:#273433;
+  --accent:#5FC4AC;--accent-soft:#12302A;--clay:#E0906A;--clay-soft:#2E1D14;--gold:#D6B65C;--gold-soft:#2B2410;
+  --have:#5FC4AC;--partial:#D6B65C;--gap:#E0906A;
+}
+
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.62;-webkit-font-smoothing:antialiased;}
+.wrap{max-width:860px;margin:0 auto;padding:56px 24px 96px;}
+
+.masthead{display:flex;flex-direction:column;gap:14px;padding-bottom:26px;border-bottom:2px solid var(--ink);}
+.kicker{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);}
+h1{font-family:var(--display);font-size:clamp(34px,6.5vw,52px);line-height:1.04;font-weight:600;margin:0;text-wrap:balance;letter-spacing:-.015em;}
+.standfirst{font-size:19px;color:var(--muted);margin:0;max-width:62ch;}
+.meta{font-family:var(--mono);font-size:11.5px;color:var(--faint);display:flex;flex-wrap:wrap;gap:18px;}
+
+section{padding-top:46px;display:flex;flex-direction:column;gap:16px;}
+h2{font-family:var(--display);font-size:27px;font-weight:600;line-height:1.2;margin:0;text-wrap:balance;display:flex;gap:14px;align-items:baseline;}
+h2 .num{font-family:var(--mono);font-size:13px;font-weight:400;color:var(--accent);flex:none;}
+p{margin:0;}
+a{color:var(--accent);text-decoration:underline;text-underline-offset:2px;text-decoration-thickness:1px;}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+ul,ol{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:8px;}
+li::marker{color:var(--faint);}
+em.term{font-style:normal;font-family:var(--mono);font-size:.86em;background:var(--accent-soft);padding:1px 5px;border-radius:3px;}
+
+.quotes{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;}
+.q{background:var(--surface);border-top:2px solid var(--accent);padding:16px 18px;display:flex;flex-direction:column;gap:9px;}
+.q .co{font-family:var(--mono);font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--accent);}
+.q .txt{font-size:15px;line-height:1.5;}
+.q .role{font-size:12.5px;color:var(--faint);font-family:var(--mono);margin-top:auto;}
+
+.scroll{overflow-x:auto;}
+table{border-collapse:collapse;width:100%;font-size:14.5px;min-width:660px;}
+th,td{text-align:left;vertical-align:top;padding:10px 12px;border-bottom:1px solid var(--rule);}
+th{font-family:var(--mono);font-size:10px;letter-spacing:.11em;text-transform:uppercase;color:var(--muted);font-weight:400;border-bottom:1px solid var(--ink);}
+td.lab{font-weight:600;white-space:nowrap;}
+td.tier{font-family:var(--mono);font-size:11px;color:var(--faint);white-space:nowrap;}
+.st{font-family:var(--mono);font-size:11px;font-weight:600;white-space:nowrap;padding:2px 8px;border-radius:100px;display:inline-block;}
+.st.have{color:var(--have);background:var(--accent-soft);}
+.st.partial{color:var(--partial);background:var(--gold-soft);}
+.st.gap{color:var(--gap);background:var(--clay-soft);}
+
+.mod{background:var(--surface);border:1px solid var(--rule);padding:20px 22px;display:flex;flex-direction:column;gap:12px;}
+.mod .top{display:flex;gap:12px;align-items:baseline;flex-wrap:wrap;}
+.mod .id{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--accent);}
+.mod .name{font-family:var(--display);font-size:20px;font-weight:600;}
+.mod .covers{font-family:var(--mono);font-size:10.5px;color:var(--faint);letter-spacing:.08em;margin-left:auto;}
+.mod .learn{font-size:15.5px;color:var(--muted);}
+.mod .build{background:var(--accent-soft);padding:13px 15px;display:flex;flex-direction:column;gap:5px;border-radius:2px;}
+.mod .build .lbl{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);}
+.mod .build .what{font-size:15px;}
+.mod .proves{font-size:13.5px;color:var(--faint);}
+.modlist{display:flex;flex-direction:column;gap:14px;}
+
+.band{font-family:var(--mono);font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--faint);padding-top:14px;display:flex;align-items:center;gap:12px;}
+.band::after{content:"";flex:1;height:1px;background:var(--rule);}
+
+.warn{background:var(--clay-soft);padding:18px 22px;display:flex;flex-direction:column;gap:9px;border-radius:2px;}
+.warn .lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--clay);}
+.pick{background:var(--gold-soft);border:1px solid var(--gold);padding:20px 22px;display:flex;flex-direction:column;gap:11px;border-radius:2px;}
+.pick .lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);}
+
+.sources{padding-top:40px;border-top:1px solid var(--rule);margin-top:54px;display:flex;flex-direction:column;gap:13px;}
+.sources h2{font-size:19px;}
+.sources ol{font-size:14px;color:var(--muted);gap:9px;}
+</style>
+
+<div class="wrap">
+
+<header class="masthead">
+  <div class="kicker">Agent Env Lab &middot; The Plan</div>
+  <h1>Agent Engineer Curriculum</h1>
+  <p class="standfirst">The skills AI-native companies are actually hiring for, drawn from live job postings &mdash; organised into fourteen labels, twelve modules, and nine small projects that each prove one of them.</p>
+  <div class="meta"><span>Built from real postings, Sep 2026</span><span>Target: applied AI / AI engineer, junior&ndash;mid</span></div>
+</header>
+
+<section>
+  <h2><span class="num">01</span> <span>Three role shapes, one spine</span></h2>
+  <p>&ldquo;Applied AI Engineer&rdquo; means three noticeably different jobs depending on the company. Here is what each actually says, in their own words.</p>
+
+  <div class="quotes">
+    <div class="q">
+      <div class="co">Sarvam AI</div>
+      <div class="txt">&ldquo;Flow design, prompting, tool definitions, memory systems, evaluation, and deployment&hellip; state handling, retries, and scheduled execution.&rdquo;</div>
+      <div class="role">Agent product builder</div>
+    </div>
+    <div class="q">
+      <div class="co">Wispr Flow</div>
+      <div class="txt">&ldquo;Build end-to-end verification loops that let agents determine when their work is actually complete&hellip; turn failures and human feedback into durable evaluation signals.&rdquo;</div>
+      <div class="role">Agent infrastructure &amp; eval</div>
+    </div>
+    <div class="q">
+      <div class="co">Emergent</div>
+      <div class="txt">&ldquo;Work directly with business users to translate problems into working apps&hellip; think in systems, with focus on data flows, edge cases, and user outcomes.&rdquo;</div>
+      <div class="role">Forward deployed</div>
+    </div>
+  </div>
+
+  <p>Different emphases &mdash; but notice what none of them ask for: training a model, publishing research, or inventing an architecture. Every one is a <strong>backend engineering job where the payload is an LLM</strong>, judged on whether the thing you shipped stays up and gets measurably better.</p>
+
+  <div class="warn">
+    <div class="lbl">The sentence that decides most applications</div>
+    <p>Sarvam: <em>&ldquo;Shipped AI features to real users in production, not just notebooks or prototypes.&rdquo;</em><br>Wispr Flow: <em>&ldquo;You've built internal tools that other engineers adopted, and you can explain how you measured their impact.&rdquo;</em></p>
+    <p>Both are the same filter written twice: <strong>did it reach someone, and can you prove it worked?</strong> A curriculum that ends in demos fails this filter. So every project below ends in a number, a trace, or a user.</p>
+  </div>
+
+  <h3>One tool layer, three surfaces</h3>
+  <p>The architecture that makes all of this fit together. We write the tool layer <em>once</em> and point it at three different faces &mdash; which is why a month is enough.</p>
+  <pre>            <span class="c">Core: tool layer + domain services</span>
+        search_jobs &middot; read_application &middot; draft_message &hellip;
+                            &#9474;
+        &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9524;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9524;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;
+   Seeded world          Real backend          MCP server
+   <span class="c">(evals, CI)</span>        <span class="c">+ your agent loop</span>     <span class="c">stdio &rarr; HTTP</span>
+   graded                traced, versioned     Claude / ChatGPT
+                         crash-resumable       / Gemini call it</pre>
+  <p>The MCP server is a thin wrapper &mdash; roughly 150 lines over tools you were writing anyway. But it matters that it is a <em>third</em> surface and not the whole product: an MCP host supplies the model and the loop, so if that were the only thing you built, you would own no agent to version, trace, make resumable, or evaluate. Modules M1, M3, M4, M8, M9 and M11 would have nothing to grade.</p>
+</section>
+
+<section>
+  <h2><span class="num">02</span> <span>The fourteen labels</span></h2>
+  <p>Four tiers. Tier 0 is ordinary software engineering &mdash; not optional, and where most self-taught AI portfolios quietly fail. Tier 3 is what separates a mid-level hire from a junior one.</p>
+
+  <div class="scroll">
+  <table>
+    <thead><tr><th>Tier</th><th>Label</th><th>The mid-level bar</th><th>You today</th></tr></thead>
+    <tbody>
+      <tr><td class="tier">0 &middot; Foundation</td><td class="lab">A. Async Python</td><td>FastAPI services, async/await properly, background workers, packaging, tests. Not scripts.</td><td><span class="st partial">partial</span></td></tr>
+      <tr><td class="tier">0</td><td class="lab">B. Data layer</td><td>PostgreSQL schema design, indices, transactions; Redis for cache, locks and queues.</td><td><span class="st partial">partial</span></td></tr>
+      <tr><td class="tier">0</td><td class="lab">C. Ship &amp; run</td><td>Docker, one-command deploy, CI running tests on every push, secrets handling.</td><td><span class="st partial">partial</span></td></tr>
+      <tr><td class="tier">1 &middot; LLM core</td><td class="lab">D. LLM API fluency</td><td>Structured outputs, function calling, streaming, retries on malformed output, token accounting across providers.</td><td><span class="st have">have</span></td></tr>
+      <tr><td class="tier">1</td><td class="lab">E. Prompt engineering</td><td>System prompt design, prompts versioned like code, A/B comparison, safe rollback.</td><td><span class="st partial">partial</span></td></tr>
+      <tr><td class="tier">2 &middot; Agent systems</td><td class="lab">F. Orchestration</td><td>Flow design, state machines, subagents, termination control, human-in-the-loop handoffs.</td><td><span class="st have">have</span></td></tr>
+      <tr><td class="tier">2</td><td class="lab">G. Tool layer</td><td>Tool definitions models call correctly; building <em class="term">and running</em> MCP servers; OAuth connectors to real SaaS APIs.</td><td><span class="st partial">partial</span></td></tr>
+      <tr><td class="tier">2</td><td class="lab">H. Memory &amp; context</td><td>Working vs long-term vs retrieval memory; compaction; what to keep, summarise or re-fetch &mdash; and measuring the difference.</td><td><span class="st gap">gap</span></td></tr>
+      <tr><td class="tier">2</td><td class="lab">I. Retrieval / RAG</td><td>Chunking strategy, embeddings, <strong>hybrid search, reranking</strong>, vector DB operations.</td><td><span class="st partial">partial</span></td></tr>
+      <tr><td class="tier">2</td><td class="lab">J. Reliability</td><td>Idempotency, retries with backoff, state that survives a restart, scheduled runs, partial-failure recovery.</td><td><span class="st gap">gap</span></td></tr>
+      <tr><td class="tier">3 &middot; Quality &amp; ops</td><td class="lab">K. Evaluation</td><td>Task suites, graders, trajectory analysis, regression gates in CI, turning failures into durable eval signals.</td><td><span class="st gap">gap</span></td></tr>
+      <tr><td class="tier">3</td><td class="lab">L. Observability</td><td>OpenTelemetry spans over agent runs, structured logs, dashboards, alerting on drift.</td><td><span class="st partial">partial</span></td></tr>
+      <tr><td class="tier">3</td><td class="lab">M. Cost &amp; latency</td><td>Token budgets, prompt caching, model routing, streaming, measuring p95 rather than average.</td><td><span class="st partial">partial</span></td></tr>
+      <tr><td class="tier">3</td><td class="lab">N. Safety &amp; guardrails</td><td>Prompt-injection defence, approval gates on irreversible actions, output validation, audit trails.</td><td><span class="st gap">gap</span></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <p>Four real gaps (H, J, K, N), one strength you already have and under-sell (F), and a Tier 0 that needs firming up &mdash; every posting listed Python backend, Postgres and Redis as hard requirements.</p>
+</section>
+
+<section>
+  <h2><span class="num">03</span> <span>What we deliberately skip</span></h2>
+  <ul>
+    <li><strong>Model training, fine-tuning, PyTorch.</strong> None of these postings ask for it; Wispr Flow says so explicitly. It's a different career.</li>
+    <li><strong>Heavy DSA grinding.</strong> Not one of these JDs mentions algorithms &mdash; they mention Postgres and observability. Keep enough warm to survive a 45-minute screen; spend nothing more.</li>
+    <li><strong>Kubernetes depth, MLOps platforms, distributed training.</strong> Adjacent jobs, not this one.</li>
+    <li><strong>Framework tourism.</strong> Knowing LangGraph well beats knowing six frameworks shallowly. Nobody asks which you used; they ask what broke.</li>
+  </ul>
+</section>
+
+<section>
+  <h2><span class="num">04</span> <span>Twelve modules, nine small projects</span></h2>
+  <p>Each module is <strong>lessons first, then a small build</strong> &mdash; nothing gets built before its concept page exists. Projects stay small: two to five days each, one clear thing proved per project. The last assembles the pieces.</p>
+
+  <div class="band">Phase 1 &middot; The measurement spine</div>
+  <div class="modlist">
+
+    <div class="mod">
+      <div class="top"><span class="id">M1</span><span class="name">Eval foundations</span><span class="covers">K</span></div>
+      <div class="learn">What an eval is &middot; offline vs online vs A/B &middot; unit vs trajectory &middot; outcome vs process grading &middot; the three grader families &middot; contamination, saturation, overfitting.</div>
+      <div class="build"><div class="lbl">No build</div><div class="what">Concepts only. <strong>Lesson already written.</strong></div></div>
+      <div class="proves">Status: complete.</div>
+    </div>
+
+    <div class="mod">
+      <div class="top"><span class="id">M2</span><span class="name">Environment design</span><span class="covers">K &middot; B</span></div>
+      <div class="learn">Deterministic tool mocks &middot; seeded world state &middot; the <em class="term">reset / step / done</em> interface &middot; trajectory logging &middot; task templating and difficulty &middot; reward hacking.</div>
+      <div class="build"><div class="lbl">Project 1</div><div class="what">A seeded support-ops world with ~8 tools, full trajectory capture, and a state-diff grader. No LLM anywhere in the grading path.</div></div>
+      <div class="proves">Proves: you can build the thing agents get scored in &mdash; the rarest item on the list.</div>
+    </div>
+
+    <div class="mod">
+      <div class="top"><span class="id">M3</span><span class="name">Graders &amp; judges</span><span class="covers">K</span></div>
+      <div class="learn">Programmatic graders &middot; partial credit &middot; LLM-as-judge mechanics, rubric decomposition, position and verbosity bias &middot; calibrating a judge against your own labels &middot; variance, and why one run is never evidence.</div>
+      <div class="build"><div class="lbl">Project 2</div><div class="what">Add a judge for the one slice code can't decide, hand-label 100 examples, measure agreement, and report scores with a confidence interval.</div></div>
+      <div class="proves">Proves: you can answer &ldquo;how do you know your judge is right?&rdquo; &mdash; most candidates can't.</div>
+    </div>
+
+  </div>
+
+  <div class="band">Phase 2 &middot; The agent itself</div>
+  <div class="modlist">
+
+    <div class="mod">
+      <div class="top"><span class="id">M4</span><span class="name">LLM API fluency, properly</span><span class="covers">D &middot; E</span></div>
+      <div class="learn">Structured outputs and schema enforcement &middot; function calling &middot; streaming &middot; handling malformed output &middot; token accounting &middot; prompts as versioned artefacts.</div>
+      <div class="build"><div class="lbl">Project 3</div><div class="what">A prompt registry: prompts versioned in git, run against the M2 task suite, two versions compared side by side, one rolled back on a regression.</div></div>
+      <div class="proves">Proves: &ldquo;prompt iteration workflows with versioning, A/B testing and safe rollback&rdquo; &mdash; Sarvam's exact phrase.</div>
+    </div>
+
+    <div class="mod">
+      <div class="top"><span class="id">M5</span><span class="name">Tool layer &amp; MCP</span><span class="covers">G</span></div>
+      <div class="learn">What makes a tool definition a model uses correctly &middot; MCP architecture &middot; <strong>stdio vs Streamable HTTP</strong> transports &middot; resources vs tools &middot; running a server &middot; tool-call failure modes.</div>
+      <div class="build"><div class="lbl">Project 4</div><div class="what">Write and run your own MCP server over stdio, exposing the same tool layer &mdash; then add it to Claude Desktop and <strong>use it daily from week&nbsp;2</strong>. Your own usage becomes the source of real task ideas.</div></div>
+      <div class="proves">Proves: built MCP, not just consumed it. Sarvam asks for MCP infrastructure at scale.</div>
+    </div>
+
+    <div class="mod">
+      <div class="top"><span class="id">M6</span><span class="name">Memory &amp; context engineering</span><span class="covers">H</span></div>
+      <div class="learn">Working vs long-term vs retrieval memory &middot; compaction and summarisation &middot; what to keep, drop or re-fetch &middot; context rot over long horizons &middot; measuring whether memory actually helped.</div>
+      <div class="build"><div class="lbl">Project 5</div><div class="what">A memory layer on Postgres + Redis, then an A/B on the M2 suite: the same agent with and without it, scored.</div></div>
+      <div class="proves">Proves: Wispr Flow's &ldquo;enhance how context and memory are delivered to agents <em>while measuring performance improvements</em>.&rdquo;</div>
+    </div>
+
+    <div class="mod">
+      <div class="top"><span class="id">M7</span><span class="name">Retrieval that isn't naive</span><span class="covers">I</span></div>
+      <div class="learn">Chunking strategies and why they matter more than the model &middot; embeddings &middot; <strong>hybrid search</strong> (keyword + dense) &middot; <strong>reranking</strong> &middot; where your existing RAG metrics fit.</div>
+      <div class="build"><div class="lbl">Project 6</div><div class="what">Upgrade a retrieval service to hybrid + rerank, and publish the before/after on context precision, recall and faithfulness.</div></div>
+      <div class="proves">Proves: the exact RAG bullet in Sarvam's requirements, with numbers attached.</div>
+    </div>
+
+  </div>
+
+  <div class="band">Phase 3 &middot; Production behaviour</div>
+  <div class="modlist">
+
+    <div class="mod">
+      <div class="top"><span class="id">M8</span><span class="name">Reliability</span><span class="covers">J &middot; A &middot; B</span></div>
+      <div class="learn">Idempotency keys &middot; retries with backoff and jitter &middot; durable run state &middot; resuming after a crash &middot; scheduled execution &middot; partial-failure recovery &middot; <strong>promoting the MCP server to Streamable HTTP with OAuth&nbsp;2.1</strong> so other people can connect to it.</div>
+      <div class="build"><div class="lbl">Project 7</div><div class="what">Make an agent run survive being killed mid-flight: persist state, resume, and prove no double-refund by killing it during a tool call.</div></div>
+      <div class="proves">Proves: Sarvam's &ldquo;state handling, retries, and scheduled execution&rdquo; &mdash; with a demo that is genuinely hard to fake.</div>
+    </div>
+
+    <div class="mod">
+      <div class="top"><span class="id">M9</span><span class="name">Observability</span><span class="covers">L &middot; M</span></div>
+      <div class="learn">OpenTelemetry spans over an agent run &middot; what belongs in a span &middot; structured logs &middot; cost and latency as first-class metrics &middot; p95 vs average &middot; drift alerting.</div>
+      <div class="build"><div class="lbl">Project 8</div><div class="what">Trace every run end to end, then a dashboard showing cost per task, p95 latency, and score &mdash; three numbers on one screen.</div></div>
+      <div class="proves">Proves: the observability requirement, and gives you the cost dashboard hiring guides explicitly name.</div>
+    </div>
+
+    <div class="mod">
+      <div class="top"><span class="id">M10</span><span class="name">Guardrails &amp; safety</span><span class="covers">N</span></div>
+      <div class="learn">Prompt injection arriving through tool results &middot; approval gates on irreversible actions &middot; output validation &middot; audit trails &middot; why blocklists fail.</div>
+      <div class="build"><div class="lbl">Bolt-on to project 7</div><div class="what">An approval gate on anything irreversible, plus an injection test suite added to the M2 tasks as adversarial variants.</div></div>
+      <div class="proves">Proves: &ldquo;an agent with human approval on irreversible actions&rdquo; &mdash; a named portfolio item in 2026 hiring guides.</div>
+    </div>
+
+    <div class="mod">
+      <div class="top"><span class="id">M11</span><span class="name">CI &amp; the regression gate</span><span class="covers">K &middot; C</span></div>
+      <div class="learn">Evals in CI &middot; choosing a threshold &middot; handling flaky evals &middot; dataset versioning &middot; the held-out slice in practice.</div>
+      <div class="build"><div class="lbl">Bolt-on to project 1</div><div class="what">A GitHub Action that runs the suite on every pull request and blocks the merge on a regression.</div></div>
+      <div class="proves">Proves: Wispr Flow's &ldquo;test harnesses, CI systems, eval pipelines.&rdquo;</div>
+    </div>
+
+    <div class="mod">
+      <div class="top"><span class="id">M12</span><span class="name">Ship it and write it up</span><span class="covers">C &middot; all</span></div>
+      <div class="learn">Deployment &middot; what a good engineering writeup contains &middot; failure taxonomies &middot; describing impact in numbers.</div>
+      <div class="build"><div class="lbl">Project 9 &middot; capstone</div><div class="what">Deploy the agent so real people can use it, get five real users, and publish a writeup: what broke, what the failure taxonomy was, what the numbers did.</div></div>
+      <div class="proves">Proves the sentence that gates everything: shipped to real users, impact measured.</div>
+    </div>
+
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">05</span> <span>Why this order</span></h2>
+  <p>Measurement first, deliberately. Most people build the agent and bolt on evals once things start breaking. Doing it backwards means every later module &mdash; memory, retrieval, reliability, guardrails &mdash; gets built against a suite that can already tell you whether it helped.</p>
+  <p>That one choice turns nine small projects into a single coherent story rather than nine disconnected repos. Everything after M3 produces a before-and-after number, because the measuring stick already exists.</p>
+
+  <div class="pick">
+    <div class="lbl">What this looks like on a resume when it's done</div>
+    <ul>
+      <li>One deployed agent product with real users &mdash; answers &ldquo;not just notebooks or prototypes.&rdquo;</li>
+      <li>An eval harness with a calibrated judge and a CI gate &mdash; answers &ldquo;experience building and running AI system evaluations.&rdquo;</li>
+      <li>A remote MCP server with OAuth that other people's assistants connect to &mdash; which is Sarvam's &ldquo;connector frameworks and OAuth integrations&rdquo; built rather than claimed.</li>
+      <li>Memory measured A/B, hybrid retrieval with before/after scores, a crash-resumable run, a cost and latency dashboard.</li>
+      <li>A written failure taxonomy &mdash; the artefact that reads as senior regardless of years.</li>
+    </ul>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">06</span> <span>Three questions before we start M2</span></h2>
+  <ul>
+    <li><strong>What should the agent actually do?</strong> Support-ops is the default because correctness is machine-checkable &mdash; but if you'd rather it be something you'd use daily, the whole curriculum still holds; only the world changes.</li>
+    <li><strong>How many hours a week?</strong> Decides whether M1&ndash;M12 is a two-month or a five-month plan.</li>
+    <li><strong>Public or private?</strong> M12 needs real users. Five people from your network counts.</li>
+  </ul>
+</section>
+
+<div class="sources">
+  <h2>Sources</h2>
+  <ol>
+    <li>MCP host support and transports &mdash; ten major clients support remote MCP with OAuth&nbsp;2.1; ChatGPT accepts only remote HTTPS, while stdio works in Claude Desktop, Claude Code, Gemini CLI, Cursor and VS Code. <a href="https://truthifi.com/education/state-of-mcp-2026-ai-agents-custom-connectors">State of MCP 2026</a>, <a href="https://mcp.directory/blog/oauth-21-for-remote-mcp-servers-streamable-http-explained-2026">OAuth 2.1 for remote MCP servers</a></li>
+    <li>Sarvam AI, <em>Applied AI Engineer, Sarvam Agents</em> &mdash; Bengaluru, mid-level; responsibilities and requirements quoted above. <a href="https://agentic-engineering-jobs.com/jobs/sarvam-applied-ai-engineer-sarvam-agents-kOdnk7">posting</a></li>
+    <li>Wispr Flow, <em>AI Engineer, Internal Systems</em> &mdash; verification loops, evaluation infrastructure, context and memory delivery. <a href="https://freehire.me/jobs/ai-engineer-internal-systems-wispr-flow-fkhmr7bk">posting</a></li>
+    <li>Emergent, <em>Forward Deployed AI Engineer</em> &mdash; Bengaluru, 2&ndash;5 yrs, systems thinking and direct customer collaboration. <a href="https://www.ycombinator.com/companies/emergent/jobs/g9I324Y-forward-deployed-ai-engineer">posting</a></li>
+    <li>Scale AI, <em>Staff Software Engineer, RL Environments</em> &mdash; trajectory capture, verifier frameworks, graders under adversarial optimisation. <a href="https://job-boards.greenhouse.io/scaleai/jobs/4729820005">posting</a></li>
+    <li>AI Shipping Labs, <em>What Is an AI Engineer? Based on 1,000+ Job Descriptions</em> &mdash; aggregate skill list and portfolio guidance. <a href="https://aishippinglabs.com/blog/what-is-an-ai-engineer-based-on-job-descriptions">analysis</a></li>
+  </ol>
+</div>
+
+</div>

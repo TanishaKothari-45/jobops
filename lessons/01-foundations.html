@@ -1,0 +1,380 @@
+<title>Eval Foundations</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+:root{
+  --paper:#EFF2F1;
+  --surface:#FFFFFF;
+  --ink:#141C1C;
+  --muted:#5A6968;
+  --faint:#8A9897;
+  --rule:#D5DCDA;
+  --accent:#0E6455;
+  --accent-soft:#DCEAE5;
+  --clay:#A8481C;
+  --clay-soft:#F4E3DA;
+  --gold:#7E6110;
+  --gold-soft:#F2EAD3;
+  --display:"Fraunces",Georgia,serif;
+  --body:"Source Serif 4",Georgia,serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#0E1414;
+    --surface:#161E1E;
+    --ink:#E6ECEA;
+    --muted:#9AA9A7;
+    --faint:#6F7E7C;
+    --rule:#273433;
+    --accent:#5FC4AC;
+    --accent-soft:#12302A;
+    --clay:#E0906A;
+    --clay-soft:#2E1D14;
+    --gold:#D6B65C;
+    --gold-soft:#2B2410;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0E1414;
+  --surface:#161E1E;
+  --ink:#E6ECEA;
+  --muted:#9AA9A7;
+  --faint:#6F7E7C;
+  --rule:#273433;
+  --accent:#5FC4AC;
+  --accent-soft:#12302A;
+  --clay:#E0906A;
+  --clay-soft:#2E1D14;
+  --gold:#D6B65C;
+  --gold-soft:#2B2410;
+}
+
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.65;-webkit-font-smoothing:antialiased;}
+.wrap{max-width:760px;margin:0 auto;padding:56px 24px 96px;}
+
+.masthead{display:flex;flex-direction:column;gap:14px;padding-bottom:28px;border-bottom:2px solid var(--ink);}
+.kicker{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);}
+h1{font-family:var(--display);font-size:clamp(36px,7vw,54px);line-height:1.04;font-weight:600;margin:0;text-wrap:balance;letter-spacing:-.015em;}
+.standfirst{font-size:19px;color:var(--muted);margin:0;max-width:60ch;}
+.meta{font-family:var(--mono);font-size:11.5px;color:var(--faint);display:flex;flex-wrap:wrap;gap:18px;}
+
+section{padding-top:44px;display:flex;flex-direction:column;gap:16px;}
+h2{font-family:var(--display);font-size:27px;font-weight:600;line-height:1.2;margin:0;text-wrap:balance;display:flex;gap:14px;align-items:baseline;}
+h2 .num{font-family:var(--mono);font-size:13px;font-weight:400;color:var(--accent);flex:none;}
+h3{font-family:var(--display);font-size:19px;font-weight:600;margin:18px 0 0;}
+p{margin:0;}
+strong{font-weight:600;}
+em.term{font-style:normal;font-family:var(--mono);font-size:.86em;background:var(--accent-soft);color:var(--ink);padding:1px 5px;border-radius:3px;}
+a{color:var(--accent);text-decoration:underline;text-underline-offset:2px;text-decoration-thickness:1px;}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+
+ul,ol{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:9px;}
+li::marker{color:var(--faint);}
+
+.analogy{background:var(--surface);border-left:3px solid var(--accent);padding:18px 22px;display:flex;flex-direction:column;gap:9px;}
+.analogy .lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);}
+
+.warn{background:var(--clay-soft);padding:18px 22px;display:flex;flex-direction:column;gap:9px;border-radius:2px;}
+.warn .lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--clay);}
+
+.pick{background:var(--gold-soft);border:1px solid var(--gold);padding:20px 22px;display:flex;flex-direction:column;gap:12px;border-radius:2px;}
+.pick .lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);}
+
+.scroll{overflow-x:auto;}
+table{border-collapse:collapse;width:100%;font-size:15px;min-width:520px;}
+th,td{text-align:left;vertical-align:top;padding:11px 14px;border-bottom:1px solid var(--rule);}
+th{font-family:var(--mono);font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--muted);font-weight:400;border-bottom:1px solid var(--ink);}
+td:first-child{font-weight:600;}
+
+.ask{display:flex;flex-direction:column;gap:6px;padding:14px 0;border-bottom:1px solid var(--rule);}
+.ask .q{font-weight:600;}
+.ask .a{color:var(--muted);font-size:15.5px;}
+
+.vocab{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);}
+.vocab > div{background:var(--surface);padding:14px 16px;display:flex;flex-direction:column;gap:5px;}
+.vocab dt{font-family:var(--mono);font-size:12.5px;color:var(--accent);font-weight:600;}
+.vocab dd{margin:0;font-size:14.5px;color:var(--muted);line-height:1.5;}
+
+.next{margin-top:44px;background:var(--surface);border:1px solid var(--rule);padding:22px;display:flex;flex-direction:column;gap:8px;}
+.next .lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);}
+
+.sources{padding-top:40px;border-top:1px solid var(--rule);margin-top:52px;display:flex;flex-direction:column;gap:14px;}
+.sources h2{font-size:19px;}
+.sources ol{font-size:14.5px;color:var(--muted);gap:9px;}
+</style>
+
+<div class="wrap">
+
+<header class="masthead">
+  <div class="kicker">Lesson 01 &middot; Agent Env Lab</div>
+  <h1>Eval Foundations</h1>
+  <p class="standfirst">What an evaluation actually is, why normal software testing breaks on LLMs, and the three ways people grade an agent &mdash; before we write a single line of the project.</p>
+  <div class="meta"><span>No maths required</span><span>~15 min</span><span>Sources at the end</span></div>
+</header>
+
+<section>
+  <h2><span class="num">1.1</span> <span>What an eval actually is</span></h2>
+  <p>An <strong>eval</strong> (short for evaluation) is a test suite for software that doesn't give the same answer twice.</p>
+  <p>That's the whole idea. Everything else is detail.</p>
+  <p>In normal programming you write <em class="term">assert add(2,2) == 4</em>. It passes or it doesn't, and it behaves identically forever. Run it a thousand times, get a thousand identical results. That repeatability is what makes traditional testing feel solid.</p>
+  <p>LLMs break it. Ask the same model the same question twice and you get two different sentences that may both be correct, or both wrong, or one of each. There is no <em class="term">==</em> you can write. So instead of a test that asks <em>"is the output exactly this string"</em>, you need one that asks <em>"is the output good enough, and how often"</em>.</p>
+
+  <div class="analogy">
+    <div class="lbl">In plain words</div>
+    <p>Testing normal code is like checking a vending machine: press B4, a Snickers must come out. Every single time. If it doesn't, the machine is broken.</p>
+    <p>Testing an LLM is like assessing a new employee. You can't check them against one right answer &mdash; you give them twenty realistic tasks, see how many they handle well, and form a judgement. If they get 18 out of 20 right this month and 12 out of 20 next month, something changed and you want to know what.</p>
+    <p>An eval is that set of twenty tasks, written down, run automatically.</p>
+  </div>
+
+  <p>So every eval has three parts, however fancy it gets:</p>
+  <ol>
+    <li><strong>A set of tasks</strong> &mdash; the questions on the exam. Called the <em class="term">dataset</em>, <em class="term">golden set</em>, or <em class="term">task suite</em>.</li>
+    <li><strong>A thing being tested</strong> &mdash; your prompt, your model, your whole agent. Whatever you're about to change.</li>
+    <li><strong>A grader</strong> &mdash; the thing that decides pass or fail, or gives a score. Also called a <em class="term">scorer</em>, or in reinforcement-learning language a <em class="term">verifier</em>.</li>
+  </ol>
+  <p>When eval engineers talk, they are always talking about one of those three. If you're ever lost in the conversation, silently ask: tasks, thing being tested, or grader?</p>
+</section>
+
+<section>
+  <h2><span class="num">1.2</span> <span>Why this became a whole job</span></h2>
+  <p>Here's what turned evals from a nice-to-have into standalone job postings.</p>
+  <p>When you build normal software, your bottleneck is writing the code. When you build an LLM product, writing is fast &mdash; you change three lines of a prompt in thirty seconds. Your bottleneck becomes <strong>knowing whether that change made things better or worse.</strong></p>
+  <p>Without evals the loop is: tweak the prompt, try five examples by hand, they look fine, ship, and three days later a customer finds it broke something else. You can't iterate quickly because you can't see.</p>
+  <p>With evals: change the prompt, run 200 tasks in four minutes, get a number. Teams with good evals ship far more versions per quarter &mdash; not because they're smarter, but because they can move without fear.</p>
+
+  <div class="analogy">
+    <div class="lbl">In plain words</div>
+    <p>It's the difference between cooking with a thermometer and cooking by poking the chicken. Both can work. Only one lets you cook a hundred chickens a day and be confident about all of them &mdash; and only one lets a second person reproduce what you did.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">1.3</span> <span>Three places to measure: offline, online, A/B</span></h2>
+  <p>Our first three-ways choice. These aren't competitors &mdash; mature teams use all three at different moments. But knowing which one answers which question is a real interview question.</p>
+
+  <div class="scroll">
+  <table>
+    <thead><tr><th>Kind</th><th>What it is</th><th>Answers</th><th>Blind spot</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>Offline</td>
+        <td>Run a fixed set of saved tasks in your own environment. No real users.</td>
+        <td>"Did my change break anything I already knew about?"</td>
+        <td>Only tests situations you thought of. Real users are more creative than you.</td>
+      </tr>
+      <tr>
+        <td>Online</td>
+        <td>Score real production traffic as it happens &mdash; cheap automatic checks on everything, a stronger grader on a sample.</td>
+        <td>"Is quality drifting in the real world, right now?"</td>
+        <td>You usually don't know the correct answer for live traffic, so grading is fuzzier.</td>
+      </tr>
+      <tr>
+        <td>A/B test</td>
+        <td>Send some real users version A and some version B, compare actual behaviour.</td>
+        <td>"Do humans genuinely prefer the new version?"</td>
+        <td>Slow, needs traffic volume, can't tell you <em>why</em>.</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="analogy">
+    <div class="lbl">In plain words</div>
+    <p><strong>Offline</strong> is a driving test on a closed course. Same cones, same parking bay, every candidate. Fair, repeatable, cheap &mdash; but the closed course has no schoolchildren running into the road.</p>
+    <p><strong>Online</strong> is the dashcam in a real taxi. Messy, unrepeatable, but it's the actual world.</p>
+    <p><strong>A/B</strong> is putting two drivers on the same route for a month and seeing who gets more repeat customers.</p>
+  </div>
+
+  <p>Almost all of the engineering skill lives in offline evals, because that's the one you control and the one that runs in CI. That's where this course spends its time.</p>
+</section>
+
+<section>
+  <h2><span class="num">1.4</span> <span>Grading one step vs the whole journey</span></h2>
+  <p>This is the split that separates RAG-era evaluation from agent-era evaluation. Worth being very clear about.</p>
+
+  <h3>Unit-level eval</h3>
+  <p>You evaluate <strong>one model call</strong>. Input in, output out, score the output. "Was this summary faithful to the document?" "Did the classifier pick the right label?" "Was the retrieved context relevant?"</p>
+  <p>Everything you already know from RAG evaluation &mdash; context precision, context recall, faithfulness, answer relevance &mdash; lives here. It's genuinely useful and it isn't going away. It is just <em>one box</em> in a bigger picture.</p>
+
+  <h3>Trajectory-level eval</h3>
+  <p>You evaluate <strong>an entire agent run</strong>: fifteen steps, six tool calls, decisions along the way, and whatever state the world ended up in. <em class="term">Trajectory</em> just means "the full recorded path the agent took" &mdash; every message, every tool call, every tool result, in order.</p>
+  <p>This is the hard one, and where nearly all production agent failures actually live. An agent can produce a beautifully written final message while having called the wrong API, refunded the wrong customer, or silently given up four steps ago.</p>
+
+  <div class="analogy">
+    <div class="lbl">In plain words</div>
+    <p>Unit-level eval is marking one line of a student's working. Trajectory eval is marking the whole answer &mdash; including noticing they got the right final number by copying it from the back of the book.</p>
+  </div>
+
+  <div class="warn">
+    <div class="lbl">The trap</div>
+    <p>Errors <strong>cascade</strong>. If step 3 fetched the wrong customer record, steps 4 through 15 all look wrong too. When you read a failed trajectory your job is to find the <strong>first</strong> step that went wrong &mdash; not the last, and not the loudest. Beginners consistently fix the final error and wonder why nothing improves.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">1.5</span> <span>Outcome-based vs process-based grading</span></h2>
+  <p>You asked to be able to answer this one cold, so here it is properly.</p>
+
+  <h3>Outcome-based grading</h3>
+  <p><strong>Definition:</strong> you ignore how the agent got there and judge only the end result &mdash; the final answer, or the final state of the world.</p>
+  <p><strong>Example:</strong> the task is "refund customer 4471's undelivered order." You don't read the transcript at all. You look at the database afterwards: is there a refund row for order 8823, for the right amount, and is the ticket marked resolved? Yes &rarr; pass. No &rarr; fail.</p>
+  <p><strong>Where it's used:</strong> anywhere the correct end state is well defined. Code generation (do the unit tests pass?), maths (is the number right?), tool-use agents (is the database in the expected state?), SQL generation (does the query return the right rows?). It's the backbone of modern agent benchmarks and of RL reward signals, where it's called a <em class="term">verifiable reward</em> &mdash; verifiable meaning a machine can check it without an opinion.</p>
+  <p><strong>Why people love it:</strong> cheap, fast, objective, impossible to argue with. No model needed to grade it. It never has a bad day.</p>
+  <p><strong>Where it fails:</strong> it can't see <em>luck</em> or <em>recklessness</em>. An agent that got the right answer by guessing, or that deleted three unrelated records on the way, scores identically to one that did it properly. And for open-ended work &mdash; "write a good apology email" &mdash; there's no single correct end state to check against.</p>
+
+  <h3>Process-based grading</h3>
+  <p><strong>Definition:</strong> you judge the <em>path</em> &mdash; the reasoning steps, the sequence of tool calls, whether policy was followed.</p>
+  <p><strong>Example:</strong> same refund task. Did the agent verify the customer's identity before discussing the order? Did it check the refund policy before issuing money? Did it escalate rather than approving an amount above its limit? You can pass or fail on these regardless of the final outcome.</p>
+  <p><strong>Where it's used:</strong> regulated domains &mdash; finance, healthcare, insurance &mdash; where <em>how</em> you reached a decision is legally as important as the decision. Also safety evaluation, multi-step reasoning where you want partial credit, and any time you need to debug <em>why</em> something failed rather than just that it did.</p>
+  <p><strong>Why people need it:</strong> it gives you a gradient. A binary pass/fail on a twelve-step task tells you almost nothing &mdash; "it failed" isn't a bug report. Process grading tells you it failed <em>at step 4, by skipping the policy check</em>.</p>
+  <p><strong>Where it fails:</strong> expensive, often needs a model or a human to judge, and you can accidentally punish an agent for finding a smarter route than the one you imagined.</p>
+
+  <div class="analogy">
+    <div class="lbl">In plain words</div>
+    <p>A maths teacher marking a paper. <strong>Outcome:</strong> "the answer is 42, tick." <strong>Process:</strong> "show your working." Every good teacher uses both, because the student who wrote 42 with no working might be brilliant &mdash; or might have copied.</p>
+    <p>Now raise the stakes: a surgeon whose patient recovered. Outcome grading says "great surgeon." Process grading asks whether they washed their hands. You want both, and in a hospital you legally need the second.</p>
+  </div>
+
+  <div class="warn">
+    <div class="lbl">The interesting part</div>
+    <p>The two <strong>disagree regularly</strong>, and the disagreements are the most valuable signal in your whole eval. A run that passes on outcome but fails on process is either a lucky guess or a policy violation you'd be sued for. A run that fails on outcome but passes on process usually means your <em>tools</em> are broken, not your agent. Most people build only one, so they never see this.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">1.6</span> <span>Three families of grader</span></h2>
+  <p>The second three-ways choice, and the most practically important. Every time you sit down to score something, you are picking one of these.</p>
+
+  <div class="scroll">
+  <table>
+    <thead><tr><th>Grader</th><th>How it works</th><th>Cost &amp; speed</th><th>Use it when</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>Programmatic</td>
+        <td>Plain code. Exact match, regex, JSON schema validation, running unit tests, or comparing final database state against expected state.</td>
+        <td>Free, milliseconds, perfectly repeatable.</td>
+        <td>There's a definable right answer. <strong>Always try this first.</strong></td>
+      </tr>
+      <tr>
+        <td>Model-based<br>(LLM-as-judge)</td>
+        <td>Give another LLM the output, a rubric, often a reference answer, and ask it to score.</td>
+        <td>Cents per call, seconds, wobbles between runs.</td>
+        <td>Quality is genuinely subjective &mdash; tone, helpfulness, writing quality &mdash; and code can't decide.</td>
+      </tr>
+      <tr>
+        <td>Human</td>
+        <td>A person reads the output and scores it against a rubric.</td>
+        <td>Expensive, slow, doesn't scale.</td>
+        <td>Building your first 100 labelled examples, and checking your LLM judge agrees with you.</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <p>The single most common beginner mistake in this field: reaching for an LLM judge when a five-line programmatic check would have done the job. An LLM judge is a <em>fallback for what code cannot decide</em>, not a default.</p>
+
+  <div class="analogy">
+    <div class="lbl">In plain words</div>
+    <p>Marking a school exam. The multiple-choice section is marked by a machine reading the bubbles &mdash; instant, free, never wrong. The essay section needs a human examiner &mdash; slower, costlier, and two examiners will disagree a little.</p>
+    <p>No school would pay a human to mark the multiple-choice section. Teams do exactly that with LLM judges every day.</p>
+  </div>
+
+  <p>And the third row isn't optional. Humans aren't just a slow grader &mdash; they're the <strong>measuring stick you check the other graders against</strong>. A whole lesson goes to this later, because "how do you know your judge is right?" is a question most candidates can't answer.</p>
+</section>
+
+<section>
+  <h2><span class="num">1.7</span> <span>Why evals rot</span></h2>
+  <p>Three ways a perfectly good eval quietly stops being useful. Knowing these names makes you sound like someone who has done this before.</p>
+
+  <h3>Contamination</h3>
+  <p>The model was trained on your test data. It isn't reasoning; it's remembering. This is why public benchmark scores keep rising while real-world performance moves less &mdash; and it's the strongest argument for building your <em>own</em> tasks rather than downloading someone else's.</p>
+
+  <h3>Saturation</h3>
+  <p>Everything scores 97%. The eval can no longer tell good from great; all remaining signal is buried in noise. Time to write harder tasks.</p>
+
+  <h3>Overfitting to the eval</h3>
+  <p>You've tuned your prompt against the same 200 examples for six weeks. The number goes up; users notice nothing. You optimised for the test, not the job.</p>
+
+  <div class="analogy">
+    <div class="lbl">In plain words</div>
+    <p>All three are stories you know from school. <strong>Contamination</strong> is the exam paper leaking the night before. <strong>Saturation</strong> is an exam so easy everyone gets an A, so it can no longer decide who gets in. <strong>Overfitting</strong> is a coaching centre that drills last year's paper until students ace it and can't do anything else.</p>
+  </div>
+
+  <div class="warn">
+    <div class="lbl">The habit that prevents all three</div>
+    <p>Keep a <strong>held-out slice</strong> &mdash; say 20% of your tasks that you never look at while iterating, and run only occasionally. If your main score climbs and the held-out score doesn't, you're overfitting. Extremely cheap insurance, and almost nobody bothers.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">1.8</span> <span>Vocabulary you now own</span></h2>
+  <dl class="vocab">
+    <div><dt>eval</dt><dd>A repeatable test suite for non-deterministic software.</dd></div>
+    <div><dt>golden set</dt><dd>The fixed collection of tasks you test against.</dd></div>
+    <div><dt>grader / scorer</dt><dd>The thing that turns an output into a score.</dd></div>
+    <div><dt>verifier</dt><dd>Same idea, RL vocabulary. Usually implies programmatic.</dd></div>
+    <div><dt>trajectory</dt><dd>The full recorded path of a run: messages, tool calls, results, in order.</dd></div>
+    <div><dt>verifiable reward</dt><dd>A score a machine can compute with no opinion involved.</dd></div>
+    <div><dt>offline eval</dt><dd>Fixed tasks, your machine, no real users.</dd></div>
+    <div><dt>online eval</dt><dd>Scoring live production traffic.</dd></div>
+    <div><dt>contamination</dt><dd>The model has already seen your test data in training.</dd></div>
+    <div><dt>saturation</dt><dd>Everyone scores near-perfect; the eval no longer discriminates.</dd></div>
+    <div><dt>held-out set</dt><dd>Tasks you deliberately don't look at while iterating.</dd></div>
+    <div><dt>cascading error</dt><dd>One early mistake making every later step look wrong.</dd></div>
+  </dl>
+</section>
+
+<section>
+  <h2><span class="num">1.9</span> <span>Could you answer these out loud?</span></h2>
+  <div class="ask">
+    <div class="q">"What's outcome-based grading?"</div>
+    <div class="a">Judging only the end result &mdash; usually the final state of the world &mdash; and ignoring the path. Used wherever correctness is machine-checkable: code tests passing, database state, the right numeric answer. Cheap and objective, but blind to luck and to policy violations along the way.</div>
+  </div>
+  <div class="ask">
+    <div class="q">"Why not just use an LLM judge for everything?"</div>
+    <div class="a">It costs money, varies between runs, and has known biases. Programmatic checks are free, instant and perfectly repeatable &mdash; so a judge should only cover what code genuinely cannot decide, like tone or writing quality.</div>
+  </div>
+  <div class="ask">
+    <div class="q">"Your agent failed a task. First move?"</div>
+    <div class="a">Open the trajectory and find the <em>first</em> step that went wrong, not the last &mdash; errors cascade, so the visible failure is usually downstream of the real cause.</div>
+  </div>
+  <div class="ask">
+    <div class="q">"Your eval score has climbed for a month. Happy?"</div>
+    <div class="a">Not yet. I'd check the held-out slice. A main score rising while the held-out score stays flat means I've been tuning to the test set, not improving the product.</div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">1.10</span> <span>What we'll use in the project &mdash; and why</span></h2>
+  <p>Our project is a simulated support-operations backend: a seeded database of customers, orders and tickets, exposed to an agent as a handful of tools. The agent gets tasks like <em>"customer 4471 says the replacement never arrived &mdash; make it right within policy."</em></p>
+
+  <div class="pick">
+    <div class="lbl">Decisions locked in from this lesson</div>
+    <ul>
+      <li><strong>Offline eval</strong> as home base. It's the one that runs in CI, the one we control, and where the engineering skill lives. No online eval until much later.</li>
+      <li><strong>Trajectory-level, not unit-level.</strong> The whole point is the thing RAG metrics can't see: a multi-step run with tools and state.</li>
+      <li><strong>Outcome-based grading as the primary signal</strong> &mdash; compare final database state to expected state. This is exactly why we build a simulated world instead of downloading a dataset: <em>we</em> define what correct means, so a machine can check it with no opinion.</li>
+      <li><strong>Process-based grading as a second, parallel score</strong> &mdash; policy assertions like "escalated before refunding over &#8377;5,000." Then we deliberately study where the two disagree, because that's where the interesting failures hide.</li>
+      <li><strong>Programmatic graders only, to begin with.</strong> Zero LLM calls in the grading path &mdash; free to run, perfectly repeatable, and it forces us to learn the harder skill first. An LLM judge comes later for one narrow slice ("was the email to the customer appropriate?"), and then we calibrate it against your own human labels.</li>
+      <li><strong>A held-out slice from day one.</strong> 20% of tasks we don't look at. Cheap habit, and a good line in the writeup.</li>
+    </ul>
+  </div>
+</section>
+
+<div class="next">
+  <div class="lbl">Next lesson</div>
+  <p><strong>02 &mdash; Environment design.</strong> What a simulated world needs to be: deterministic tools, seeded state, and the <em class="term">reset / step / done</em> shape that makes an environment reusable. Then we build ours.</p>
+</div>
+
+<div class="sources">
+  <h2>Sources</h2>
+  <ol>
+    <li>Scale AI, <em>Staff Software Engineer, RL Environments</em> &mdash; job posting naming trajectory capture, verifier frameworks, and graders that hold up under adversarial optimisation as core responsibilities. <a href="https://job-boards.greenhouse.io/scaleai/jobs/4729820005">job-boards.greenhouse.io/scaleai</a></li>
+    <li>OpenAI, <em>Evaluating model performance</em> &mdash; the task/grader split and grader taxonomy. <a href="https://platform.openai.com/docs/guides/evals">platform.openai.com/docs/guides/evals</a></li>
+    <li>Anthropic, <em>Create strong empirical evaluations</em> &mdash; grading methods, and when code-based grading beats model-based. <a href="https://docs.claude.com/en/docs/test-and-evaluate/develop-tests">docs.claude.com</a></li>
+    <li>Sierra AI, <em>&tau;-bench: A Benchmark for Tool-Agent-User Interaction in Real-World Domains</em> &mdash; the database-state comparison method our outcome grader is modelled on. <a href="https://arxiv.org/abs/2406.12045">arxiv.org/abs/2406.12045</a></li>
+    <li>AI Shipping Labs, <em>What Is an AI Engineer? Based on 1,000+ Job Descriptions (2026)</em> &mdash; evidence that eval ownership is now a standalone role. <a href="https://aishippinglabs.com/blog/what-is-an-ai-engineer-based-on-job-descriptions">aishippinglabs.com</a></li>
+  </ol>
+</div>
+
+</div>

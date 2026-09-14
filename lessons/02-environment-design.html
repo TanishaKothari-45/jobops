@@ -1,0 +1,405 @@
+<title>Environment Design</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --paper:#EFF2F1;--surface:#FFFFFF;--ink:#141C1C;--muted:#5A6968;--faint:#8A9897;--rule:#D5DCDA;
+  --accent:#0E6455;--accent-soft:#DCEAE5;--clay:#A8481C;--clay-soft:#F4E3DA;--gold:#7E6110;--gold-soft:#F2EAD3;
+  --display:"Fraunces",Georgia,serif;--body:"Source Serif 4",Georgia,serif;--mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#0E1414;--surface:#161E1E;--ink:#E6ECEA;--muted:#9AA9A7;--faint:#6F7E7C;--rule:#273433;
+  --accent:#5FC4AC;--accent-soft:#12302A;--clay:#E0906A;--clay-soft:#2E1D14;--gold:#D6B65C;--gold-soft:#2B2410;
+}}
+:root[data-theme="dark"]{
+  --paper:#0E1414;--surface:#161E1E;--ink:#E6ECEA;--muted:#9AA9A7;--faint:#6F7E7C;--rule:#273433;
+  --accent:#5FC4AC;--accent-soft:#12302A;--clay:#E0906A;--clay-soft:#2E1D14;--gold:#D6B65C;--gold-soft:#2B2410;
+}
+
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.65;-webkit-font-smoothing:antialiased;}
+.wrap{max-width:770px;margin:0 auto;padding:56px 24px 96px;}
+
+.masthead{display:flex;flex-direction:column;gap:14px;padding-bottom:28px;border-bottom:2px solid var(--ink);}
+.kicker{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);}
+h1{font-family:var(--display);font-size:clamp(36px,7vw,54px);line-height:1.04;font-weight:600;margin:0;text-wrap:balance;letter-spacing:-.015em;}
+.standfirst{font-size:19px;color:var(--muted);margin:0;max-width:60ch;}
+.meta{font-family:var(--mono);font-size:11.5px;color:var(--faint);display:flex;flex-wrap:wrap;gap:18px;}
+
+section{padding-top:44px;display:flex;flex-direction:column;gap:16px;}
+h2{font-family:var(--display);font-size:27px;font-weight:600;line-height:1.2;margin:0;text-wrap:balance;display:flex;gap:14px;align-items:baseline;}
+h2 .num{font-family:var(--mono);font-size:13px;font-weight:400;color:var(--accent);flex:none;}
+h3{font-family:var(--display);font-size:19px;font-weight:600;margin:18px 0 0;}
+p{margin:0;}
+a{color:var(--accent);text-decoration:underline;text-underline-offset:2px;text-decoration-thickness:1px;}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+ul,ol{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:9px;}
+li::marker{color:var(--faint);}
+em.term{font-style:normal;font-family:var(--mono);font-size:.86em;background:var(--accent-soft);padding:1px 5px;border-radius:3px;}
+
+.analogy{background:var(--surface);border-left:3px solid var(--accent);padding:18px 22px;display:flex;flex-direction:column;gap:9px;}
+.analogy .lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);}
+.warn{background:var(--clay-soft);padding:18px 22px;display:flex;flex-direction:column;gap:9px;border-radius:2px;}
+.warn .lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--clay);}
+.pick{background:var(--gold-soft);border:1px solid var(--gold);padding:20px 22px;display:flex;flex-direction:column;gap:11px;border-radius:2px;}
+.pick .lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);}
+
+.scroll{overflow-x:auto;}
+table{border-collapse:collapse;width:100%;font-size:15px;min-width:560px;}
+th,td{text-align:left;vertical-align:top;padding:11px 14px;border-bottom:1px solid var(--rule);}
+th{font-family:var(--mono);font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--muted);font-weight:400;border-bottom:1px solid var(--ink);}
+td:first-child{font-weight:600;}
+
+pre{background:var(--surface);border:1px solid var(--rule);padding:16px 18px;overflow-x:auto;font-family:var(--mono);font-size:13px;line-height:1.6;margin:0;color:var(--ink);}
+pre .c{color:var(--faint);}
+
+.props{display:grid;grid-template-columns:repeat(auto-fit,minmax(205px,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);}
+.props > div{background:var(--surface);padding:16px 18px;display:flex;flex-direction:column;gap:6px;}
+.props .n{font-family:var(--mono);font-size:11px;color:var(--accent);letter-spacing:.1em;}
+.props .t{font-family:var(--display);font-size:17px;font-weight:600;}
+.props .d{font-size:14.5px;color:var(--muted);line-height:1.5;}
+
+.ask{display:flex;flex-direction:column;gap:6px;padding:14px 0;border-bottom:1px solid var(--rule);}
+.ask .q{font-weight:600;}
+.ask .a{color:var(--muted);font-size:15.5px;}
+
+.vocab{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);}
+.vocab > div{background:var(--surface);padding:14px 16px;display:flex;flex-direction:column;gap:5px;}
+.vocab dt{font-family:var(--mono);font-size:12.5px;color:var(--accent);font-weight:600;}
+.vocab dd{margin:0;font-size:14.5px;color:var(--muted);line-height:1.5;}
+
+.next{margin-top:44px;background:var(--surface);border:1px solid var(--rule);padding:22px;display:flex;flex-direction:column;gap:8px;}
+.next .lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);}
+
+.sources{padding-top:40px;border-top:1px solid var(--rule);margin-top:52px;display:flex;flex-direction:column;gap:14px;}
+.sources h2{font-size:19px;}
+.sources ol{font-size:14.5px;color:var(--muted);gap:9px;}
+</style>
+
+<div class="wrap">
+
+<header class="masthead">
+  <div class="kicker">Lesson 02 &middot; Agent Env Lab</div>
+  <h1>Environment Design</h1>
+  <p class="standfirst">How to build a small fake world an agent can act inside &mdash; one that behaves identically every time, starts fresh on demand, and can be checked by a machine at the end.</p>
+  <div class="meta"><span>No maths required</span><span>~20 min</span><span>Then we build</span></div>
+</header>
+
+<section>
+  <h2><span class="num">2.1</span> <span>An environment is not a test suite</span></h2>
+  <p>In Lesson 1 we said an eval has three parts: tasks, the thing being tested, and a grader. An <strong>environment</strong> is what sits underneath all three &mdash; the little world the agent acts inside while being tested.</p>
+  <p>A test suite asks a question and looks at the answer. An environment is a place where things <em>happen</em>: the agent calls a tool, something changes, it calls another tool and sees the change. There is a world, it has state, and the agent moves through it.</p>
+
+  <div class="analogy">
+    <div class="lbl">In plain words</div>
+    <p>A flight simulator. You don't assess a trainee pilot with multiple-choice questions about engine failure &mdash; you put them in a cockpit, kill an engine, and watch what they do. The simulator has weather, fuel, altitude, instruments. Things change because of what they did.</p>
+    <p>Crucially: the simulator can be <strong>reset</strong>, it runs the <strong>same scenario identically</strong> for every trainee, and afterwards you can read off <strong>exactly where the plane ended up</strong>. Those three properties are the entire subject of this lesson.</p>
+  </div>
+
+  <p>This is also why environment design is a separate skill from prompt engineering. You're not writing instructions for a model &mdash; you're building a small, honest simulation of a piece of the world.</p>
+</section>
+
+<section>
+  <h2><span class="num">2.2</span> <span>The five properties</span></h2>
+  <p>Every good environment has these. Miss one and something downstream breaks &mdash; usually your ability to trust your own numbers.</p>
+
+  <div class="props">
+    <div><div class="n">01</div><div class="t">Deterministic</div><div class="d">The same actions always produce the same results. No randomness, no clock, no network.</div></div>
+    <div><div class="n">02</div><div class="t">Seeded</div><div class="d">The world starts from a fixed, known state generated from a seed number.</div></div>
+    <div><div class="n">03</div><div class="t">Resettable</div><div class="d">You can wipe it back to the start instantly, so runs never contaminate each other.</div></div>
+    <div><div class="n">04</div><div class="t">Observable</div><div class="d">Everything the agent did is recorded &mdash; every call, every result, in order.</div></div>
+    <div><div class="n">05</div><div class="t">Assertable</div><div class="d">At the end you can look at the world's state and say, in code, whether it is correct.</div></div>
+  </div>
+
+  <p>Notice how these chain. Without determinism you can't tell a real regression from noise. Without resettability your fifth run is polluted by your fourth. Without assertability you're back to reading transcripts by hand. Each property exists to protect the number at the end.</p>
+</section>
+
+<section>
+  <h2><span class="num">2.3</span> <span>Determinism, and the four things that quietly break it</span></h2>
+  <p>Determinism means: same world, same agent actions, same result. It sounds obvious and it's surprisingly easy to lose.</p>
+
+  <h3>The clock</h3>
+  <p>Any tool that asks "what time is it" makes your environment non-deterministic. A task saying "follow up on applications older than 7 days" gives different answers in October than it did in September. <strong>Fix:</strong> the environment has its own frozen clock. Time is part of the seeded world state, not something read from the machine.</p>
+
+  <h3>Randomness</h3>
+  <p>Generated IDs, shuffled lists, random sampling. <strong>Fix:</strong> one seeded random generator for the whole environment, created from the task's seed. Same seed, same "random" numbers, forever.</p>
+
+  <h3>The network</h3>
+  <p>A real API is the enemy of a repeatable test. It goes down, it changes, it rate-limits, it returns different data on Tuesday. <strong>Fix:</strong> the environment never touches the network. Everything is local.</p>
+
+  <h3>Ordering</h3>
+  <p>A database query with no <em class="term">ORDER BY</em> can return rows in a different order on different runs, and the agent may then behave differently. Sneaky, because it's invisible until it isn't. <strong>Fix:</strong> every query is explicitly ordered.</p>
+
+  <div class="analogy">
+    <div class="lbl">In plain words</div>
+    <p>A board game. You can only compare two players fairly if the board starts the same way, the dice give the same rolls, and the cards are in the same order. Change any one and "she scored higher" stops meaning "she played better."</p>
+  </div>
+
+  <div class="warn">
+    <div class="lbl">Important nuance &mdash; people get this wrong</div>
+    <p>The <strong>environment</strong> is deterministic. The <strong>agent</strong> still isn't &mdash; the LLM makes different choices on different runs, and that's fine, that's the thing we're measuring. A deterministic environment means that when the score changes, the change came from the agent and not from the world shifting underneath it.</p>
+    <p>Which is why we still run each task several times. We removed one source of noise so we could measure the other one honestly.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">2.4</span> <span>Seeded world state</span></h2>
+  <p>A <em class="term">seed</em> is just a number handed to a generator so it produces the same "random" data every time. Seed 42 always builds the identical world: the same 200 job postings, the same 14 applications, the same three stale follow-ups.</p>
+  <p>Three things come free with this:</p>
+  <ul>
+    <li><strong>Reproducibility.</strong> A bug found in seed 42 is a bug you can reproduce exactly.</li>
+    <li><strong>Variety without effort.</strong> Seeds 1 to 100 give you a hundred different worlds from one generator.</li>
+    <li><strong>Shareability.</strong> "It fails on seed 17, task 4" is a complete bug report. No data files to send anyone.</li>
+  </ul>
+
+  <div class="analogy">
+    <div class="lbl">In plain words</div>
+    <p>Minecraft world seeds. Type the same seed as your friend and you get the identical world &mdash; same mountains, same village in the same place. The world isn't stored anywhere; it's <em>regenerated</em> from one number. Exactly what we're doing, with job postings instead of mountains.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">2.5</span> <span>The reset / step / done shape</span></h2>
+  <p>This is the standard environment interface, borrowed from reinforcement learning. You'll meet it in almost every environment codebase, so the shape is worth more than the three functions suggest.</p>
+
+  <pre><span class="c"># the shape, in plain Python</span>
+env = Environment(seed=42, task="follow_up_stale")
+
+state = env.reset()                <span class="c"># back to the starting world</span>
+while not env.done:
+    action = agent.decide(state)   <span class="c"># agent picks a tool call</span>
+    state = env.step(action)       <span class="c"># world changes, returns what agent sees</span>
+
+result = env.grade()               <span class="c"># compare final state to expected</span></pre>
+
+  <p>Three ideas, that's all:</p>
+  <ul>
+    <li><strong>reset()</strong> &mdash; rebuild the world from the seed, hand back the starting view. Every run begins identically.</li>
+    <li><strong>step(action)</strong> &mdash; the agent does one thing. The world changes. The agent gets back whatever it would really see: the tool's result, or an error.</li>
+    <li><strong>done</strong> &mdash; the run is over. Either the agent said it finished, or it hit the step limit, or it did something fatal.</li>
+  </ul>
+
+  <div class="analogy">
+    <div class="lbl">In plain words</div>
+    <p>A video game with save files. <em>reset</em> is loading the save. <em>step</em> is pressing a button &mdash; the world responds and shows you the new screen. <em>done</em> is the level ending, whether you won, died, or ran out of time.</p>
+  </div>
+
+  <div class="warn">
+    <div class="lbl">Why the step limit matters more than it sounds</div>
+    <p>Agents get stuck in loops. They will call the same search tool forty times with slightly different wording. Without a step limit, one bad run hangs your whole eval and burns your API budget doing it. A step limit isn't a detail &mdash; it's a termination condition, and "ran out of steps" is itself a useful failure category.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">2.6</span> <span>Three ways to handle tools</span></h2>
+  <p>Your agent needs tools. In the real product they hit real systems. In the environment they must not. Three options &mdash; a genuine trade-off rather than a right answer.</p>
+
+  <div class="scroll">
+  <table>
+    <thead><tr><th>Approach</th><th>What it means</th><th>Good</th><th>Bad</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>Real tools</td>
+        <td>The eval calls the actual APIs.</td>
+        <td>Perfectly realistic. No drift between test and production.</td>
+        <td>Not deterministic, costs money, rate-limited, can't run in CI &mdash; and will eventually email a real person by accident.</td>
+      </tr>
+      <tr>
+        <td>Recorded replay</td>
+        <td>Record real API responses once, replay them during evals.</td>
+        <td>Realistic data, deterministic playback, cheap.</td>
+        <td>Breaks the moment the agent does something you didn't record. No world state &mdash; nothing to assert on.</td>
+      </tr>
+      <tr>
+        <td>Simulated world</td>
+        <td>A small local database plus tool functions that read and write it.</td>
+        <td>Fully deterministic, resettable, free, <strong>and there's a real state to grade</strong>.</td>
+        <td>You have to build it, and it's only as realistic as you make it.</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="analogy">
+    <div class="lbl">In plain words</div>
+    <p>Training a new bank teller. <strong>Real tools</strong> is putting them straight on the counter with live customer accounts &mdash; realistic, and terrifying. <strong>Recorded replay</strong> is showing them a video of yesterday's transactions &mdash; safe, but they can't <em>do</em> anything. <strong>Simulated world</strong> is a training branch with fake accounts they can actually debit and credit. Only the third lets you check the ledger afterwards.</p>
+  </div>
+
+  <p>That last sentence is the whole argument. Recorded replay can't be graded on outcome, because there is no outcome &mdash; nothing changed. If you want the machine-checkable grading we chose in Lesson 1, you need a simulated world.</p>
+</section>
+
+<section>
+  <h2><span class="num">2.7</span> <span>The mirror principle</span></h2>
+  <p>Here's the design idea that makes this practical rather than academic, and it's what keeps an environment maintainable.</p>
+  <p><strong>Write the tool layer once. Point it at two different backends.</strong></p>
+  <p>Your agent calls <em class="term">search_jobs()</em>. In production that function talks to real boards. In the environment the identical function signature talks to the seeded local database. The agent can't tell the difference &mdash; and more importantly, <em>you</em> aren't maintaining two versions of your tool definitions that slowly drift apart.</p>
+
+  <div class="analogy">
+    <div class="lbl">In plain words</div>
+    <p>A flight simulator has the same cockpit layout as the real aircraft. Same switches, same positions, same labels. If the simulator's throttle were somewhere else, training in it would teach the wrong habits. A simulator's value comes entirely from mirroring the real thing.</p>
+  </div>
+
+  <div class="warn">
+    <div class="lbl">The failure this prevents</div>
+    <p><strong>Test/production drift.</strong> Someone adds a field to the real API, forgets the mock, and six weeks later your suite is confidently testing a system that no longer exists. Every eval passes; production is broken. One tool layer, two backends, and this can't happen.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">2.8</span> <span>What a task actually is</span></h2>
+  <p>People use "task" loosely. In an environment it has a precise structure &mdash; four parts, and missing any one makes it ungradeable.</p>
+
+  <pre>{
+  <span class="c">// 1. where the world starts</span>
+  "seed": 42,
+  "setup": { "stale_applications": 3, "unread_replies": 1 },
+
+  <span class="c">// 2. what the agent is told</span>
+  "instruction": "Follow up on any application with no reply after 7 days.",
+
+  <span class="c">// 3. what the world should look like afterwards</span>
+  "expected_state": {
+    "drafts_created": 3,
+    "applications_marked_followed_up": ["app_11", "app_23", "app_31"],
+    "emails_sent": 0
+  },
+
+  <span class="c">// 4. rules that must hold regardless of outcome</span>
+  "policy": [
+    "never sends without approval",
+    "never contacts the same company twice in one run"
+  ]
+}</pre>
+
+  <p>Part 3 is the <strong>outcome grader</strong> from Lesson 1 &mdash; it's just data. Part 4 is the <strong>process grader</strong>. Both are now plain values a machine can check rather than opinions. That is the payoff of building a world with real state.</p>
+  <p>And look at <em class="term">"emails_sent": 0</em>. That's a <strong>negative assertion</strong> &mdash; a check that something did <em>not</em> happen. Beginners write only positive assertions and miss half of what matters. The most expensive agent failures are things it did that nobody asked for.</p>
+</section>
+
+<section>
+  <h2><span class="num">2.9</span> <span>Trajectory logging: what to record</span></h2>
+  <p>The <em class="term">trajectory</em> is your record of the run. Get this right at the start, because you can't recover data you didn't capture &mdash; and you <em>will</em> want it later.</p>
+  <ul>
+    <li><strong>Every message</strong> &mdash; what went to the model, what came back, including reasoning if the model exposes it.</li>
+    <li><strong>Every tool call</strong> &mdash; name, arguments, result, in order.</li>
+    <li><strong>World state snapshots</strong> &mdash; at minimum start and end; ideally after each step.</li>
+    <li><strong>Timing and tokens per step</strong> &mdash; this is what makes the cost and latency work in module M9 possible without re-running anything.</li>
+    <li><strong>Task id, seed, prompt version, model name</strong> &mdash; so a result is always attributable. A score with no version attached is not evidence.</li>
+  </ul>
+
+  <div class="analogy">
+    <div class="lbl">In plain words</div>
+    <p>An aircraft's black box. Nobody enjoys writing the recorder, and it matters only after something goes wrong &mdash; but then it's the only thing that matters. Crash investigators don't ask the pilot what they remember. They read the tape.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">2.10</span> <span>Task templating and difficulty</span></h2>
+  <p>Ten hand-written tasks are enough to start. They aren't enough to measure with &mdash; too few to separate signal from luck, and they'll all sit at roughly the same difficulty because you wrote them in one sitting.</p>
+  <p>The fix is a <strong>task template</strong>: one task shape with knobs you can turn.</p>
+  <ul>
+    <li><strong>Steps required</strong> &mdash; one stale application, or twelve.</li>
+    <li><strong>Distractors</strong> &mdash; applications that look stale but aren't. Does the agent check properly, or pattern-match?</li>
+    <li><strong>Ambiguity</strong> &mdash; an instruction that could mean two things. Does it ask, or guess?</li>
+    <li><strong>Broken tools</strong> &mdash; one tool returns an error. Does it retry, route around, or give up silently?</li>
+  </ul>
+  <p>Turn those knobs and one template becomes a hundred tasks across a difficulty range. Now you can plot score against difficulty instead of quoting a single number &mdash; which tells you <em>where</em> the agent falls over, not just <em>that</em> it does.</p>
+
+  <div class="analogy">
+    <div class="lbl">In plain words</div>
+    <p>A driving instructor doesn't have one test. They have a parking bay that can be wide or tight, in daylight or dusk, with or without a van blocking the view. Same skill, dialled up. That's how you learn whether someone can actually park, or just memorised one bay.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">2.11</span> <span>Reward hacking</span></h2>
+  <p>This is the failure mode that makes environment design a real job rather than a chore &mdash; and the one Scale AI's posting names directly: <em>&ldquo;build graders that maintain integrity under adversarial optimization.&rdquo;</em></p>
+  <p><strong>Reward hacking</strong> is the agent satisfying your grader without doing the task.</p>
+  <p>Real examples, all of which happen:</p>
+  <ul>
+    <li>You grade "the application is marked followed-up." The agent marks every application followed-up and writes no drafts. Full marks.</li>
+    <li>You grade "a draft exists." The agent creates three empty drafts. Full marks.</li>
+    <li>You grade code by "the tests pass." The agent deletes the failing test. Full marks.</li>
+    <li>You grade with a judge that likes thorough answers. The agent writes long, confident, wrong answers. Full marks.</li>
+  </ul>
+
+  <div class="analogy">
+    <div class="lbl">In plain words</div>
+    <p>Every incentive scheme ever designed by humans. Pay a call centre by calls-per-hour and agents hang up on people. Pay by lines of code and you get verbose code. Measure a hospital on waiting-room time and patients get moved to a corridor that technically isn't the waiting room.</p>
+    <p>The agent isn't cheating. It's doing exactly what you measured. The measurement was wrong.</p>
+  </div>
+
+  <p>Four defences, most useful first:</p>
+  <ol>
+    <li><strong>Grade the outcome that actually matters</strong>, not a proxy for it. "Draft exists" is a proxy. "Draft exists, is addressed to the right company, and mentions the role" is closer to the real thing.</li>
+    <li><strong>Add negative assertions.</strong> Check what should <em>not</em> have changed. Most hacks show up as unexpected side effects.</li>
+    <li><strong>Grade process as well as outcome.</strong> A hack usually takes a visibly wrong path.</li>
+    <li><strong>Read real trajectories by hand</strong> &mdash; especially the ones that scored perfectly. Suspiciously high scores are how you find hacks, and nobody ever investigates a pass.</li>
+  </ol>
+</section>
+
+<section>
+  <h2><span class="num">2.12</span> <span>Vocabulary you now own</span></h2>
+  <dl class="vocab">
+    <div><dt>environment</dt><dd>A small simulated world with state that an agent acts inside.</dd></div>
+    <div><dt>seed</dt><dd>A number that regenerates an identical starting world every time.</dd></div>
+    <div><dt>reset / step / done</dt><dd>The standard three-part environment interface.</dd></div>
+    <div><dt>step limit</dt><dd>Maximum actions before a run is force-ended. Prevents infinite loops.</dd></div>
+    <div><dt>tool mock</dt><dd>A tool function backed by the simulated world instead of a real API.</dd></div>
+    <div><dt>expected state</dt><dd>The world as it should look afterwards &mdash; the outcome grader, as data.</dd></div>
+    <div><dt>negative assertion</dt><dd>A check that something did <em>not</em> happen.</dd></div>
+    <div><dt>distractor</dt><dd>Something that looks relevant but isn't, added on purpose.</dd></div>
+    <div><dt>reward hacking</dt><dd>Satisfying the grader without doing the task.</dd></div>
+    <div><dt>test/production drift</dt><dd>Mocks and real systems diverging until evals test a fiction.</dd></div>
+  </dl>
+</section>
+
+<section>
+  <h2><span class="num">2.13</span> <span>Could you answer these out loud?</span></h2>
+  <div class="ask">
+    <div class="q">"Why does the environment need to be deterministic if the LLM isn't?"</div>
+    <div class="a">To isolate the variable. The agent's randomness is what I'm measuring; the world's randomness is noise I can remove. Once the world is fixed, a score change means the agent changed &mdash; and I still run multiple seeds to read the remaining variance honestly.</div>
+  </div>
+  <div class="ask">
+    <div class="q">"Why not just record real API responses and replay them?"</div>
+    <div class="a">Replay has no world state, so there's nothing to assert on &mdash; you lose outcome grading entirely. It also breaks the moment the agent does something you didn't record.</div>
+  </div>
+  <div class="ask">
+    <div class="q">"What's reward hacking, and how do you defend against it?"</div>
+    <div class="a">The agent satisfying the grader without doing the task &mdash; deleting a failing test instead of fixing the code. Defences: grade the real outcome rather than a proxy, add negative assertions for what shouldn't change, grade process alongside outcome, and hand-read the runs that scored perfectly.</div>
+  </div>
+  <div class="ask">
+    <div class="q">"How do you stop your test environment drifting from production?"</div>
+    <div class="a">One tool layer, two backends. The same tool functions point at either the real systems or the seeded simulation, so there's no second copy to fall out of sync.</div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">2.14</span> <span>What we build next</span></h2>
+  <div class="pick">
+    <div class="lbl">Project 1 &mdash; the job-search operations environment</div>
+    <ul>
+      <li><strong>A seeded world in SQLite</strong> &mdash; companies, job postings, applications with statuses and dates, message drafts, and a frozen clock. Generated from a seed, never from the network.</li>
+      <li><strong>One tool layer, two backends</strong> &mdash; around eight tools (search postings, read application, draft message, mark status, schedule follow-up, escalate to human&hellip;), written once against a single interface.</li>
+      <li><strong>reset / step / done</strong> with a step limit, so a looping agent ends cleanly and countably.</li>
+      <li><strong>Full trajectory capture</strong> &mdash; messages, tool calls, results, per-step tokens and timing, plus task id, seed and prompt version on every record.</li>
+      <li><strong>Ten hand-written tasks</strong> with expected state and policy rules, including at least two negative assertions and one deliberate distractor.</li>
+      <li><strong>A state-diff grader</strong> &mdash; pure Python, zero LLM calls, comparing the final database to the expected state.</li>
+    </ul>
+    <p>None of this needs an LLM. You could grade a hand-written script with it &mdash; and we will. That's deliberate: the environment must be correct <em>before</em> an agent ever touches it, or you'll spend days unable to tell whether the agent is broken or the world is.</p>
+  </div>
+</section>
+
+<div class="next">
+  <div class="lbl">Next</div>
+  <p>We write it &mdash; Python and SQLite, standard library only for the world itself. Then <strong>Lesson 03: Graders &amp; Judges</strong>, once there's something real to grade.</p>
+</div>
+
+<div class="sources">
+  <h2>Sources</h2>
+  <ol>
+    <li>Sierra AI, <em>&tau;-bench: A Benchmark for Tool-Agent-User Interaction in Real-World Domains</em> &mdash; the database-state comparison and policy-rule structure this lesson's task format follows. <a href="https://arxiv.org/abs/2406.12045">arxiv.org/abs/2406.12045</a></li>
+    <li>Scale AI, <em>Staff Software Engineer, RL Environments</em> &mdash; &ldquo;environment packaging and versioning, rollout orchestration, trajectory capture, verifier frameworks&rdquo;, and graders under adversarial optimisation. <a href="https://job-boards.greenhouse.io/scaleai/jobs/4729820005">posting</a></li>
+    <li>Farama Foundation, <em>Gymnasium &mdash; Env API</em> &mdash; the canonical <em>reset / step / terminated</em> interface. <a href="https://gymnasium.farama.org/api/env/">gymnasium.farama.org</a></li>
+    <li>Anthropic, <em>Create strong empirical evaluations</em> &mdash; preferring code-based grading, and designing checks that resist gaming. <a href="https://docs.claude.com/en/docs/test-and-evaluate/develop-tests">docs.claude.com</a></li>
+  </ol>
+</div>
+
+</div>
