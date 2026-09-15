@@ -1,8 +1,28 @@
+# secrets - never commit
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+credentials.json
+token.json
+client_secret*.json
+secrets/
+
+# python
 .venv/
 __pycache__/
 *.pyc
 *.egg-info/
+build/
+dist/
+.pytest_cache/
+.coverage
+
+# run artifacts
 worlds/
 trajectories/*.json
+*.db
+*.sqlite3
+
 .DS_Store
-.env
