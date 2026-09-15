@@ -1,0 +1,471 @@
+<title>Graders and Judges</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --paper:#EFF2F1;--surface:#FFFFFF;--ink:#141C1C;--muted:#5A6968;--faint:#8A9897;--rule:#D5DCDA;
+  --accent:#0E6455;--accent-soft:#DCEAE5;--clay:#A8481C;--clay-soft:#F4E3DA;--gold:#7E6110;--gold-soft:#F2EAD3;
+  --display:"Fraunces",Georgia,serif;--body:"Source Serif 4",Georgia,serif;--mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#0E1414;--surface:#161E1E;--ink:#E6ECEA;--muted:#9AA9A7;--faint:#6F7E7C;--rule:#273433;
+  --accent:#5FC4AC;--accent-soft:#12302A;--clay:#E0906A;--clay-soft:#2E1D14;--gold:#D6B65C;--gold-soft:#2B2410;
+}}
+:root[data-theme="dark"]{
+  --paper:#0E1414;--surface:#161E1E;--ink:#E6ECEA;--muted:#9AA9A7;--faint:#6F7E7C;--rule:#273433;
+  --accent:#5FC4AC;--accent-soft:#12302A;--clay:#E0906A;--clay-soft:#2E1D14;--gold:#D6B65C;--gold-soft:#2B2410;
+}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.65;-webkit-font-smoothing:antialiased;}
+.wrap{max-width:790px;margin:0 auto;padding:56px 24px 96px;}
+.masthead{display:flex;flex-direction:column;gap:14px;padding-bottom:28px;border-bottom:2px solid var(--ink);}
+.kicker{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);}
+h1{font-family:var(--display);font-size:clamp(36px,7vw,54px);line-height:1.04;font-weight:600;margin:0;text-wrap:balance;letter-spacing:-.015em;}
+.standfirst{font-size:19px;color:var(--muted);margin:0;max-width:62ch;}
+.meta{font-family:var(--mono);font-size:11.5px;color:var(--faint);display:flex;flex-wrap:wrap;gap:18px;}
+section{padding-top:46px;display:flex;flex-direction:column;gap:16px;}
+h2{font-family:var(--display);font-size:27px;font-weight:600;line-height:1.2;margin:0;text-wrap:balance;display:flex;gap:14px;align-items:baseline;}
+h2 .num{font-family:var(--mono);font-size:13px;font-weight:400;color:var(--accent);flex:none;}
+h3{font-family:var(--display);font-size:19.5px;font-weight:600;margin:18px 0 0;}
+h4{font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin:14px 0 -4px;font-weight:600;}
+p{margin:0;}
+a{color:var(--accent);text-decoration:underline;text-underline-offset:2px;text-decoration-thickness:1px;}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+ul,ol{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:9px;}
+li::marker{color:var(--faint);}
+em.term{font-style:normal;font-family:var(--mono);font-size:.86em;background:var(--accent-soft);padding:1px 5px;border-radius:3px;}
+.analogy{background:var(--surface);border-left:3px solid var(--accent);padding:18px 22px;display:flex;flex-direction:column;gap:9px;}
+.analogy .lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);}
+.warn{background:var(--clay-soft);padding:18px 22px;display:flex;flex-direction:column;gap:9px;border-radius:2px;}
+.warn .lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--clay);}
+.pick{background:var(--gold-soft);border:1px solid var(--gold);padding:20px 22px;display:flex;flex-direction:column;gap:11px;border-radius:2px;}
+.pick .lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);}
+.case{background:var(--surface);border:1px solid var(--rule);padding:20px 22px;display:flex;flex-direction:column;gap:11px;}
+.case .name{font-family:var(--display);font-size:20px;font-weight:600;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;}
+.case .tag{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);background:var(--accent-soft);padding:2px 8px;border-radius:100px;}
+.case .row{display:flex;gap:10px;font-size:15px;}
+.case .row b{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);min-width:86px;flex:none;padding-top:4px;font-weight:400;}
+.cases{display:flex;flex-direction:column;gap:14px;}
+.scroll{overflow-x:auto;}
+table{border-collapse:collapse;width:100%;font-size:14.5px;min-width:600px;}
+th,td{text-align:left;vertical-align:top;padding:10px 13px;border-bottom:1px solid var(--rule);}
+th{font-family:var(--mono);font-size:10px;letter-spacing:.11em;text-transform:uppercase;color:var(--muted);font-weight:400;border-bottom:1px solid var(--ink);}
+td:first-child{font-weight:600;}
+pre{background:var(--surface);border:1px solid var(--rule);padding:16px 18px;overflow-x:auto;font-family:var(--mono);font-size:12.5px;line-height:1.6;margin:0;color:var(--ink);}
+pre .c{color:var(--faint);}
+.ask{display:flex;flex-direction:column;gap:7px;padding:16px 0;border-bottom:1px solid var(--rule);}
+.ask .q{font-weight:600;}
+.ask .a{color:var(--muted);font-size:15.5px;}
+.vocab{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);}
+.vocab > div{background:var(--surface);padding:14px 16px;display:flex;flex-direction:column;gap:5px;}
+.vocab dt{font-family:var(--mono);font-size:12.5px;color:var(--accent);font-weight:600;}
+.vocab dd{margin:0;font-size:14.5px;color:var(--muted);line-height:1.5;}
+.next{margin-top:44px;background:var(--surface);border:1px solid var(--rule);padding:22px;display:flex;flex-direction:column;gap:8px;}
+.next .lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);}
+.sources{padding-top:40px;border-top:1px solid var(--rule);margin-top:52px;display:flex;flex-direction:column;gap:14px;}
+.sources h2{font-size:19px;}
+.sources ol{font-size:14px;color:var(--muted);gap:9px;}
+</style>
+
+<div class="wrap">
+
+<header class="masthead">
+  <div class="kicker">Lesson 03 &middot; Agent Env Lab</div>
+  <h1>Graders and Judges</h1>
+  <p class="standfirst">Every way there is to decide whether an output was good &mdash; from string matching to model juries &mdash; how the real benchmarks do it, where each one breaks, and how to prove your judge can be trusted.</p>
+  <div class="meta"><span>The long one</span><span>~40 min</span><span>Built to be defended out loud</span></div>
+</header>
+
+<section>
+  <h2><span class="num">3.1</span> <span>The grader is the hard part</span></h2>
+  <p>People think the hard part of an eval is writing the tasks. It isn't. Tasks are just realistic inputs, and you can get those from production traffic.</p>
+  <p>The hard part is the grader, because the grader <strong>is your definition of correct</strong>. Everything downstream inherits it. If the grader is wrong, then every number you report is wrong, every decision you make from those numbers is wrong, and &mdash; worst of all &mdash; your agent will start optimising toward whatever your grader actually measures rather than what you meant.</p>
+
+  <div class="analogy">
+    <div class="lbl">In plain words</div>
+    <p>A school can survive a badly worded exam question. It cannot survive a badly designed marking scheme. One bad question costs a few marks; a bad marking scheme quietly teaches ten thousand students the wrong thing, because they study for the marking scheme.</p>
+  </div>
+
+  <p>So this lesson is long on purpose. Graders are where interviews go deep, because they're where production goes wrong.</p>
+</section>
+
+<section>
+  <h2><span class="num">3.2</span> <span>The full taxonomy &mdash; seven families</span></h2>
+  <p>Lesson 1 gave you three families as a simplification. Here is the real map. In any evaluation you build, you are choosing from these seven, and usually combining several.</p>
+
+  <h4>1 &middot; Exact and fuzzy string matching</h4>
+  <p>Does the output equal the answer, contain it, or match a regex? <strong>Use for:</strong> classification labels, extraction, multiple choice, anything with one right token. <strong>Breaks when:</strong> there are many correct phrasings. "New Delhi" vs "Delhi" vs "new delhi".</p>
+
+  <h4>2 &middot; Structural / schema validation</h4>
+  <p>Is the output valid JSON? Does it match the schema? Are all required fields present and correctly typed? <strong>Use for:</strong> any structured-output feature, tool calls, API responses. <strong>Underrated:</strong> this catches a huge share of production failures for almost no effort, and it is a <em>hard</em> check &mdash; no ambiguity. Always add it before anything cleverer.</p>
+
+  <h4>3 &middot; Executable / functional correctness</h4>
+  <p>Run the output and see if it works. Unit tests pass, the SQL returns the right rows, the script exits zero. <strong>Use for:</strong> code generation, SQL, config, anything executable. <strong>This is the gold standard where it applies</strong> &mdash; objective, no opinion, impossible to argue with. It is why coding benchmarks are the most trusted benchmarks we have.</p>
+
+  <h4>4 &middot; State comparison</h4>
+  <p>Ignore the text entirely; look at what changed in the world. Did the database end up correct? <strong>Use for:</strong> tool-using agents, anything that takes actions. <strong>This is what we built in Project 1</strong>, and it is what &tau;-bench uses. It converts "was the agent good?" &mdash; an opinion &mdash; into "is the database in state X?" &mdash; a fact.</p>
+
+  <h4>5 &middot; Model-based judging (LLM-as-judge)</h4>
+  <p>Ask another model to score the output against a rubric. <strong>Use for:</strong> genuinely subjective quality &mdash; tone, helpfulness, writing, summarisation faithfulness. <strong>Cost:</strong> money, latency, variance, and a set of biases we'll cover in detail.</p>
+
+  <h4>6 &middot; Learned graders / reward models</h4>
+  <p>A model <em>fine-tuned specifically to grade</em>, rather than a general chat model prompted to grade. Reward models in RLHF are exactly this. Open judge models like Prometheus and JudgeLM exist for teams that can't send data to a frontier API. <strong>Use for:</strong> high volume, privacy constraints, or when you have enough human labels to train on. <strong>Cost:</strong> you now have a second model to maintain and evaluate.</p>
+
+  <h4>7 &middot; Human</h4>
+  <p>A person applies a rubric. <strong>Use for:</strong> creating your first labelled set, validating every other grader, and adjudicating disagreements. <strong>Never skip entirely</strong> &mdash; humans are not just the slowest grader, they are the <em>measuring stick the other six are calibrated against</em>.</p>
+
+  <div class="warn">
+    <div class="lbl">The family that mostly died</div>
+    <p><strong>Statistical overlap metrics</strong> &mdash; BLEU, ROUGE, METEOR, and to a lesser extent BERTScore and embedding cosine similarity. These compare your output to a reference by word or vector overlap. They were the standard for a decade in translation and summarisation, and they correlate poorly with human judgement on open-ended generation, because a good answer worded differently scores badly and a bad answer worded similarly scores well.</p>
+    <p>Know the names: interviewers over 30 will mention them, and "we moved off ROUGE because overlap doesn't measure correctness" is a good answer. They still have narrow uses &mdash; translation, and as a cheap regression tripwire.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">3.3</span> <span>How to actually choose</span></h2>
+  <p>A decision procedure you can recite. Work down the list and stop at the first one that applies.</p>
+  <ol>
+    <li><strong>Can I execute it?</strong> &rarr; functional correctness. Run the tests.</li>
+    <li><strong>Did it change a system?</strong> &rarr; state comparison. Diff the world.</li>
+    <li><strong>Is the output structured?</strong> &rarr; schema validation, always, as a floor.</li>
+    <li><strong>Is there one right answer in text?</strong> &rarr; string or fuzzy matching.</li>
+    <li><strong>Is it genuinely subjective?</strong> &rarr; LLM judge &mdash; <em>and then calibrate it</em>.</li>
+    <li><strong>Is it subjective, high-volume, and private?</strong> &rarr; consider a learned grader.</li>
+    <li><strong>None of the above?</strong> &rarr; humans, and you probably have a product-definition problem rather than an eval problem.</li>
+  </ol>
+  <p>The single most common mistake in the field is jumping to step 5 when steps 1 to 4 would have worked. An LLM judge feels like the modern answer. It is usually the lazy one.</p>
+
+  <div class="analogy">
+    <div class="lbl">In plain words</div>
+    <p>A doctor ordering tests. Temperature, blood pressure, a blood panel &mdash; cheap, objective, repeatable, and they answer most questions. You only order the expensive scan with the ambiguous read when the cheap instruments genuinely can't tell you. Nobody starts with the scan.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">3.4</span> <span>How the real benchmarks do it</span></h2>
+  <p>Six systems you should be able to name, describe, and criticise. This section is the one to reread before an interview.</p>
+
+  <div class="cases">
+
+    <div class="case">
+      <div class="name">HumanEval <span class="tag">functional correctness</span></div>
+      <div class="row"><b>Grader</b><span>Generate a function, run hidden unit tests against it. Pass if all tests pass.</span></div>
+      <div class="row"><b>Metric</b><span><em class="term">pass@k</em> &mdash; the chance that at least one of k samples is correct.</span></div>
+      <div class="row"><b>Why it mattered</b><span>It made code generation measurable without any human in the loop, and set the template every coding benchmark since has followed.</span></div>
+      <div class="row"><b>Criticism</b><span>Small, and heavily contaminated by now &mdash; models have seen it. Also, passing the given tests is not the same as being correct; tests can be incomplete.</span></div>
+    </div>
+
+    <div class="case">
+      <div class="name">SWE-bench &rarr; SWE-bench Verified <span class="tag">the grader was wrong</span></div>
+      <div class="row"><b>Grader</b><span>Take a real GitHub issue, have the agent produce a patch, then run two sets of tests: <em class="term">FAIL_TO_PASS</em> (tests that failed before the real fix and must now pass) and <em class="term">PASS_TO_PASS</em> (tests that already passed and must keep passing).</span></div>
+      <div class="row"><b>Note this</b><span><strong>PASS_TO_PASS is a negative assertion</strong> &mdash; a check that the agent didn't break anything else. Exactly the idea from Lesson 2, in the most-cited agent benchmark in the world.</span></div>
+      <div class="row"><b>What went wrong</b><span>OpenAI audited it and found three grader defects: unit tests that were <em>overly specific</em> and rejected correct solutions; issue descriptions that were <em>underspecified</em>, so nobody could tell what "correct" meant; and <em>environment setup failures</em> that failed valid patches for reasons unrelated to the patch.</span></div>
+      <div class="row"><b>The fix</b><span>Human annotators went through the set and produced <strong>SWE-bench Verified</strong>: 500 samples confirmed to be gradeable. Scores jumped &mdash; not because models improved, but because the grader stopped being broken.</span></div>
+      <div class="row"><b>Why you care</b><span>This is the best story in the field for "even a fully automated, objective, executable grader can be systematically wrong, and the way you find out is by having humans read it." Use it in interviews.</span></div>
+    </div>
+
+    <div class="case">
+      <div class="name">&tau;-bench <span class="tag">state comparison</span></div>
+      <div class="row"><b>Grader</b><span>Retail and airline customer-service domains. An LLM plays the user, the agent has tools and a policy document, and grading <strong>compares the database state after the task to the expected state</strong> &mdash; never the conversation text.</span></div>
+      <div class="row"><b>Why that design</b><span>It allows infinite variation in how the agent talks while keeping correctness objective. This is the design Project 1 copies.</span></div>
+      <div class="row"><b>Metric</b><span><em class="term">pass^k</em> &mdash; did it succeed on <strong>all</strong> k attempts, not at least one. The reliability metric, not the capability metric.</span></div>
+      <div class="row"><b>The finding</b><span>GPT-4o scored around 25% on pass^8 in the retail domain &mdash; roughly a 60% drop from its pass^1 score. Read that plainly: an agent that looks competent once is close to a coin flip when you need it to behave the same way eight times.</span></div>
+      <div class="row"><b>Why you care</b><span>"pass@k measures whether it <em>can</em>; pass^k measures whether it <em>will</em>" is one of the most useful sentences you can say about agent evaluation.</span></div>
+    </div>
+
+    <div class="case">
+      <div class="name">MT-Bench &amp; Chatbot Arena <span class="tag">LLM-as-judge, validated</span></div>
+      <div class="row"><b>Grader</b><span>GPT-4 judges open-ended multi-turn answers; Chatbot Arena collects real human pairwise preferences at scale.</span></div>
+      <div class="row"><b>The key result</b><span>Strong LLM judges reached <strong>over 80% agreement with human preferences &mdash; the same level of agreement humans reach with each other</strong>. That single finding is why LLM-as-judge became acceptable practice rather than a hack.</span></div>
+      <div class="row"><b>The honest part</b><span>The same paper named the biases: <strong>position bias</strong> measured at roughly 10&ndash;15 points of win-rate swing depending on which answer is shown first, plus verbosity and self-enhancement bias.</span></div>
+      <div class="row"><b>Why you care</b><span>It's the citation for both halves of the argument: judges can work, <em>and</em> here is exactly how they fail. Being able to say both is what makes you sound calibrated rather than credulous.</span></div>
+    </div>
+
+    <div class="case">
+      <div class="name">Length-Controlled AlpacaEval <span class="tag">debiasing a judge</span></div>
+      <div class="row"><b>The problem</b><span>Automatic judges prefer longer answers. So a model could climb the leaderboard by being wordier, which is not the same as being better.</span></div>
+      <div class="row"><b>The fix</b><span>Rather than telling the judge "ignore length" and hoping, they fit a statistical model of how length difference drives the judge's preference, then ask a counterfactual: <em>what would this preference have been if both answers were the same length?</em></span></div>
+      <div class="row"><b>The result</b><span>Correlation with human Chatbot Arena rankings rose from <strong>0.94 to 0.98</strong>, at under $10 and under three minutes per evaluation.</span></div>
+      <div class="row"><b>Why you care</b><span>It's the model answer to "how would you handle judge bias?" You don't prompt it away. You <em>measure</em> the bias and correct for it &mdash; and then you prove the correction worked by showing correlation with human judgement went up.</span></div>
+    </div>
+
+    <div class="case">
+      <div class="name">RAGAS and component metrics <span class="tag">unit-level</span></div>
+      <div class="row"><b>Grader</b><span>Decompose a RAG answer into separately checkable properties: context precision and recall for the retriever, faithfulness and answer relevance for the generator &mdash; most computed with an LLM judge over decomposed claims.</span></div>
+      <div class="row"><b>Why it's good design</b><span>It grades <em>components</em>, so a failure tells you which part to fix. "Faithfulness is low but context recall is fine" means the retriever is working and the generator is hallucinating.</span></div>
+      <div class="row"><b>Limitation</b><span>Every one of these metrics is itself an LLM judge, so all the judge caveats apply &mdash; and almost nobody calibrates them. This is where your existing RAG knowledge fits in the bigger map.</span></div>
+    </div>
+
+  </div>
+
+  <div class="warn">
+    <div class="lbl">Tooling you should be able to name</div>
+    <p><strong>OpenAI Evals</strong> and the Evals API (graders as configurable objects: string check, text similarity, python, model-based). <strong>Inspect AI</strong> from the UK AI Safety Institute &mdash; the most serious open eval framework, with a clean solver/scorer split. <strong>promptfoo</strong> for lightweight local eval in CI. <strong>LangSmith</strong>, <strong>Braintrust</strong>, <strong>DeepEval</strong> for hosted eval and tracing. <strong>RewardBench</strong> and <strong>JudgeBench</strong> for benchmarking judges themselves &mdash; yes, there are benchmarks that evaluate evaluators.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">3.5</span> <span>LLM-as-judge, mechanically</span></h2>
+  <p>When you do reach for a judge, these are the design decisions. Each one moves the numbers.</p>
+
+  <h3>Pointwise vs pairwise vs reference-based</h3>
+  <div class="scroll">
+  <table>
+    <thead><tr><th>Mode</th><th>You ask</th><th>Good for</th><th>Weakness</th></tr></thead>
+    <tbody>
+      <tr><td>Pointwise</td><td>"Score this answer 1&ndash;5 on accuracy."</td><td>Absolute tracking over time; CI gates.</td><td>Judges compress scores &mdash; almost everything becomes a 4. Poor at detecting small changes.</td></tr>
+      <tr><td>Pairwise</td><td>"Which of A and B is better?"</td><td>Comparing two versions. Far more sensitive.</td><td>Position bias. No absolute number, so you can't say "we're at 82%".</td></tr>
+      <tr><td>Reference-based</td><td>"Here is the correct answer. Does this match it?"</td><td>When you have gold answers. Much more reliable than free judging.</td><td>You need gold answers, which is the expensive part.</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p><strong>Rule of thumb:</strong> pairwise when comparing two candidates, reference-based when you have gold data, pointwise only when you need a number that persists across time. And if you use pairwise, <strong>always run both orderings and average</strong> &mdash; that alone kills most position bias for double the cost.</p>
+
+  <h3>Rubric decomposition</h3>
+  <p>Never ask for "quality, 1&ndash;10". Split it into named, independently-scored dimensions with explicit criteria. For a follow-up email: <em>is it addressed to the right company · does it reference the actual role · is the tone professional without being obsequious · is it under 120 words</em>.</p>
+  <p>Three things improve at once: the judge gets more consistent, you learn <em>which</em> dimension failed, and a human can check the judge's work because the criteria are concrete.</p>
+
+  <div class="analogy">
+    <div class="lbl">In plain words</div>
+    <p>Compare two marking schemes. "Give the essay a grade out of 10" &mdash; two examiners will disagree wildly. "2 marks for a clear thesis, 3 for evidence, 2 for structure, 3 for style" &mdash; suddenly they agree, and the student knows what went wrong. Nothing about the essay changed. The scheme did.</p>
+  </div>
+
+  <h3>The other levers</h3>
+  <ul>
+    <li><strong>Reasoning before scoring.</strong> Ask the judge to state its reasoning first, then the score. Generally improves agreement, and gives you something auditable when you disagree with it.</li>
+    <li><strong>Few-shot anchoring.</strong> Show the judge two or three pre-scored examples, especially borderline ones. This is the cheapest accuracy win available and almost nobody does it.</li>
+    <li><strong>Structured output.</strong> Force the judge to emit JSON with a fixed schema. Free-text scores are a parsing nightmare and silently fail.</li>
+    <li><strong>Juries.</strong> Several cheaper models voting often beats one expensive judge, and it dissolves self-preference bias because no single model's own output is being flattered. The trade is cost and complexity.</li>
+    <li><strong>A different model than the one you're testing.</strong> Non-negotiable if you can manage it &mdash; self-preference is real.</li>
+  </ul>
+</section>
+
+<section>
+  <h2><span class="num">3.6</span> <span>Every way a judge lies to you</span></h2>
+
+  <h3>Position bias</h3>
+  <p>The judge prefers whichever answer it sees first (or last). MT-Bench measured this at roughly <strong>10&ndash;15 points of win-rate swing</strong> purely from ordering. <strong>Fix:</strong> run both orders, average. If they disagree, call it a tie.</p>
+
+  <h3>Verbosity / length bias</h3>
+  <p>Longer answers score higher regardless of quality. Studies have found LLM judges showing a stronger length preference than humans do &mdash; one recent analysis put it at about <strong>+17% for LLM judges against +13% for humans</strong>, indicating a systematic overvaluation rather than merely inherited human taste. Notably, <strong>more recent work suggests this has shrunk considerably in current model generations</strong> &mdash; so treat it as something to measure on your own judge rather than assume. <strong>Fix:</strong> the AlpacaEval approach &mdash; model the effect and control for it, or cap output length in the rubric.</p>
+
+  <h3>Self-preference / self-enhancement</h3>
+  <p>A model rates its own outputs more favourably than other models' outputs. <strong>Fix:</strong> judge with a different family than the one you're evaluating, or use a jury.</p>
+
+  <h3>Sycophancy and framing</h3>
+  <p>If your prompt hints at the answer you want &mdash; "did the assistant do a good job here?" &mdash; the judge obliges. <strong>Fix:</strong> neutral framing, and never tell the judge which system produced which answer.</p>
+
+  <h3>Score compression / leniency</h3>
+  <p>On a 1&ndash;10 scale, judges cluster everything between 6 and 9. You lose most of your resolution. <strong>Fix:</strong> fewer points on the scale (1&ndash;4 beats 1&ndash;10), explicit criteria per point, or switch to pairwise.</p>
+
+  <h3>Formatting bias</h3>
+  <p>Markdown, bullet points and headers read as "high effort" to a judge. <strong>Fix:</strong> say so in the rubric, and check it by running the same content with and without formatting.</p>
+
+  <h3>Weak at the things it's weak at</h3>
+  <p>A judge is a language model. It is unreliable at arithmetic, at counting, at long-document recall, and at verifying facts it doesn't know. If your rubric asks it to check a number, <strong>you have used the wrong grader family</strong> &mdash; that's a Python check.</p>
+
+  <div class="warn">
+    <div class="lbl">The meta-point to carry into an interview</div>
+    <p>Every one of these is <em>measurable</em>. Position bias: swap the order and compare. Verbosity: correlate score against length. Self-preference: judge outputs from several models including the judge's own family. Leniency: plot the score distribution.</p>
+    <p>"How would you handle judge bias?" has a weak answer (list the biases) and a strong answer (<em>here is how I'd measure each one on my own judge, and what I'd do about it</em>). The second is what separates candidates.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">3.7</span> <span>Calibration: proving your judge works</span></h2>
+  <p>This is the section that makes you unusual. Almost everyone builds a judge. Almost nobody validates one.</p>
+
+  <h3>The procedure</h3>
+  <ol>
+    <li><strong>Write the rubric first</strong>, precisely enough that another person could apply it.</li>
+    <li><strong>Hand-label 100 examples yourself</strong> against that rubric. Sample them deliberately &mdash; include the hard and borderline ones, not 100 easy passes.</li>
+    <li><strong>Get a second human to label 30 of them.</strong> Human&ndash;human agreement is your <em>ceiling</em>. If two careful people only agree 75% of the time, a judge hitting 75% is doing as well as a person, and no prompt engineering will take you past it.</li>
+    <li><strong>Run the judge on the same 100</strong> and compare.</li>
+    <li><strong>Iterate on the rubric, not the labels.</strong> Where the judge disagrees with you, ask whether the rubric was ambiguous. Usually it was.</li>
+  </ol>
+
+  <h3>How to measure agreement, without the maths</h3>
+  <p><strong>Raw agreement</strong> is just "what fraction of the time did we say the same thing?" It's intuitive and it flatters you, because some agreement happens by luck. If 90% of your examples are passes and the judge says "pass" to everything, you get 90% raw agreement from a judge that isn't reading.</p>
+  <p><strong>Cohen's kappa</strong> fixes that. In one sentence: <em>kappa is how much better than lucky guessing your agreement is, on a scale where 0 is no better than chance and 1 is perfect.</em> You do not need the formula &mdash; every stats library computes it, and interviewers want the interpretation, not the arithmetic.</p>
+  <div class="scroll">
+  <table>
+    <thead><tr><th>Kappa</th><th>Read it as</th><th>What to do</th></tr></thead>
+    <tbody>
+      <tr><td>below 0.4</td><td>Your judge is close to guessing.</td><td>Don't ship it. The rubric is probably ambiguous.</td></tr>
+      <tr><td>0.4 &ndash; 0.6</td><td>Moderate. Usable as a rough tripwire.</td><td>Fine for "did something break", not for "is v2 better".</td></tr>
+      <tr><td>0.6 &ndash; 0.8</td><td>Substantial. This is a working judge.</td><td>Ship it, report the kappa alongside every score.</td></tr>
+      <tr><td>above 0.8</td><td>Strong &mdash; or your task is easy.</td><td>Check you aren't only testing easy cases.</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>Two related names worth knowing: <strong>Krippendorff's alpha</strong>, which handles more than two raters and missing labels, and <strong>Spearman correlation</strong>, which is what you use when your judge outputs a <em>ranking</em> rather than a label &mdash; as in AlpacaEval's 0.94 &rarr; 0.98 against human rankings.</p>
+
+  <div class="analogy">
+    <div class="lbl">In plain words</div>
+    <p>A new smoke alarm. Raw agreement is "it agreed with reality 99% of the time" &mdash; which a brick also achieves, since there's usually no fire. Kappa asks the real question: given how rare fires are, is this thing actually detecting them, or is it just quiet?</p>
+  </div>
+
+  <div class="warn">
+    <div class="lbl">Recalibrate, or it rots</div>
+    <p>A calibration is a statement about one judge model, one rubric version, and one data distribution. Change the judge model, change the rubric, or let your traffic drift, and it no longer holds. Store the kappa <em>with</em> the judge version, and re-run the calibration whenever any of the three changes. Treat it like a test that can go stale.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">3.8</span> <span>Partial credit and reward shaping</span></h2>
+  <p>A binary pass/fail on a twelve-step task tells you almost nothing. "It failed" is not a bug report, and a suite of binary scores can't tell you whether v2 is closer than v1.</p>
+  <p>Ways to give partial credit, roughly in order of how much you should trust them:</p>
+  <ul>
+    <li><strong>Sub-goal checklists.</strong> Break the task into required state changes and score the fraction achieved. Objective, and it tells you <em>which</em> sub-goal fails.</li>
+    <li><strong>Weighted checks.</strong> Not all checks matter equally &mdash; "didn't send an unapproved email" should outweigh "subject line mentions the role". Weight them explicitly rather than pretending they're equal.</li>
+    <li><strong>Milestone / progress scoring.</strong> How far through the intended trajectory did it get before going wrong? Useful for long tasks.</li>
+    <li><strong>Graded rubric dimensions</strong> from a judge. Most informative, least trustworthy. Calibrate before believing.</li>
+  </ul>
+
+  <div class="warn">
+    <div class="lbl">The danger of shaping</div>
+    <p>Every partial-credit scheme is an incentive, and agents optimise incentives. Award points for "created a draft" and you will get empty drafts. Award points per sub-goal and an agent may learn to hit the cheap sub-goals and skip the expensive one. The more granular your reward, the more surface area for gaming &mdash; so pair every partial-credit scheme with negative assertions and the occasional hand-read of perfect scores.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">3.9</span> <span>Turning grades into numbers you can trust</span></h2>
+  <p>You graded 200 runs. Now what do you report?</p>
+  <ul>
+    <li><strong>pass@k</strong> &mdash; at least one of k attempts succeeded. A <em>capability</em> measure: can the model do this at all? Right for code generation where you can test and retry.</li>
+    <li><strong>pass^k</strong> &mdash; all k attempts succeeded. A <em>reliability</em> measure: will it do this every time? Right for agents taking real actions, where one bad run out of eight is a refunded customer. &tau;-bench's GPT-4o result &mdash; strong pass@1, ~25% pass^8 &mdash; is the whole argument for this metric in one number.</li>
+    <li><strong>Mean score with variance across seeds.</strong> Run everything at least three times. Report the spread. A single-run number is not a measurement.</li>
+    <li><strong>Paired comparison.</strong> When comparing v1 and v2, run both on the <em>same</em> items and compare per-item. This removes most of the noise that comes from some items simply being harder.</li>
+    <li><strong>Confidence intervals.</strong> You don't need the maths &mdash; <em>bootstrap</em> is the technique and it means "resample your results many times to see how much the average wobbles". If the intervals for v1 and v2 overlap heavily, you haven't shown an improvement.</li>
+    <li><strong>Per-category breakdown.</strong> One aggregate number hides everything. Score by task type, by difficulty, by failure mode.</li>
+    <li><strong>Cost and latency alongside quality.</strong> "+3% at 2.4&times; the cost" is the actual decision a team makes.</li>
+  </ul>
+
+  <div class="analogy">
+    <div class="lbl">In plain words</div>
+    <p>A bowler taking 5 wickets in one match is pass@1 &mdash; they <em>can</em> do it. Taking 3+ wickets in eight consecutive matches is pass^8 &mdash; they're someone you pick for the tour. Selectors care about the second. So do the people deploying your agent.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">3.10</span> <span>Grading a trajectory, not just an answer</span></h2>
+  <p>Agents add a dimension. Beyond "was the end state right", you can grade the path:</p>
+  <ul>
+    <li><strong>Policy assertions</strong> &mdash; the process grading from Lesson 1. Did it follow the rules? Machine-checkable from the audit log.</li>
+    <li><strong>Tool-call correctness</strong> &mdash; right tool, right arguments. Gradeable against a reference trajectory where one exists.</li>
+    <li><strong>Efficiency</strong> &mdash; steps, tokens and cost against the minimum required. A correct answer in 40 steps is a different product from one in 4.</li>
+    <li><strong>Recovery</strong> &mdash; when a tool failed, did it adapt or give up? Deliberately break a tool and see.</li>
+    <li><strong>Termination</strong> &mdash; did it stop, or did the step limit stop it? "Ran out of steps" is its own failure category.</li>
+    <li><strong>First divergence</strong> &mdash; the single most useful debugging artefact: the earliest step where this run departs from a correct one.</li>
+  </ul>
+  <p>And the pairing that matters most, from Lesson 1: run outcome and process grading together and <strong>look at the disagreements</strong>. Right outcome with a policy violation is the dangerous quadrant. Wrong outcome with a clean process usually means your tools are broken, not your agent.</p>
+</section>
+
+<section>
+  <h2><span class="num">3.11</span> <span>Anti-gaming, concretely</span></h2>
+  <ol>
+    <li><strong>Grade the real outcome, never a proxy.</strong> "A draft exists" is a proxy. "A draft exists, names the right company, and references the role" is closer.</li>
+    <li><strong>Always include negative assertions.</strong> SWE-bench's PASS_TO_PASS is one. Ours is <em class="term">emails_sent: 0</em>.</li>
+    <li><strong>Hold out tasks the agent's developers never see</strong> &mdash; you can't tune to what you can't read.</li>
+    <li><strong>Hand-read the perfect scores.</strong> Nobody investigates a pass, which is exactly why hacks live there.</li>
+    <li><strong>Version everything.</strong> A score is meaningless without the dataset hash, the prompt version, the judge model and the grader version beside it.</li>
+    <li><strong>Re-audit the grader periodically.</strong> SWE-bench went two years before someone checked whether the tests were fair, and the answer was no.</li>
+  </ol>
+</section>
+
+<section>
+  <h2><span class="num">3.12</span> <span>Vocabulary you now own</span></h2>
+  <dl class="vocab">
+    <div><dt>functional correctness</dt><dd>Grading by executing the output. The gold standard where it applies.</dd></div>
+    <div><dt>state comparison</dt><dd>Grading by diffing the world, ignoring text entirely.</dd></div>
+    <div><dt>FAIL_TO_PASS</dt><dd>Tests that must newly pass. The positive assertion.</dd></div>
+    <div><dt>PASS_TO_PASS</dt><dd>Tests that must keep passing. The negative assertion.</dd></div>
+    <div><dt>pointwise / pairwise</dt><dd>Score one answer, vs pick between two.</dd></div>
+    <div><dt>reference-based judging</dt><dd>Judging against a known-correct answer. More reliable.</dd></div>
+    <div><dt>rubric decomposition</dt><dd>Splitting "quality" into named, separately-scored criteria.</dd></div>
+    <div><dt>position bias</dt><dd>Judge prefers whichever answer came first. ~10-15 points on MT-Bench.</dd></div>
+    <div><dt>verbosity bias</dt><dd>Judge prefers longer answers regardless of quality.</dd></div>
+    <div><dt>self-preference</dt><dd>Judge favours outputs from its own model family.</dd></div>
+    <div><dt>length control</dt><dd>Statistically removing length's effect on a judge's preference.</dd></div>
+    <div><dt>Cohen's kappa</dt><dd>Agreement above chance, 0 to 1. Below 0.4 is a guessing judge.</dd></div>
+    <div><dt>human ceiling</dt><dd>How often two careful people agree. Your judge can't beat it.</dd></div>
+    <div><dt>pass@k</dt><dd>At least one of k attempts worked. Capability.</dd></div>
+    <div><dt>pass^k</dt><dd>All k attempts worked. Reliability.</dd></div>
+    <div><dt>bootstrap CI</dt><dd>Resampling results to see how much the average wobbles.</dd></div>
+    <div><dt>jury</dt><dd>Several judges voting; dissolves self-preference.</dd></div>
+    <div><dt>reward model</dt><dd>A model fine-tuned specifically to grade.</dd></div>
+  </dl>
+</section>
+
+<section>
+  <h2><span class="num">3.13</span> <span>Interview answers, out loud</span></h2>
+
+  <div class="ask">
+    <div class="q">"Walk me through how you'd evaluate an agent."</div>
+    <div class="a">Start from what's decidable. If it produces code, run the tests. If it takes actions, diff the resulting state. If it emits structure, validate the schema. Only what's left &mdash; tone, writing quality &mdash; goes to an LLM judge, and that judge gets calibrated against my own hand labels before I trust a number from it. Then I grade the trajectory too, not just the end state, because policy violations don't show up in the outcome. And I never quote a single-run number.</div>
+  </div>
+
+  <div class="ask">
+    <div class="q">"How do you know your LLM judge is right?"</div>
+    <div class="a">I hand-label around 100 examples against the rubric, have a second person label 30 of those to establish the human ceiling, then measure judge&ndash;human agreement with Cohen's kappa. Below 0.4 I don't ship it &mdash; usually the rubric is ambiguous rather than the judge being stupid. Above roughly 0.6 I'll use it, and I report the kappa next to every score so people know what the number is worth. I re-run the calibration whenever the judge model or the rubric changes.</div>
+  </div>
+
+  <div class="ask">
+    <div class="q">"What biases do LLM judges have, and what do you do about them?"</div>
+    <div class="a">Position, verbosity, self-preference, sycophancy, score compression and formatting bias. The important part is that each is measurable on my own judge: swap the order and diff for position, correlate score against length for verbosity, judge several model families including the judge's own for self-preference, plot the distribution for compression. Then fix what I find &mdash; average both orderings, control for length the way AlpacaEval does, judge with a different family. Prompting "please ignore length" is not a fix.</div>
+  </div>
+
+  <div class="ask">
+    <div class="q">"Your eval score went from 71 to 74. Ship it?"</div>
+    <div class="a">Not on that alone. I'd want it run over several seeds with the spread reported, paired on the same items so item difficulty isn't doing the work, and confidence intervals &mdash; if they overlap heavily, there's no result. Then I'd check the held-out slice moved too, and look at per-category breakdown, because a 3-point average can hide a regression in one category. And I'd want the cost and latency delta next to it.</div>
+  </div>
+
+  <div class="ask">
+    <div class="q">"Give me an example of a grader being wrong."</div>
+    <div class="a">SWE-bench. Fully automated and executable &mdash; about as objective as grading gets &mdash; and it still had three systematic defects: unit tests so specific they rejected correct patches, issue descriptions too underspecified to define correctness, and environment failures that failed valid solutions for unrelated reasons. OpenAI had humans audit it and released SWE-bench Verified, 500 samples confirmed gradeable. Scores rose without models improving. It's the best reminder that "objective" and "correct" aren't the same thing.</div>
+  </div>
+
+  <div class="ask">
+    <div class="q">"What's the difference between pass@k and pass^k?"</div>
+    <div class="a">pass@k is at least one of k attempts succeeding &mdash; a capability measure, right for code where you can test and retry. pass^k is all k succeeding &mdash; a reliability measure, right for agents that take real actions. &tau;-bench showed GPT-4o around 25% on pass^8 in retail, roughly a 60% drop from pass^1. An agent that looks capable once can be a coin flip when you need it eight times, and that gap is invisible if you only report pass@1.</div>
+  </div>
+
+  <div class="ask">
+    <div class="q">"When would you NOT use an LLM judge?"</div>
+    <div class="a">Whenever something cheaper is decidable &mdash; execution, state diff, schema validation, exact match. Also anywhere the judgement involves arithmetic, counting, or verifying facts the judge doesn't know, because those are exactly the things language models are bad at. And in a CI gate that must be fast, cheap and deterministic, a judge's variance alone can trip the threshold.</div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">3.14</span> <span>What this means for our project</span></h2>
+  <div class="pick">
+    <div class="lbl">Decisions from this lesson</div>
+    <ul>
+      <li><strong>Keep grading LLM-free as the default.</strong> State comparison plus policy checks already cover everything decidable in our domain. That's step 2 of the decision procedure, and we should not be at step 5 yet.</li>
+      <li><strong>Add partial credit</strong> via sub-goal checklists with explicit weights &mdash; "didn't send unapproved" weighs more than "subject mentions the role". Our graders currently treat every check equally, which is a simplification we should fix.</li>
+      <li><strong>Add efficiency and termination</strong> to the trajectory grade: steps used against minimum needed, and whether it stopped itself or the limit stopped it.</li>
+      <li><strong>Add exactly one judge, later</strong>, for the one undecidable thing: <em>is this follow-up draft actually well written and appropriate?</em> Reference-based, rubric-decomposed into four named criteria, structured JSON output, judged by a different model family.</li>
+      <li><strong>Then calibrate it properly</strong> &mdash; you hand-label 100 drafts, we measure kappa, and we publish that number in the README. That single artefact is worth more in an interview than the rest of the harness.</li>
+      <li><strong>Report pass^3, not just pass@1</strong>, once the LLM agent lands, since our agent takes real actions.</li>
+    </ul>
+  </div>
+</section>
+
+<div class="next">
+  <div class="lbl">Next</div>
+  <p>You decide what changes in the grader &mdash; weights, partial credit, efficiency scoring &mdash; and we implement it together. Then <strong>M4: plugging the model in</strong>, where the scripted stand-in gets deleted and the numbers start meaning something.</p>
+</div>
+
+<div class="sources">
+  <h2>Sources</h2>
+  <ol>
+    <li>Zheng et al., <em>Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena</em> (NeurIPS 2023) &mdash; &gt;80% judge&ndash;human agreement matching human&ndash;human agreement; position, verbosity and self-enhancement bias; position bias measured at 10&ndash;15 points of win-rate swing. <a href="https://arxiv.org/abs/2306.05685">arxiv.org/abs/2306.05685</a></li>
+    <li>Dubois et al., <em>Length-Controlled AlpacaEval: A Simple Way to Debias Automatic Evaluators</em> &mdash; counterfactual length control; Spearman correlation with Chatbot Arena rising from 0.94 to 0.98. <a href="https://arxiv.org/abs/2404.04475">arxiv.org/abs/2404.04475</a></li>
+    <li>OpenAI, <em>Introducing SWE-bench Verified</em> &mdash; overly specific tests, underspecified issues, environment setup failures; 500 human-verified samples; FAIL_TO_PASS and PASS_TO_PASS. <a href="https://openai.com/index/introducing-swe-bench-verified/">openai.com</a></li>
+    <li>Yao et al. (Sierra), <em>&tau;-bench: A Benchmark for Tool-Agent-User Interaction in Real-World Domains</em> &mdash; database-state grading and the pass^k reliability metric. <a href="https://arxiv.org/abs/2406.12045">arxiv.org/abs/2406.12045</a></li>
+    <li>Sierra, <em>&tau;-bench: benchmarking AI agents for the real world</em> &mdash; the pass^8 reliability drop. <a href="https://sierra.ai/blog/benchmarking-ai-agents">sierra.ai</a></li>
+    <li>Anthropic, <em>Create strong empirical evaluations</em> &mdash; grading methods and when code-based grading beats model-based. <a href="https://docs.claude.com/en/docs/test-and-evaluate/develop-tests">docs.claude.com</a></li>
+    <li>OpenAI, <em>Evaluating model performance</em> &mdash; the grader taxonomy exposed in the Evals API. <a href="https://platform.openai.com/docs/guides/evals">platform.openai.com</a></li>
+    <li>UK AI Safety Institute, <em>Inspect AI</em> &mdash; solver/scorer architecture for evaluations. <a href="https://inspect.aisi.org.uk/">inspect.aisi.org.uk</a></li>
+  </ol>
+</div>
+
+</div>
