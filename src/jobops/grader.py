@@ -18,20 +18,27 @@ from .world import World
 
 # ------------------------------------------------------------------ outcome
 
-LIST_FIELDS = {"applications_followed_up", "drafted_for_applications"}
-ABSOLUTE_FIELDS = {"application_status_counts"}
-
-
 def delta(baseline: dict, end: dict) -> dict:
-    """What the agent changed, as opposed to what it inherited."""
+    """What the agent changed, as opposed to what it inherited.
+
+    Behaviour comes from the VALUE'S TYPE, not from a hardcoded list of field
+    names. An earlier version kept two name sets, and the first new snapshot key
+    we added broke every task - a list got subtracted from a list. Type dispatch
+    cannot rot as the snapshot grows.
+
+      list  -> what appeared that was not there before
+      dict  -> absolute; a breakdown is meaningless as a difference
+      other -> arithmetic difference
+    """
     out: dict = {}
     for key, end_value in end.items():
-        if key in ABSOLUTE_FIELDS:
+        before = baseline.get(key)
+        if isinstance(end_value, (list, tuple, set)):
+            out[key] = sorted(set(end_value) - set(before or []))
+        elif isinstance(end_value, dict):
             out[key] = end_value
-        elif key in LIST_FIELDS:
-            out[key] = sorted(set(end_value) - set(baseline.get(key, [])))
         else:
-            out[key] = end_value - baseline.get(key, 0)
+            out[key] = end_value - (before or 0)
     return out
 
 

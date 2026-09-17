@@ -14,6 +14,8 @@ from __future__ import annotations
 
 from typing import Any, Protocol
 
+from .clock import days_between
+from .postings import search_postings as search
 from .world import World
 
 
@@ -87,12 +89,86 @@ TOOL_SPECS: list[dict[str, Any]] = [
         },
     },
     {
-        "name": "get_posting",
-        "description": "Full detail for one posting.",
+        "name": "fetch_posting",
+        "description": (
+            "Full detail for ONE posting, including the job description.\n\n"
+            "Call this only for postings you are seriously considering. Each call "
+            "returns a lot of text, so fetching everything search returned wastes "
+            "your context and your step budget - narrow down first.\n\n"
+            "Read-only. Changes nothing."
+        ),
         "parameters": {
             "type": "object",
-            "properties": {"posting_id": {"type": "string"}},
+            "properties": {
+                "posting_id": {
+                    "type": "string",
+                    "description": "A posting_id from a search_postings result. "
+                                   "Do not invent one.",
+                },
+            },
             "required": ["posting_id"],
+        },
+    },
+    {
+        "name": "get_profile",
+        "description": (
+            "Your own profile: skills, years of experience, home country, the most "
+            "senior level worth applying to, whether you need visa sponsorship, and "
+            "the job titles you are targeting.\n\n"
+            "Call this BEFORE judging whether any role suits you. No other tool "
+            "judges fit - that decision is yours, and it needs this.\n\n"
+            "Read-only. Changes nothing."
+        ),
+        "parameters": {"type": "object", "properties": {}},
+    },
+    {
+        "name": "get_company",
+        "description": (
+            "Company detail: funding stage, size of the last round and when it "
+            "closed, headcount, and industry.\n\n"
+            "Use this when funding matters to the decision - a company that raised "
+            "recently is usually hiring and paying. Call it by company NAME exactly "
+            "as it appeared in a search result.\n\n"
+            "Read-only. Changes nothing."
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "company": {
+                    "type": "string",
+                    "description": "Company name as returned by search_postings, "
+                                   "e.g. \"Vantara Labs\". Case-insensitive.",
+                },
+            },
+            "required": ["company"],
+        },
+    },
+    {
+        "name": "shortlist_posting",
+        "description": (
+            "Add ONE posting to the shortlist of roles worth applying to. This is "
+            "how you deliver your answer - do not just describe roles in a message, "
+            "shortlist them.\n\n"
+            "`reason` must say why THIS role suits THIS person: the specific title, "
+            "location, seniority or funding facts that made you pick it. "
+            "\"Looks like a good fit\" is not a reason.\n\n"
+            "Shortlisting the same posting twice is an error. Reversible - nothing "
+            "is sent and no application is created."
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "posting_id": {
+                    "type": "string",
+                    "description": "A posting_id from a search_postings result.",
+                },
+                "reason": {
+                    "type": "string",
+                    "description": "Why this specific role suits this specific person. "
+                                   "At least a sentence, citing concrete facts.",
+                },
+            },
+            "required": ["posting_id", "reason"],
         },
     },
     {
@@ -223,36 +299,79 @@ class SimBackend:
 
     # tools ---------------------------------------------------------------
 
-    def _search_postings(self, query=None, seniority=None, remote_only=None, limit=10):
-        sql = ("SELECT p.*, c.name AS company FROM postings p "
-               "JOIN companies c ON c.id = p.company_id WHERE p.status = 'open'")
-        params: list = []
-        if query:
-            sql += " AND (p.title LIKE ? OR c.name LIKE ?)"
-            params += [f"%{query}%", f"%{query}%"]
-        if seniority:
-            sql += " AND p.seniority = ?"
-            params.append(seniority)
-        if remote_only:
-            sql += " AND p.remote = 1"
-        # Explicit, total ordering. Without the id tiebreak this is a source of
-        # non-determinism the day two postings share a timestamp.
-        sql += " ORDER BY p.posted_at DESC, p.id ASC LIMIT ?"
-        params.append(int(limit))
-        return [{"posting_id": r["id"], "company": r["company"], "title": r["title"],
-                 "seniority": r["seniority"], "location": r["location"],
-                 "remote": bool(r["remote"]), "posted_at": r["posted_at"]}
-                for r in self.world.q(sql, tuple(params))]
+    def _search_postings(self, **kwargs):
+        """A thin wrapper. All the logic lives in the pure function, which is
+        why it can be tested without a world at all."""
+        out = search(self.world.open_postings(), today=self.world.now(), **kwargs)
+        if "error" in out:
+            raise ToolError(out["error"])
+        return out
 
-    def _get_posting(self, posting_id):
+    def _fetch_posting(self, posting_id):
         row = self.world.one(
-            "SELECT p.*, c.name AS company, c.industry FROM postings p "
-            "JOIN companies c ON c.id = p.company_id WHERE p.id = ?", (posting_id,))
+            "SELECT p.*, c.name AS company, c.industry, c.funding_stage "
+            "FROM postings p JOIN companies c ON c.id = p.company_id "
+            "WHERE p.id = ?", (posting_id,))
         if row is None:
-            raise ToolError(f"no such posting: {posting_id}")
-        return {"posting_id": row["id"], "company": row["company"], "industry": row["industry"],
-                "title": row["title"], "seniority": row["seniority"], "location": row["location"],
-                "remote": bool(row["remote"]), "posted_at": row["posted_at"], "url": row["url"]}
+            raise ToolError(
+                f"No posting {posting_id}. Call search_postings to see valid ids.")
+        return {
+            "posting_id": row["id"], "company": row["company"],
+            "industry": row["industry"], "funding_stage": row["funding_stage"],
+            "title": row["title"], "seniority": row["seniority"],
+            "location": row["location"], "country": row["country"],
+            "work_mode": row["work_mode"],
+            "requires_relocation": bool(row["requires_relocation"]),
+            "days_since_posted": int(days_between(row["posted_at"], self.world.now())),
+            "description": row["description"], "url": row["url"],
+            "today": self.world.now(),
+        }
+
+    def _get_profile(self):
+        return self.world.profile()
+
+    def _get_company(self, company):
+        row = self.world.one(
+            "SELECT * FROM companies WHERE LOWER(name) = LOWER(?)", (company,))
+        if row is None:
+            known = [r["name"] for r in self.world.q(
+                "SELECT name FROM companies ORDER BY name LIMIT 5")]
+            raise ToolError(
+                f"No company named {company!r}. Use the company name exactly as it "
+                f"appeared in a search result, for example: {', '.join(known)}.")
+        last_round_at = row["last_round_at"]
+        return {
+            "company": row["name"],
+            "industry": row["industry"],
+            "headcount": row["headcount"],
+            "funding_stage": row["funding_stage"],
+            "last_round_usd": row["last_round_usd"],
+            # Precomputed, because "is this recent?" is a date calculation and
+            # the model should never be doing one.
+            "months_since_last_round": (
+                round(days_between(last_round_at, self.world.now()) / 30.44, 1)
+                if last_round_at else None),
+            "today": self.world.now(),
+        }
+
+    def _shortlist_posting(self, posting_id, reason):
+        posting = self.world.one("SELECT * FROM postings WHERE id = ?", (posting_id,))
+        if posting is None:
+            raise ToolError(
+                f"No posting {posting_id}. Call search_postings to see valid ids.")
+        if not (reason or "").strip():
+            raise ToolError("reason must not be empty - say why this role suits you.")
+        existing = self.world.one(
+            "SELECT posting_id FROM shortlist WHERE posting_id = ?", (posting_id,))
+        if existing is not None:
+            raise ToolError(f"{posting_id} is already shortlisted.")
+        self.world.conn.execute(
+            "INSERT INTO shortlist VALUES (?,?,?)",
+            (posting_id, reason.strip(), self.world.now()))
+        self.world.conn.commit()
+        size = len(self.world.q("SELECT posting_id FROM shortlist"))
+        return {"posting_id": posting_id, "title": posting["title"],
+                "shortlist_size": size}
 
     def _list_applications(self, status=None):
         sql = ("SELECT a.*, p.title, c.name AS company FROM applications a "

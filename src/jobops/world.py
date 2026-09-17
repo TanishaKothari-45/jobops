@@ -13,6 +13,7 @@ from importlib import resources
 from pathlib import Path
 
 from .clock import WORLD_EPOCH, Clock, days_between, fmt
+from .postings import Posting
 from .seed import WorldSetup, generate
 
 
@@ -35,9 +36,12 @@ class World:
         self.conn.executescript(self._schema())
         data = generate(self.seed, self.setup, self.clock)
 
-        self.conn.executemany("INSERT INTO companies VALUES (?,?,?,?)", data.companies)
+        self.conn.execute(
+            "INSERT INTO profile VALUES (?,?,?,?,?,?,?,?,?,?)", data.profile)
         self.conn.executemany(
-            "INSERT INTO postings VALUES (?,?,?,?,?,?,?,?,?)", data.postings)
+            "INSERT INTO companies VALUES (?,?,?,?,?,?,?,?,?,?,?)", data.companies)
+        self.conn.executemany(
+            "INSERT INTO postings VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)", data.postings)
         self.conn.executemany(
             "INSERT INTO applications VALUES (?,?,?,?,?,?,?,?)", data.applications)
         self.conn.executemany(
@@ -80,6 +84,46 @@ class World:
         rows = self.q("SELECT * FROM applications ORDER BY id")
         return [r["id"] for r in rows if self.is_stale(r)]
 
+    def profile(self) -> dict:
+        """The one profile row, as a plain dict with JSON columns decoded."""
+        row = self.one("SELECT * FROM profile WHERE id = 1")
+        return {
+            "name": row["name"],
+            "headline": row["headline"],
+            "years_experience": row["years_experience"],
+            "home_country": row["home_country"],
+            "max_seniority": row["max_seniority"],
+            "open_to_remote": bool(row["open_to_remote"]),
+            "needs_sponsorship": bool(row["needs_sponsorship"]),
+            "skills": json.loads(row["skills_json"]),
+            "target_titles": json.loads(row["target_titles_json"]),
+        }
+
+    def open_postings(self, *, applied_to: bool = False) -> list[Posting]:
+        """Postings as `Posting` objects, for the pure search function.
+
+        By default this excludes roles we have already applied to - the tool
+        promises "postings you have not applied to yet", and the promise is
+        kept here rather than left to the agent.
+        """
+        rows = self.q(
+            "SELECT p.*, c.name AS company FROM postings p "
+            "JOIN companies c ON c.id = p.company_id "
+            "WHERE p.status = 'open' ORDER BY p.id")
+        applied = {r["posting_id"] for r in self.q("SELECT posting_id FROM applications")}
+        out = []
+        for r in rows:
+            if not applied_to and r["id"] in applied:
+                continue
+            out.append(Posting(
+                posting_id=r["id"], company=r["company"], title=r["title"],
+                seniority=r["seniority"], work_mode=r["work_mode"],
+                location=r["location"], country=r["country"],
+                requires_relocation=bool(r["requires_relocation"]),
+                posted_at=r["posted_at"], url=r["url"], source=r["source"],
+            ))
+        return out
+
     # ----------------------------------------------------------------- write
 
     def record_event(self, tool: str, args: dict, ok: bool, result: object) -> None:
@@ -118,6 +162,15 @@ class World:
             "application_status_counts": {r["status"]: r["n"] for r in by_status},
             "scheduled_follow_ups": len(self.q(
                 "SELECT id FROM applications WHERE next_follow_up_at IS NOT NULL")),
+            # The shortlister's answer, as state. This is what makes "are these
+            # the right roles?" a set comparison instead of a judgement call.
+            "shortlisted": [r["posting_id"] for r in self.q(
+                "SELECT posting_id FROM shortlist ORDER BY posting_id")],
+            "shortlist_size": len(self.q("SELECT posting_id FROM shortlist")),
+            "shortlisted_companies": sorted({r["company"] for r in self.q(
+                "SELECT c.name AS company FROM shortlist s "
+                "JOIN postings p ON p.id = s.posting_id "
+                "JOIN companies c ON c.id = p.company_id")}),
         }
 
     def dump(self, path: str | Path) -> None:
