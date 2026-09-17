@@ -27,14 +27,62 @@ class ToolError(Exception):
 TOOL_SPECS: list[dict[str, Any]] = [
     {
         "name": "search_postings",
-        "description": "Search open job postings. Returns the most recently posted matches first.",
+        "description": (
+            "Search open job postings you have not applied to yet, across every company "
+            "we track. Returns the most recently posted matches first, newest to oldest.\n\n"
+            "Use this to discover roles. Do NOT use it to review applications you have "
+            "already sent - that is list_applications. Do NOT use it to read a full job "
+            "description - it returns summaries only; call fetch_posting for detail.\n\n"
+            "This tool does NOT judge whether a role suits you. Call get_profile and "
+            "decide that yourself.\n\n"
+            "`query` matches as a case-insensitive substring over job title and company "
+            "name: \"AI\" matches \"Applied AI Engineer\", but \"ML\" will NOT match "
+            "\"Machine Learning\". It does not understand synonyms - search several "
+            "titles separately rather than hoping one query covers them.\n\n"
+            "scope=\"indexed\" (default) searches companies we already track and is "
+            "instant. scope=\"discover\" also searches the wider web for companies we do "
+            "not track yet; it is slow and costs money, so use it when indexed results "
+            "look thin.\n\n"
+            "Read-only. Changes nothing."
+        ),
         "parameters": {
             "type": "object",
             "properties": {
-                "query": {"type": "string", "description": "Match against job title or company name."},
-                "seniority": {"type": "string", "enum": ["mid", "senior"]},
-                "remote_only": {"type": "boolean"},
-                "limit": {"type": "integer", "default": 10},
+                "query": {
+                    "type": "string",
+                    "description": "Substring matched on job title and company name. "
+                                   "Omit to browse everything.",
+                },
+                "seniority": {
+                    "type": "string",
+                    "enum": ["junior", "mid", "senior", "staff_plus"],
+                    "description": "Filter by inferred seniority. Omit for any.",
+                },
+                "work_mode": {
+                    "type": "string",
+                    "enum": ["remote", "onsite", "hybrid"],
+                    "description": "Filter by how the role is worked. Omit for any.",
+                },
+                "country": {
+                    "type": "string",
+                    "description": "Country name, e.g. \"India\". Omit for any. Some "
+                                   "postings have no country we could determine.",
+                },
+                "posted_within_days": {
+                    "type": "integer",
+                    "description": "Only postings newer than this many days.",
+                },
+                "scope": {
+                    "type": "string",
+                    "enum": ["indexed", "discover"],
+                    "description": "\"indexed\" (default) searches tracked companies and "
+                                   "is instant. \"discover\" also searches the web for "
+                                   "untracked companies; slow and costs money.",
+                },
+                "limit": {
+                    "type": "integer",
+                    "description": "How many results to return. Default 8, maximum 25.",
+                },
             },
         },
     },
