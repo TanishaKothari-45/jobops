@@ -1,0 +1,368 @@
+<title>The Agent Loop</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --paper:#EFF2F1;--surface:#FFFFFF;--ink:#141C1C;--muted:#5A6968;--faint:#8A9897;--rule:#D5DCDA;
+  --accent:#0E6455;--accent-soft:#DCEAE5;--clay:#A8481C;--clay-soft:#F4E3DA;--gold:#7E6110;--gold-soft:#F2EAD3;
+  --display:"Fraunces",Georgia,serif;--body:"Source Serif 4",Georgia,serif;--mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#0E1414;--surface:#161E1E;--ink:#E6ECEA;--muted:#9AA9A7;--faint:#6F7E7C;--rule:#273433;
+  --accent:#5FC4AC;--accent-soft:#12302A;--clay:#E0906A;--clay-soft:#2E1D14;--gold:#D6B65C;--gold-soft:#2B2410;
+}}
+:root[data-theme="dark"]{
+  --paper:#0E1414;--surface:#161E1E;--ink:#E6ECEA;--muted:#9AA9A7;--faint:#6F7E7C;--rule:#273433;
+  --accent:#5FC4AC;--accent-soft:#12302A;--clay:#E0906A;--clay-soft:#2E1D14;--gold:#D6B65C;--gold-soft:#2B2410;
+}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.65;-webkit-font-smoothing:antialiased;}
+.wrap{max-width:790px;margin:0 auto;padding:56px 24px 96px;}
+.masthead{display:flex;flex-direction:column;gap:14px;padding-bottom:28px;border-bottom:2px solid var(--ink);}
+.kicker{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);}
+h1{font-family:var(--display);font-size:clamp(36px,7vw,54px);line-height:1.04;font-weight:600;margin:0;text-wrap:balance;letter-spacing:-.015em;}
+.standfirst{font-size:19px;color:var(--muted);margin:0;max-width:62ch;}
+.meta{font-family:var(--mono);font-size:11.5px;color:var(--faint);display:flex;flex-wrap:wrap;gap:18px;}
+section{padding-top:46px;display:flex;flex-direction:column;gap:16px;}
+h2{font-family:var(--display);font-size:27px;font-weight:600;line-height:1.2;margin:0;text-wrap:balance;display:flex;gap:14px;align-items:baseline;}
+h2 .num{font-family:var(--mono);font-size:13px;font-weight:400;color:var(--accent);flex:none;}
+h3{font-family:var(--display);font-size:19.5px;font-weight:600;margin:18px 0 0;}
+p{margin:0;}
+a{color:var(--accent);text-decoration:underline;text-underline-offset:2px;text-decoration-thickness:1px;}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+ul,ol{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:9px;}
+li::marker{color:var(--faint);}
+em.term{font-style:normal;font-family:var(--mono);font-size:.86em;background:var(--accent-soft);padding:1px 5px;border-radius:3px;}
+.analogy{background:var(--surface);border-left:3px solid var(--accent);padding:18px 22px;display:flex;flex-direction:column;gap:9px;}
+.analogy .lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);}
+.warn{background:var(--clay-soft);padding:18px 22px;display:flex;flex-direction:column;gap:9px;border-radius:2px;}
+.warn .lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--clay);}
+.pick{background:var(--gold-soft);border:1px solid var(--gold);padding:20px 22px;display:flex;flex-direction:column;gap:11px;border-radius:2px;}
+.pick .lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);}
+.scroll{overflow-x:auto;}
+table{border-collapse:collapse;width:100%;font-size:14.5px;min-width:560px;}
+th,td{text-align:left;vertical-align:top;padding:10px 13px;border-bottom:1px solid var(--rule);}
+th{font-family:var(--mono);font-size:10px;letter-spacing:.11em;text-transform:uppercase;color:var(--muted);font-weight:400;border-bottom:1px solid var(--ink);}
+td:first-child{font-weight:600;}
+pre{background:var(--surface);border:1px solid var(--rule);padding:16px 18px;overflow-x:auto;font-family:var(--mono);font-size:12.5px;line-height:1.6;margin:0;color:var(--ink);}
+pre .c{color:var(--faint);}
+pre .k{color:var(--accent);}
+.dials{display:grid;grid-template-columns:repeat(auto-fit,minmax(205px,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);}
+.dials > div{background:var(--surface);padding:16px 18px;display:flex;flex-direction:column;gap:6px;}
+.dials .n{font-family:var(--mono);font-size:11px;color:var(--accent);letter-spacing:.1em;}
+.dials .t{font-family:var(--display);font-size:17px;font-weight:600;}
+.dials .d{font-size:14.5px;color:var(--muted);line-height:1.5;}
+.ask{display:flex;flex-direction:column;gap:7px;padding:16px 0;border-bottom:1px solid var(--rule);}
+.ask .q{font-weight:600;}
+.ask .a{color:var(--muted);font-size:15.5px;}
+.vocab{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);}
+.vocab > div{background:var(--surface);padding:14px 16px;display:flex;flex-direction:column;gap:5px;}
+.vocab dt{font-family:var(--mono);font-size:12.5px;color:var(--accent);font-weight:600;}
+.vocab dd{margin:0;font-size:14.5px;color:var(--muted);line-height:1.5;}
+.next{margin-top:44px;background:var(--surface);border:1px solid var(--rule);padding:22px;display:flex;flex-direction:column;gap:8px;}
+.next .lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);}
+.sources{padding-top:40px;border-top:1px solid var(--rule);margin-top:52px;display:flex;flex-direction:column;gap:14px;}
+.sources h2{font-size:19px;}
+.sources ol{font-size:14px;color:var(--muted);gap:9px;}
+</style>
+
+<div class="wrap">
+
+<header class="masthead">
+  <div class="kicker">Lesson 05 &middot; Agent Env Lab</div>
+  <h1>The Agent Loop</h1>
+  <p class="standfirst">The thing that replaces the scripted <em>if/else</em>. Twelve lines of code, five control dials, and every hard problem in production agents hiding in the ones nobody tunes.</p>
+  <div class="meta"><span>~35 min</span><span>Then the model gets plugged in</span></div>
+</header>
+
+<section>
+  <h2><span class="num">5.1</span> <span>The loop is twelve lines</span></h2>
+  <p>Before the mystique: every agent you have ever used &mdash; Claude Code, Cursor, a customer service bot, the thing we are about to build &mdash; runs this.</p>
+
+  <pre>messages = [user_task]
+
+while True:
+    reply = model(messages, tools=TOOL_SPECS)   <span class="c"># ask</span>
+    messages.append(reply)
+
+    <span class="k">if</span> not reply.tool_calls:                      <span class="c"># it answered instead of acting</span>
+        break
+
+    <span class="k">for</span> call <span class="k">in</span> reply.tool_calls:                 <span class="c"># act</span>
+        result = execute(call)
+        messages.append(tool_result(call.id, result))
+
+    <span class="k">if</span> steps &gt;= STEP_LIMIT:                      <span class="c"># or it never stops</span>
+        break</pre>
+
+  <p>That is it. Ask, act, observe, repeat. Frameworks wrap it and harnesses decorate it, but underneath every one of them is a while-loop that calls a model, checks whether the response contains tool calls, runs them if it does, and stops when it doesn't.</p>
+
+  <div class="analogy">
+    <div class="lbl">In plain words</div>
+    <p>You are messaging a very capable colleague who has <strong>no memory between messages</strong>. Everything they know about the task, they know because it is in the thread you send them. Each time they reply they either say "I'm done, here's the answer" or "please run this for me and tell me what came back".</p>
+    <p>Your job is not to make them clever. It is to decide what goes in the thread, which tools they may ask for, and when to stop replying.</p>
+  </div>
+
+  <p>The interesting engineering is not the loop. It is the handful of decisions wrapped around it, and that is what this lesson is about.</p>
+</section>
+
+<section>
+  <h2><span class="num">5.2</span> <span>What actually flows through it</span></h2>
+  <p>A conversation with a tool-using model is a list of typed blocks, not a list of strings. Roughly:</p>
+  <ul>
+    <li><strong>user</strong> &mdash; the task</li>
+    <li><strong>assistant</strong> &mdash; may contain text, reasoning, and one or more <em class="term">tool_use</em> blocks, each with an id, a tool name and arguments</li>
+    <li><strong>user</strong> &mdash; one <em class="term">tool_result</em> block per tool_use, matched by id</li>
+  </ul>
+  <p>Three things follow from that structure, and each one bites people:</p>
+  <ol>
+    <li><strong>Every tool_use needs a matching tool_result.</strong> Miss one and the next call fails, or the model loses track of which answer belongs to which request.</li>
+    <li><strong>A model can emit several tool_use blocks at once</strong> &mdash; parallel tool calling. Your loop must handle a list, not one.</li>
+    <li><strong>Errors go back as tool_result too</strong>, not as exceptions. A failed tool is information the agent can act on. This is why Lesson 4 spent so long on error text.</li>
+  </ol>
+  <p>Providers differ in naming &mdash; Anthropic's <em class="term">tool_use</em>/<em class="term">tool_result</em>, OpenAI's <em class="term">tool_calls</em> and <em class="term">role:"tool"</em> &mdash; but the shape is the same. Write your loop against your own small interface and adapt at the edge, exactly as we did with the three ATS providers.</p>
+</section>
+
+<section>
+  <h2><span class="num">5.3</span> <span>First question: does this need an agent at all?</span></h2>
+  <p>Anthropic's guidance is unusually blunt here, and it is the most valuable thing in their agents write-up: <strong>find the simplest thing that works.</strong> Most production "agents" should be workflows.</p>
+  <p>The distinction: in a <strong>workflow</strong>, you wrote the control flow. In an <strong>agent</strong>, the model decides the control flow. The second is more capable and much harder to make reliable.</p>
+
+  <div class="scroll">
+  <table>
+    <thead><tr><th>Pattern</th><th>What it is</th><th>Use when</th></tr></thead>
+    <tbody>
+      <tr><td>Prompt chaining</td><td>A fixed sequence of calls, each feeding the next, with programmatic <em>gates</em> between steps.</td><td>The steps are known in advance.</td></tr>
+      <tr><td>Routing</td><td>Classify the input, send it to a specialised handler.</td><td>Distinct kinds of request need different treatment.</td></tr>
+      <tr><td>Parallelisation</td><td>Split work across simultaneous calls, or run the same task several times and vote.</td><td>Independent subtasks, or you want consensus.</td></tr>
+      <tr><td>Orchestrator&ndash;workers</td><td>One model decomposes and delegates, then synthesises.</td><td>The subtasks are not predictable up front.</td></tr>
+      <tr><td>Evaluator&ndash;optimiser</td><td>A generator paired with a critic, looping until quality passes.</td><td>You have clear criteria and iteration genuinely helps.</td></tr>
+      <tr><td><strong>Agent</strong></td><td>Open loop; the model plans, acts, observes, and decides when it is done.</td><td>The path cannot be predicted, and you can tolerate variance.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <p>They compose: routing feeds a chain, an orchestrator wraps an evaluator&ndash;optimiser at the worker layer, parallelisation sits inside any of them.</p>
+
+  <div class="warn">
+    <div class="lbl">The honest test</div>
+    <p>If you can draw the flowchart, <strong>write the flowchart</strong>. An agent is what you reach for when you genuinely cannot enumerate the steps &mdash; and you pay for that flexibility in latency, in cost, and in a far larger space of ways to fail.</p>
+    <p>Saying this in an interview marks you as someone who has run one in production rather than read about them.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">5.4</span> <span>The five dials</span></h2>
+  <p>Once you have decided it really is an agent, everything you control lives in five places.</p>
+
+  <div class="dials">
+    <div><div class="n">01</div><div class="t">Tools</div><div class="d">What it can do. Lesson 4 - and the highest-leverage dial by a distance.</div></div>
+    <div><div class="n">02</div><div class="t">Stopping</div><div class="d">When the loop may end, and who decides.</div></div>
+    <div><div class="n">03</div><div class="t">Context</div><div class="d">What it can see each turn. The dial almost nobody tunes.</div></div>
+    <div><div class="n">04</div><div class="t">Verification</div><div class="d">How it, or you, know the work is actually done.</div></div>
+    <div><div class="n">05</div><div class="t">Guardrails</div><div class="d">What it may never do, enforced outside the model.</div></div>
+  </div>
+
+  <p>Notice that the <em>prompt</em> is not on this list. It matters &mdash; but it is one input among five, and it is the one people spend ninety percent of their effort on.</p>
+</section>
+
+<section>
+  <h2><span class="num">5.5</span> <span>Stopping: the dial that bites first</span></h2>
+  <p>A loop with no termination logic either declares victory early or never stops. Four conditions, and you need all four:</p>
+  <ul>
+    <li><strong>Success</strong> &mdash; the model stops calling tools and answers. The intended exit.</li>
+    <li><strong>Step cap</strong> &mdash; a hard maximum. Non-negotiable. This is what stops a looping agent draining your budget at three in the morning.</li>
+    <li><strong>Budget</strong> &mdash; tokens or money. A step cap does not bound cost if each step is enormous.</li>
+    <li><strong>No progress</strong> &mdash; the same call with the same arguments three times running means it is stuck, and ten more steps will not help.</li>
+  </ul>
+
+  <h3>How does it say it is finished?</h3>
+  <p>Two designs, and it is a real fork.</p>
+  <p><strong>Implicit</strong> &mdash; a turn with no tool calls means done. Simple, works everywhere, and it is what most loops do. The weakness: "let me explain what I found" looks identical to "I have finished the work".</p>
+  <p><strong>Explicit</strong> &mdash; a <em class="term">finish(summary)</em> tool it must call. More reliable, gives you a clean place to capture its own account of what it did, and makes "stopped without finishing" a distinguishable failure category rather than a silent one. The cost: one more tool, and the model sometimes forgets to call it.</p>
+
+  <div class="analogy">
+    <div class="lbl">In plain words</div>
+    <p>A contractor who stops arriving at your house has either finished or given up, and from your side those look identical until you inspect. A contractor who hands you a signed completion note has told you which one it was. The note can still be wrong &mdash; but now you can check it against the building.</p>
+  </div>
+
+  <div class="warn">
+    <div class="lbl">Record the reason, always</div>
+    <p>"The agent finished" and "the step limit finished it" are completely different outcomes that produce identical-looking results. Store the stop reason on every run. It becomes a failure category for free, and it is the first thing you will look at when a score drops.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">5.6</span> <span>Context: the dial almost nobody tunes</span></h2>
+  <p>Here is the number that reframes the whole subject. In a typical agent's context window, roughly <strong>84% of the tokens are observation tokens</strong> &mdash; tool outputs, piling up turn after turn, never removed.</p>
+  <p>Think about what that means. The task, the tools, the reasoning and the answer are all squeezed into the remaining sixth. Everything else is a transcript of things the agent has already looked at.</p>
+
+  <div class="analogy">
+    <div class="lbl">In plain words</div>
+    <p>A detective's desk. The case file is two pages. Everything else on the desk is photographs from leads they already followed and dismissed &mdash; and more keep arriving, and nobody clears it. By the afternoon they are reading the desk instead of the case.</p>
+  </div>
+
+  <p>Four strategies, in increasing order of cost and risk:</p>
+  <ol>
+    <li><strong>Do not create the problem.</strong> Bounded tool returns, pagination, pre-computed fields. Lesson 4 &mdash; and it is why our search returns 8 with a count rather than 34 with descriptions.</li>
+    <li><strong>Prune stale observations.</strong> Drop the body of old tool results, keep a one-line trace that the call happened.</li>
+    <li><strong>Mask rather than delete.</strong> Replace an old result with a stub the agent can re-fetch if it genuinely needs it.</li>
+    <li><strong>Summarise.</strong> Compact the history with another model call. Powerful, lossy, and a last resort &mdash; you are now trusting a summary nobody verified.</li>
+  </ol>
+
+  <div class="warn">
+    <div class="lbl">The counterintuitive finding</div>
+    <p>Pruned contexts can <strong>outperform</strong> full-history retention &mdash; not merely cost less, actually score better. Old context is not neutral: an agent holding the whole transcript will happily reason from a stale value it fetched nine steps ago instead of the current one.</p>
+    <p>"More context is better" is the intuition. It is wrong, and knowing that it is wrong is worth saying out loud in an interview.</p>
+  </div>
+
+  <p>This is the doorway into memory and context engineering, which gets its own module. For now the decision is narrower: <strong>what does the agent see each turn?</strong> Full history is the right starting point for short runs &mdash; but measure it, do not assume it.</p>
+</section>
+
+<section>
+  <h2><span class="num">5.7</span> <span>When the model emits garbage</span></h2>
+  <p>It will. These are the categories, and each needs a different response.</p>
+  <div class="scroll">
+  <table>
+    <thead><tr><th>Failure</th><th>Looks like</th><th>Response</th></tr></thead>
+    <tbody>
+      <tr><td>Malformed arguments</td><td>Invalid JSON, wrong type, missing required field</td><td>Return the validation error as a tool_result. It usually self-corrects in one turn.</td></tr>
+      <tr><td>Hallucinated id</td><td><em class="term">app_999</em> &mdash; invented rather than taken from a result</td><td>An error naming where valid ids come from. Never silently create it.</td></tr>
+      <tr><td>Wrong tool</td><td>A plausible call, but the wrong tool for the request</td><td>Not a runtime error. Fix the descriptions &mdash; it is a design bug.</td></tr>
+      <tr><td>Unknown tool</td><td>A tool name that does not exist</td><td>An error listing the real names.</td></tr>
+      <tr><td>Runaway</td><td>The same call, the same arguments, over and over</td><td>No-progress detection, then stop. Do not let it burn the budget.</td></tr>
+      <tr><td>Premature stop</td><td>Answers in prose without doing the work</td><td>This is why explicit <em class="term">finish</em> plus verification exists.</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>The governing principle from Lesson 4 applies with full force: <strong>a tool failure is information, not a crash.</strong> Hand it back and let the agent cope &mdash; then measure whether it did. "Error recovery" is a capability you can score.</p>
+
+  <div class="warn">
+    <div class="lbl">Retry the transport, not the judgement</div>
+    <p>A 503 from your API is worth retrying automatically &mdash; the agent made a fine decision and the network failed. A validation error is <em>not</em>: retrying the identical bad call changes nothing. Retry infrastructure failures in your code; hand reasoning failures back to the model.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">5.8</span> <span>The system prompt, and treating it as code</span></h2>
+  <p>An agent's system prompt does a different job from a chat prompt. It needs five things and not much else:</p>
+  <ol>
+    <li><strong>Role and objective</strong> &mdash; who it is, and what "done" means.</li>
+    <li><strong>The rules that always hold</strong> &mdash; short, absolute, few. Long rule lists get partially ignored.</li>
+    <li><strong>How the tools work together</strong> &mdash; the sequencing knowledge that belongs to no single tool's description. "Read the profile before judging fit."</li>
+    <li><strong>How to handle failure</strong> &mdash; what to do when a tool errors, when nothing matches, when the task is ambiguous.</li>
+    <li><strong>The output contract</strong> &mdash; how it delivers the answer. In our case: shortlist it, do not describe it.</li>
+  </ol>
+  <p>What does <em>not</em> belong: restating what a tool does. That is the tool's description, and duplicating it gives you two places to drift apart.</p>
+
+  <h3>Prompts are versioned artefacts</h3>
+  <p>This is the practice that separates a team that improves from one that churns. Prompts live in files, in git, with a version. Every eval result records which version produced it. Changing one becomes a change you can review, A/B against the suite, and roll back.</p>
+  <p>Sarvam's posting asks for exactly this &mdash; <em>"prompt iteration workflows with versioning, A/B testing, and safe rollback"</em> &mdash; and their Agent Engineer role puts it harder: <em>"We treat agents as code. Not prompts someone tweaks in a console, but engineered artifacts: versioned, reviewed, and held to a regression suite."</em></p>
+
+  <div class="analogy">
+    <div class="lbl">In plain words</div>
+    <p>Nobody edits production SQL by typing into a console and hoping. It goes in a file, gets reviewed, and can be reverted. Prompts became load-bearing code about three years ago; most teams still treat them like console commands.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">5.9</span> <span>Determinism, and why you cannot have it</span></h2>
+  <p>You can set temperature to 0. You will still get variation &mdash; batching, hardware and model-side nondeterminism see to that. Some providers offer a seed parameter; it reduces variance rather than removing it.</p>
+  <p>So stop trying. The environment is deterministic precisely so the agent does not have to be, and the correct response to a non-deterministic agent is <strong>measurement, not suppression</strong>:</p>
+  <ul>
+    <li>Run every task several times and report the spread, not a single number.</li>
+    <li>Use <em class="term">pass^k</em> when the agent takes real actions &mdash; all k runs must succeed.</li>
+    <li>Treat a score that moves by less than its own variance as unchanged.</li>
+  </ul>
+  <p>Temperature 0 is still a sensible default for an agent: you want its most likely action, not a creative one. Just do not mistake it for repeatability.</p>
+</section>
+
+<section>
+  <h2><span class="num">5.10</span> <span>Framework or hand-rolled?</span></h2>
+  <p>LangGraph, the agent SDKs and the rest give you retries, tracing, state persistence and a community. They also put a layer between you and the twelve lines, which matters on the day something goes wrong at step nine.</p>
+  <p>The defensible position, and the one worth holding in an interview:</p>
+  <ul>
+    <li><strong>Hand-roll the loop at least once</strong>, so you know exactly what a framework is doing for you.</li>
+    <li><strong>Adopt one when you need what it provides</strong> &mdash; durable execution, human-in-the-loop checkpoints, complex branching &mdash; not because it is what people use.</li>
+    <li><strong>Never let a framework own your tool definitions or your evals.</strong> Those are yours, and they must outlive whichever library you are using this year.</li>
+  </ul>
+  <p>You already know LangGraph. Hand-rolling this loop is not a step backwards &mdash; it is the thing that lets you say what LangGraph actually buys you.</p>
+</section>
+
+<section>
+  <h2><span class="num">5.11</span> <span>Vocabulary you now own</span></h2>
+  <dl class="vocab">
+    <div><dt>agent loop</dt><dd>Ask, act, observe, repeat, until a stopping condition fires.</dd></div>
+    <div><dt>tool_use / tool_result</dt><dd>The paired blocks carrying a call and its answer.</dd></div>
+    <div><dt>parallel tool calls</dt><dd>Several tool_use blocks in one assistant turn.</dd></div>
+    <div><dt>workflow vs agent</dt><dd>You wrote the control flow, vs the model decides it.</dd></div>
+    <div><dt>stop reason</dt><dd>Why the run ended. A failure category for free.</dd></div>
+    <div><dt>no-progress detection</dt><dd>Same call, same arguments, repeatedly - it is stuck.</dd></div>
+    <div><dt>observation tokens</dt><dd>Tool outputs in the context. Roughly 84% of it.</dd></div>
+    <div><dt>context pruning</dt><dd>Dropping stale observations. Can improve scores, not just cost.</dd></div>
+    <div><dt>masking</dt><dd>Replacing an old result with a re-fetchable stub.</dd></div>
+    <div><dt>prompt version</dt><dd>The identifier recorded beside every eval result.</dd></div>
+    <div><dt>evaluator-optimiser</dt><dd>Generator plus critic, looping to a threshold.</dd></div>
+    <div><dt>orchestrator-workers</dt><dd>One model decomposes and delegates, then synthesises.</dd></div>
+  </dl>
+</section>
+
+<section>
+  <h2><span class="num">5.12</span> <span>Interview answers, out loud</span></h2>
+  <div class="ask">
+    <div class="q">"Walk me through how an agent actually works."</div>
+    <div class="a">It is a while-loop. You send the conversation plus the tool schemas, the model replies with either an answer or one or more tool calls, you execute them, append the results, and go again until a stopping condition fires. The loop is trivial; the engineering is in five dials around it &mdash; tools, stopping conditions, context, verification and guardrails. Tools is the highest-leverage; context is the one almost nobody tunes.</div>
+  </div>
+  <div class="ask">
+    <div class="q">"When would you not build an agent?"</div>
+    <div class="a">Whenever I can draw the flowchart. If the steps are known, a workflow &mdash; a prompt chain, a router, orchestrator-workers &mdash; is cheaper, faster and far more predictable. An agent is for when the path genuinely cannot be enumerated, and you pay for that in latency, cost and a much wider space of failure modes.</div>
+  </div>
+  <div class="ask">
+    <div class="q">"How do you stop an agent looping forever?"</div>
+    <div class="a">Four conditions, not one: it stops calling tools, a hard step cap, a token or cost budget, and no-progress detection when the same call repeats with the same arguments. And I record the stop reason on every run &mdash; "it finished" and "the limit finished it" look identical in the output and are completely different outcomes.</div>
+  </div>
+  <div class="ask">
+    <div class="q">"Your agent degrades on long tasks. Why?"</div>
+    <div class="a">Usually context. Around 84% of a typical agent's window is tool output accumulating unpruned, so the task and the reasoning get squeezed into what is left &mdash; and stale observations actively mislead it, so it reasons from a value it fetched nine steps ago. I would bound tool returns first, then prune or mask old observations, and summarise only as a last resort. Pruned contexts can beat full retention outright, which surprises people.</div>
+  </div>
+  <div class="ask">
+    <div class="q">"How do you handle a malformed tool call?"</div>
+    <div class="a">Hand the validation error back as a tool result and let the model correct itself &mdash; it usually does in one turn. What I do not do is auto-retry a reasoning failure, because retrying the same bad call changes nothing. I retry transport failures in code and return judgement failures to the model. Then I measure recovery, because that is a capability worth scoring.</div>
+  </div>
+  <div class="ask">
+    <div class="q">"Temperature 0 makes it deterministic, right?"</div>
+    <div class="a">No. It reduces variance, it does not remove it &mdash; batching and hardware see to that, and seeds only help. So I make the environment deterministic instead, and measure the agent's variance honestly: several seeds per task, report the spread, and pass^k rather than pass@1 when the agent takes real actions.</div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">5.13</span> <span>What we build &mdash; four decisions</span></h2>
+  <p>The scripted stand-in gets deleted. These are yours to make.</p>
+  <div class="pick">
+    <div class="lbl">Decisions for our loop</div>
+    <ul>
+      <li><strong>Provider.</strong> Groq free tier (fast, free, weaker tool-calling) or Anthropic (best tool-calling, a few dollars). The loop is written provider-agnostic either way, so this is reversible.</li>
+      <li><strong>What it sees each turn.</strong> Full history is the honest starting point for runs this short &mdash; but record token counts from day one, so that when we reach memory the before/after number already exists.</li>
+      <li><strong>How it signals done.</strong> Implicit (a turn with no tool calls) or an explicit <em class="term">finish(summary)</em> tool. I lean explicit: it gives a clean stop reason, and the summary is somewhere the judge can eventually look.</li>
+      <li><strong>Malformed calls.</strong> Return the validation error as a tool result and let it retry &mdash; and count those retries, because schema-validity rate is one of the tool metrics from Lesson 4.</li>
+    </ul>
+  </div>
+  <p>Plus one thing that is not a decision: <strong>the prompt goes in a file with a version, from the first line.</strong> Not later, when it matters. Every eval result we ever produce will carry that version, and retrofitting it means every number before the retrofit is unattributable.</p>
+</section>
+
+<div class="next">
+  <div class="lbl">Next</div>
+  <p>You answer the four. Then the loop gets written, the scripted agent is deleted, and for the first time the suite tells us something we did not already know &mdash; whatever that number turns out to be, it is the baseline everything else is measured against.</p>
+</div>
+
+<div class="sources">
+  <h2>Sources</h2>
+  <ol>
+    <li>Anthropic, <em>Building effective agents</em> &mdash; the workflow patterns (prompt chaining, routing, parallelisation, orchestrator&ndash;workers, evaluator&ndash;optimiser), the workflow/agent distinction, and "find the simplest solution possible". <a href="https://www.anthropic.com/engineering/building-effective-agents">anthropic.com/engineering/building-effective-agents</a></li>
+    <li>Anthropic, <em>Effective context engineering for AI agents</em> &mdash; context as a finite budget, and what accumulates in it. <a href="https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents">anthropic.com/engineering</a></li>
+    <li>Anthropic, <em>Writing effective tools for AI agents</em> &mdash; token economy, and returning only what the next decision needs. <a href="https://www.anthropic.com/engineering/writing-tools-for-agents">anthropic.com/engineering/writing-tools-for-agents</a></li>
+    <li>Yao et al., <em>ReAct: Synergizing Reasoning and Acting in Language Models</em> &mdash; the reason&ndash;act&ndash;observe loop all of this descends from. <a href="https://arxiv.org/abs/2210.03629">arxiv.org/abs/2210.03629</a></li>
+    <li><em>Less Context, Better Agents: Efficient Context Engineering for Long-Horizon Tool-Using LLM Agents</em> &mdash; pruned contexts outperforming full retention. <a href="https://arxiv.org/abs/2606.10209">arxiv.org/abs/2606.10209</a></li>
+    <li>Sarvam AI, <em>Agent Engineer</em> and <em>Applied AI Engineer, Sarvam Agents</em> &mdash; "agents as code&hellip; versioned, reviewed, and held to a regression suite", and prompt iteration with A/B testing and safe rollback.</li>
+  </ol>
+</div>
+
+</div>
