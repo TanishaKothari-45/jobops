@@ -1,0 +1,374 @@
+<title>Tool Design</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --paper:#EFF2F1;--surface:#FFFFFF;--ink:#141C1C;--muted:#5A6968;--faint:#8A9897;--rule:#D5DCDA;
+  --accent:#0E6455;--accent-soft:#DCEAE5;--clay:#A8481C;--clay-soft:#F4E3DA;--gold:#7E6110;--gold-soft:#F2EAD3;
+  --display:"Fraunces",Georgia,serif;--body:"Source Serif 4",Georgia,serif;--mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#0E1414;--surface:#161E1E;--ink:#E6ECEA;--muted:#9AA9A7;--faint:#6F7E7C;--rule:#273433;
+  --accent:#5FC4AC;--accent-soft:#12302A;--clay:#E0906A;--clay-soft:#2E1D14;--gold:#D6B65C;--gold-soft:#2B2410;
+}}
+:root[data-theme="dark"]{
+  --paper:#0E1414;--surface:#161E1E;--ink:#E6ECEA;--muted:#9AA9A7;--faint:#6F7E7C;--rule:#273433;
+  --accent:#5FC4AC;--accent-soft:#12302A;--clay:#E0906A;--clay-soft:#2E1D14;--gold:#D6B65C;--gold-soft:#2B2410;
+}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.65;-webkit-font-smoothing:antialiased;}
+.wrap{max-width:790px;margin:0 auto;padding:56px 24px 96px;}
+.masthead{display:flex;flex-direction:column;gap:14px;padding-bottom:28px;border-bottom:2px solid var(--ink);}
+.kicker{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);}
+h1{font-family:var(--display);font-size:clamp(36px,7vw,54px);line-height:1.04;font-weight:600;margin:0;text-wrap:balance;letter-spacing:-.015em;}
+.standfirst{font-size:19px;color:var(--muted);margin:0;max-width:62ch;}
+.meta{font-family:var(--mono);font-size:11.5px;color:var(--faint);display:flex;flex-wrap:wrap;gap:18px;}
+section{padding-top:46px;display:flex;flex-direction:column;gap:16px;}
+h2{font-family:var(--display);font-size:27px;font-weight:600;line-height:1.2;margin:0;text-wrap:balance;display:flex;gap:14px;align-items:baseline;}
+h2 .num{font-family:var(--mono);font-size:13px;font-weight:400;color:var(--accent);flex:none;}
+h3{font-family:var(--display);font-size:19.5px;font-weight:600;margin:18px 0 0;}
+p{margin:0;}
+a{color:var(--accent);text-decoration:underline;text-underline-offset:2px;text-decoration-thickness:1px;}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+ul,ol{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:9px;}
+li::marker{color:var(--faint);}
+em.term{font-style:normal;font-family:var(--mono);font-size:.86em;background:var(--accent-soft);padding:1px 5px;border-radius:3px;}
+.analogy{background:var(--surface);border-left:3px solid var(--accent);padding:18px 22px;display:flex;flex-direction:column;gap:9px;}
+.analogy .lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);}
+.warn{background:var(--clay-soft);padding:18px 22px;display:flex;flex-direction:column;gap:9px;border-radius:2px;}
+.warn .lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--clay);}
+.pick{background:var(--gold-soft);border:1px solid var(--gold);padding:20px 22px;display:flex;flex-direction:column;gap:11px;border-radius:2px;}
+.pick .lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);}
+.scroll{overflow-x:auto;}
+table{border-collapse:collapse;width:100%;font-size:14.5px;min-width:560px;}
+th,td{text-align:left;vertical-align:top;padding:10px 13px;border-bottom:1px solid var(--rule);}
+th{font-family:var(--mono);font-size:10px;letter-spacing:.11em;text-transform:uppercase;color:var(--muted);font-weight:400;border-bottom:1px solid var(--ink);}
+td:first-child{font-weight:600;}
+pre{background:var(--surface);border:1px solid var(--rule);padding:16px 18px;overflow-x:auto;font-family:var(--mono);font-size:12.5px;line-height:1.6;margin:0;color:var(--ink);white-space:pre-wrap;}
+pre .bad{color:var(--clay);}
+pre .good{color:var(--accent);}
+.vs{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.vs > div{display:flex;flex-direction:column;gap:7px;min-width:0;}
+.vs .h{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;}
+.vs .h.b{color:var(--clay);}
+.vs .h.g{color:var(--accent);}
+@media(max-width:620px){.vs{grid-template-columns:1fr}}
+.ask{display:flex;flex-direction:column;gap:7px;padding:16px 0;border-bottom:1px solid var(--rule);}
+.ask .q{font-weight:600;}
+.ask .a{color:var(--muted);font-size:15.5px;}
+.vocab{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);}
+.vocab > div{background:var(--surface);padding:14px 16px;display:flex;flex-direction:column;gap:5px;}
+.vocab dt{font-family:var(--mono);font-size:12.5px;color:var(--accent);font-weight:600;}
+.vocab dd{margin:0;font-size:14.5px;color:var(--muted);line-height:1.5;}
+.next{margin-top:44px;background:var(--surface);border:1px solid var(--rule);padding:22px;display:flex;flex-direction:column;gap:8px;}
+.next .lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);}
+.sources{padding-top:40px;border-top:1px solid var(--rule);margin-top:52px;display:flex;flex-direction:column;gap:14px;}
+.sources h2{font-size:19px;}
+.sources ol{font-size:14px;color:var(--muted);gap:9px;}
+</style>
+
+<div class="wrap">
+
+<header class="masthead">
+  <div class="kicker">Lesson 04 &middot; Agent Env Lab</div>
+  <h1>Tool Design</h1>
+  <p class="standfirst">The tool layer decides more of your agent's behaviour than the prompt does. How to name, describe, parameterise and return &mdash; and how to test the result.</p>
+  <div class="meta"><span>~35 min</span><span>Then we rebuild search_postings properly</span></div>
+</header>
+
+<section>
+  <h2><span class="num">4.1</span> <span>A new kind of contract</span></h2>
+  <p>An API contract is between two deterministic systems. Both sides read the docs once, and from then on they behave identically forever.</p>
+  <p>A tool is a <strong>contract between a deterministic system and a non-deterministic one</strong>. Your code behaves the same every time. The thing calling it does not. It might call the wrong tool, invent an argument, ignore a required field, or call the right tool at the wrong moment &mdash; and it re-reads your description every single time it decides.</p>
+  <p>That difference is why tool design is not API design with different syntax. Anthropic's engineering guidance puts it exactly this way: tools are a fundamentally new paradigm &mdash; <em>contracts between deterministic systems and non-deterministic agents</em>.</p>
+
+  <div class="analogy">
+    <div class="lbl">In plain words</div>
+    <p>Writing an API is writing instructions for a machine. Writing a tool is writing instructions for a competent, fast, slightly distractible new colleague on their first day &mdash; who has no access to your internal wiki, cannot ask a follow-up question before acting, and will absolutely take an ambiguous instruction literally.</p>
+    <p>Everything in this lesson follows from that one image.</p>
+  </div>
+
+  <div class="warn">
+    <div class="lbl">The claim that should change how you work</div>
+    <p>Anthropic reported that <strong>Claude Sonnet 3.5 reached state of the art on SWE-bench Verified after precise refinements to its tool descriptions</strong> &mdash; not a new model, not a new system prompt. The text describing the tools.</p>
+    <p>Sit with that. When your agent misbehaves next week, your instinct will be to edit the prompt. The higher-leverage edit is almost always in <em class="term">tools.py</em>.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">4.2</span> <span>The six things the model reads</span></h2>
+  <p>Every tool the model sees is six pieces of information. Each is an opportunity to be clear, or to be ambiguous.</p>
+  <ol>
+    <li><strong>Name</strong> &mdash; how it refers to the tool, and the first thing matched against intent</li>
+    <li><strong>Description</strong> &mdash; what it does, when to use it, when not to</li>
+    <li><strong>Parameter schema</strong> &mdash; names, types, enums, which are required</li>
+    <li><strong>Parameter descriptions</strong> &mdash; the most-skipped, second-highest-leverage text you will write</li>
+    <li><strong>The return value</strong> &mdash; what comes back, which shapes every subsequent decision</li>
+    <li><strong>The error message</strong> &mdash; what it learns when things go wrong</li>
+  </ol>
+  <p>Four of the six are prose. Tool design is mostly writing.</p>
+</section>
+
+<section>
+  <h2><span class="num">4.3</span> <span>Naming</span></h2>
+  <ul>
+    <li><strong><em class="term">verb_noun</em>, consistently.</strong> <em class="term">search_postings</em>, <em class="term">get_application</em>, <em class="term">draft_message</em> &mdash; not a mix of <em class="term">findJobs</em>, <em class="term">application_get</em> and <em class="term">msgDraft</em>.</li>
+    <li><strong>Distinct verbs with distinct meanings.</strong> Pick one of search / find / lookup / query and never use the others. Overlapping names are the single biggest cause of wrong-tool selection.</li>
+    <li><strong>Namespace when you have many.</strong> <em class="term">jobs_search</em>, <em class="term">jobs_get</em>, <em class="term">msg_draft</em>. Anthropic recommends namespacing precisely because clear, distinct names stop agents confusing one tool for another.</li>
+    <li><strong>The name should predict the return.</strong> <em class="term">get_application</em> returns one; <em class="term">list_applications</em> returns many. A model that guesses wrong from the name wastes a turn.</li>
+  </ul>
+  <div class="warn">
+    <div class="lbl">The test</div>
+    <p>Show someone only your tool names &mdash; no descriptions. If they cannot tell you which tool to use for "chase the ones that have gone quiet", the model cannot either.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">4.4</span> <span>The description</span></h2>
+  <p>This is the highest-leverage text in your entire system, and most people write six words in it.</p>
+  <p>Anthropic's rule is the best one I know: <strong>write it the way you would explain the tool to a new hire</strong> &mdash; making explicit the context you would otherwise bring implicitly, including specialised query formats and any niche terminology.</p>
+  <p>A good description answers five questions:</p>
+  <ol>
+    <li><strong>What does it do?</strong> One sentence.</li>
+    <li><strong>When should I use it?</strong> The situation, not the mechanism.</li>
+    <li><strong>When should I <em>not</em> use it?</strong> Almost always omitted &mdash; and it is what prevents wrong-tool selection.</li>
+    <li><strong>What are the side effects?</strong> Does it change anything? Is it reversible? Say so plainly.</li>
+    <li><strong>What are the gotchas?</strong> Units, formats, limits, terminology.</li>
+  </ol>
+
+  <div class="vs">
+    <div>
+      <span class="h b">What most people write</span>
+      <pre><span class="bad">"Search job postings."</span></pre>
+    </div>
+    <div>
+      <span class="h g">What the model needs</span>
+      <pre><span class="good">"Search OPEN job postings you have not applied to yet. Returns the most recently posted matches first.
+
+Use this to find new roles. Do NOT use it to look at applications you already sent - that is list_applications.
+
+Matching is a case-insensitive substring on job title and company name, so 'AI' matches 'Applied AI Engineer'. It does not understand synonyms: 'ML' will not match 'Machine Learning'.
+
+Read-only. Changes nothing."</span></pre>
+    </div>
+  </div>
+
+  <p>The second costs four minutes and removes three classes of failure: wrong tool selection, wrong query format, and the model assuming semantic search when you built substring matching.</p>
+
+  <div class="analogy">
+    <div class="lbl">In plain words</div>
+    <p>"Search job postings" is a sign on a door that says <em>Office</em>. Technically true, and it tells a new starter nothing about whether to knock.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">4.5</span> <span>Parameters</span></h2>
+  <ul>
+    <li><strong>Enums over free strings.</strong> <em class="term">status: "applied" | "rejected"</em> is a constraint the model physically cannot violate. <em class="term">status: string</em> is an invitation to invent "Applied", "APPLIED" and "in progress".</li>
+    <li><strong>Describe every parameter.</strong> The type says what <em>shape</em>; the description says what it <em>means</em>. <em class="term">days: integer</em> tells the model nothing about whether that is a lookback window or a delay.</li>
+    <li><strong>Few required fields.</strong> Every required parameter is another chance to be wrong. Sensible defaults beat required arguments.</li>
+    <li><strong>Flat beats nested.</strong> Models fill deeply nested objects badly. Prefer four top-level fields to one three-level object.</li>
+    <li><strong>Avoid boolean traps.</strong> <em class="term">include_closed: true</em> is fine; <em class="term">flag: true</em> is not. If a boolean's name does not say what true means, it wants to be an enum.</li>
+    <li><strong>Mind IDs.</strong> Models are poor at inventing identifiers and will happily hallucinate <em class="term">app_999</em>. Either the id must have come from an earlier tool result, or accept a natural key instead &mdash; and every id parameter's description should say where the id comes from.</li>
+    <li><strong>Always bound the output.</strong> A <em class="term">limit</em> with a sane default, or pagination. An unbounded query is a context-window accident waiting to happen.</li>
+  </ul>
+</section>
+
+<section>
+  <h2><span class="num">4.6</span> <span>Return values &mdash; the underrated half</span></h2>
+  <p>People design inputs carefully and then return whatever the database handed back. But the return value is what the model uses to decide <em>everything it does next</em>. It deserves more design than the input, not less.</p>
+
+  <h3>Return what the next decision needs</h3>
+  <p>Not the full row, not the ORM object. The fields that inform the next step, plus the id needed to go deeper.</p>
+
+  <h3>Human-readable over raw identifiers</h3>
+  <p>Anthropic is explicit: agents reason better with human-readable fields and simplified outputs than with raw technical IDs. Return <em class="term">"company": "Vantara Labs"</em>, not only <em class="term">"company_id": "co_007"</em>. A model can reason about a name; it cannot reason about a foreign key.</p>
+
+  <h3>Pre-compute what the model is bad at</h3>
+  <p>Language models are unreliable at arithmetic and date maths. If your rule is "7 or more days since last contact", do not hand over two timestamps and hope. Return <em class="term">"days_since_contact": 12</em>. One line of Python removes an entire class of failure.</p>
+
+  <div class="warn">
+    <div class="lbl">The one worth putting on a wall</div>
+    <p><strong>Anything the model has to calculate, it will eventually calculate wrong. Anything you calculate, it never gets wrong.</strong> Move the arithmetic into the tool.</p>
+  </div>
+
+  <h3>Token economy</h3>
+  <p>Pagination, truncation and filtering, so the agent is not drowned in data. A tool returning 400 rows does not only cost money &mdash; it pushes the useful part of the context out of reach and degrades every later decision. When you truncate, <strong>say so inside the payload</strong>: <em class="term">"showing 10 of 47 - narrow the query or raise limit"</em>.</p>
+
+  <h3>Include what the model cannot know</h3>
+  <p>It has no clock. If dates matter, return <em class="term">"today"</em> in the payload. It has no memory of your schema; if a status can only move in certain ways, say so in the result of the tool that changes status.</p>
+
+  <h3>Stable ordering, always</h3>
+  <p>Same reason as Lesson 2: unordered results make runs unrepeatable, and an unrepeatable run cannot be graded.</p>
+</section>
+
+<section>
+  <h2><span class="num">4.7</span> <span>Errors are prompts</span></h2>
+  <p>When a tool fails, its error message goes straight into the model's context and becomes an instruction. Treat it as prose written for the agent, because that is exactly what it is.</p>
+
+  <div class="vs">
+    <div>
+      <span class="h b">Useless</span>
+      <pre><span class="bad">404
+"error"
+"Invalid input"
+null</span></pre>
+    </div>
+    <div>
+      <span class="h g">Recoverable</span>
+      <pre><span class="good">"No application app_999. Call list_applications to see valid ids."
+
+"Draft msg_0003 was already sent - you cannot send it twice."
+
+"subject must not be empty."</span></pre>
+    </div>
+  </div>
+
+  <ul>
+    <li><strong>Say what went wrong and what to do instead.</strong> A good error names the recovery path.</li>
+    <li><strong>Distinguish retryable from terminal.</strong> "Rate limited, retry in 30s" and "that record does not exist" need completely different reactions.</li>
+    <li><strong>Never fail silently.</strong> A tool that returns an empty list on error teaches the agent there is nothing to do. That is worse than crashing.</li>
+    <li><strong>Errors are information, not crashes.</strong> The environment hands the error to the agent and lets it cope &mdash; that is how you find out whether it can recover.</li>
+  </ul>
+</section>
+
+<section>
+  <h2><span class="num">4.8</span> <span>How many tools, and how big</span></h2>
+  <p>Two failure directions.</p>
+  <p><strong>Too many, or too overlapping</strong> &rarr; the model picks the wrong one. Selection accuracy falls as the candidate set grows, and falls fastest when tools overlap in meaning. This is measurable: the Berkeley Function-Calling Leaderboard's hardest category requires selecting the right <em>m</em> tools out of <em>N</em> offered.</p>
+  <p><strong>Too coarse</strong> &rarr; the model cannot express what it wants. A single <em class="term">do_job_stuff(action, params)</em> pushes all the ambiguity into a free-text argument, which is where ambiguity goes to become bugs.</p>
+  <p>Useful heuristics:</p>
+  <ul>
+    <li><strong>One tool per thing a user would ask for</strong> &mdash; not one per database table or REST endpoint.</li>
+    <li><strong>Build high-leverage tools, not thin API wrappers.</strong> Anthropic's phrasing. If your agent always calls three tools in the same order, that sequence probably wants to be one tool.</li>
+    <li><strong>If two tools could plausibly answer the same request</strong>, merge them, or sharpen both descriptions until they could not.</li>
+    <li><strong>Consolidate list and detail carefully.</strong> A <em class="term">list_*</em> that returns enough to decide, with <em class="term">get_*</em> for depth, usually beats one tool with a <em class="term">verbose</em> flag.</li>
+  </ul>
+
+  <div class="analogy">
+    <div class="lbl">In plain words</div>
+    <p>A kitchen. Give a cook one implement called <em>food_device</em> and they cannot work. Give them ninety near-identical knives and they spend the service choosing. What they want is eight tools, each obviously for one job, with the differences visible at a glance.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">4.9</span> <span>Side effects and irreversibility</span></h2>
+  <p>Band every tool, and design differently per band.</p>
+  <div class="scroll">
+  <table>
+    <thead><tr><th>Band</th><th>Examples</th><th>Design implications</th></tr></thead>
+    <tbody>
+      <tr><td>Read-only</td><td>search, get, list</td><td>Safe to retry, safe to parallelise, cheap to be wrong. Say "read-only" in the description.</td></tr>
+      <tr><td>Reversible write</td><td>draft, update status, schedule</td><td>Needs idempotency so a retry does not duplicate. An undo should exist.</td></tr>
+      <tr><td>Irreversible</td><td>send, delete, pay</td><td>Approval gate. Idempotency key mandatory. Description must state plainly that it cannot be undone.</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <ul>
+    <li><strong>Idempotency keys.</strong> The caller supplies a key; calling twice with the same key does the work once. This is what makes retries safe and is the foundation of crash recovery.</li>
+    <li><strong>Approval as a tool.</strong> Making <em class="term">request_approval</em> a tool the agent must call &mdash; rather than a gate hidden in your backend &mdash; makes the agent's judgement about <em>when to ask</em> observable and gradeable. That is why our project has it.</li>
+  </ul>
+</section>
+
+<section>
+  <h2><span class="num">4.10</span> <span>How tools are evaluated</span></h2>
+  <p>Where Lesson 3 and this lesson meet. Tool quality is measurable, and the vocabulary is worth a lot in an interview.</p>
+
+  <h3>The BFCL categories</h3>
+  <p>The Berkeley Function-Calling Leaderboard is the standard benchmark for tool use, and its categories are a ready-made test plan for your own tools:</p>
+  <ul>
+    <li><strong>Simple</strong> &mdash; one tool available, one call needed</li>
+    <li><strong>Multiple</strong> &mdash; several tools available, pick the right one</li>
+    <li><strong>Parallel</strong> &mdash; one tool, several invocations at once</li>
+    <li><strong>Parallel multiple</strong> &mdash; the hardest: pick <em>m</em> right tools out of <em>N</em></li>
+    <li><strong>Irrelevance / hallucination measurement</strong> &mdash; irrelevant tools are offered and the model must <em>decline to call anything</em></li>
+    <li><strong>Multi-turn</strong> &mdash; several tool interactions in sequence</li>
+  </ul>
+  <p>That fifth one is the one people forget. <strong>Knowing when <em>not</em> to call a tool is a measured capability</strong> &mdash; and it maps exactly onto our <em class="term">t02_nothing_is_stale</em> task.</p>
+
+  <h3>What to measure on your own tools</h3>
+  <ul>
+    <li><strong>Tool selection accuracy</strong> &mdash; right tool for the request</li>
+    <li><strong>Argument accuracy</strong> &mdash; right values, valid enums, no invented ids</li>
+    <li><strong>Schema validity rate</strong> &mdash; what fraction of emitted calls even parse</li>
+    <li><strong>Abstention</strong> &mdash; does it correctly do nothing when nothing is needed?</li>
+    <li><strong>Error recovery</strong> &mdash; break a tool on purpose, see whether it adapts or gives up</li>
+    <li><strong>Tool ablation</strong> &mdash; remove a tool and watch what breaks; tells you which tools carry the performance</li>
+    <li><strong>Description A/B</strong> &mdash; change only the description, re-run the suite. The cheapest improvement loop in the project.</li>
+  </ul>
+
+  <div class="pick">
+    <div class="lbl">The loop that makes tools good</div>
+    <p>Write the tool &rarr; run the suite &rarr; <strong>read the failed trajectories</strong> &rarr; notice how the model misused it &rarr; fix the <em>description or the return shape</em>, not the prompt &rarr; re-run. Anthropic's guidance describes using agents themselves to exercise and refine tools this way. The failures tell you what your description failed to say.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">4.11</span> <span>Vocabulary you now own</span></h2>
+  <dl class="vocab">
+    <div><dt>tool schema</dt><dd>The JSON-schema description of a tool's name, purpose and parameters.</dd></div>
+    <div><dt>tool selection</dt><dd>The model choosing which tool to call. The commonest failure point.</dd></div>
+    <div><dt>abstention</dt><dd>Correctly calling nothing when nothing is needed. A measured capability.</dd></div>
+    <div><dt>irrelevance detection</dt><dd>BFCL's name for testing abstention with irrelevant tools present.</dd></div>
+    <div><dt>parallel multiple</dt><dd>Picking m correct tools from N. BFCL's hardest category.</dd></div>
+    <div><dt>idempotency key</dt><dd>A caller-supplied key making a repeated call do the work once.</dd></div>
+    <div><dt>tool ablation</dt><dd>Removing a tool to see what the agent can no longer do.</dd></div>
+    <div><dt>high-leverage tool</dt><dd>One that does a meaningful unit of work, not a thin API wrapper.</dd></div>
+    <div><dt>boolean trap</dt><dd>A flag whose name does not say what true means.</dd></div>
+    <div><dt>token economy</dt><dd>Paginating, filtering and truncating so results do not swamp context.</dd></div>
+  </dl>
+</section>
+
+<section>
+  <h2><span class="num">4.12</span> <span>Interview answers, out loud</span></h2>
+  <div class="ask">
+    <div class="q">"How do you design tools for an agent?"</div>
+    <div class="a">I treat the tool layer as the main interface the model reads, so most of the work is writing. Distinct verb_noun names so two tools can never plausibly serve the same request. Descriptions written like onboarding a new hire &mdash; what it does, when to use it, when <em>not</em> to, side effects, gotchas. Enums instead of free strings so invalid values are unrepresentable. And I design the return value as carefully as the input, because that is what the model uses for its next decision: human-readable fields over raw ids, pre-computed values for anything involving arithmetic or dates, bounded output with explicit truncation.</div>
+  </div>
+  <div class="ask">
+    <div class="q">"Your agent keeps calling the wrong tool. What do you do?"</div>
+    <div class="a">Read the failed trajectories first &mdash; find the first wrong call and what the model had in front of it. Usually two descriptions overlap, and the fix is a "do not use this for X, use Y" line in both. Then re-run the suite to confirm the change actually moved the number, because otherwise I am guessing. I reach for the system prompt last, not first.</div>
+  </div>
+  <div class="ask">
+    <div class="q">"How do you stop an agent taking a dangerous action?"</div>
+    <div class="a">Band the tools: read-only, reversible write, irreversible. Irreversible ones get an approval gate, an idempotency key, and a description stating plainly that it cannot be undone. I make approval its own tool rather than a hidden backend check, because that makes the agent's judgement about <em>when to ask</em> observable &mdash; and then the process grader can fail a run that skipped it even when the outcome looked fine.</div>
+  </div>
+  <div class="ask">
+    <div class="q">"How would you evaluate tool use specifically?"</div>
+    <div class="a">Selection accuracy, argument accuracy, schema validity rate, and abstention &mdash; whether it correctly calls nothing when nothing is needed, which BFCL measures as irrelevance detection and most people never test. Plus error recovery by deliberately breaking a tool, and ablation to find which tools actually carry performance. The cheapest loop is A/B-ing the tool description against a fixed task suite.</div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">4.13</span> <span>Now: one tool, done properly</span></h2>
+  <p>We take <em class="term">search_postings</em> and rebuild it against everything above. The decisions are yours:</p>
+  <div class="pick">
+    <div class="lbl">Decisions for search_postings</div>
+    <ul>
+      <li><strong>What does a posting carry?</strong> Sponsorship requirement, remote or on-site, seniority, stack, salary band? Every field you add is something the agent can filter on &mdash; and something you can grade.</li>
+      <li><strong>Filters in the tool, or filtering by the agent?</strong> The real fork. Filters make the agent's job easy and the eval boring; agent-side filtering is what you actually want to measure.</li>
+      <li><strong>Does it know your profile?</strong> A <em class="term">get_profile</em> tool, or profile baked into search's ranking? One is observable; the other is invisible.</li>
+      <li><strong>What comes back per result</strong> &mdash; and what is pre-computed rather than left for the model to work out?</li>
+      <li><strong>How is it bounded?</strong> Limit, pagination, truncation message?</li>
+      <li><strong>What does "used correctly" mean</strong> &mdash; so the grader has something to check?</li>
+      <li><strong>What are its failure modes</strong>, and what does each error say to the agent?</li>
+    </ul>
+  </div>
+  <p>Then the tests: schema and behaviour tests for the tool itself, and tasks in the suite for whether the <em>agent</em> uses it correctly. Two different files, because they answer two different questions.</p>
+</section>
+
+<div class="next">
+  <div class="lbl">Next</div>
+  <p>You answer the seven decisions. I turn them into a spec and failing tests. You implement. Then the same for the next tool, and the next &mdash; each done properly, rather than nine at once.</p>
+</div>
+
+<div class="sources">
+  <h2>Sources</h2>
+  <ol>
+    <li>Anthropic, <em>Writing effective tools for AI agents &mdash; using AI agents</em> &mdash; high-leverage tools over thin wrappers, namespacing, human-readable fields over raw ids, token efficiency, the "new hire" test for descriptions, and the SWE-bench Verified result from description refinement. <a href="https://www.anthropic.com/engineering/writing-tools-for-agents">anthropic.com/engineering/writing-tools-for-agents</a></li>
+    <li>Anthropic, <em>Building effective agents</em> &mdash; tool design within agent architecture. <a href="https://www.anthropic.com/engineering/building-effective-agents">anthropic.com/engineering/building-effective-agents</a></li>
+    <li>UC Berkeley Gorilla, <em>Berkeley Function-Calling Leaderboard</em> &mdash; simple, multiple, parallel, parallel-multiple, irrelevance detection and multi-turn categories. <a href="https://gorilla.cs.berkeley.edu/leaderboard">gorilla.cs.berkeley.edu/leaderboard</a></li>
+    <li>Anthropic, <em>Effective context engineering for AI agents</em> &mdash; how tool returns consume and shape the context window. <a href="https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents">anthropic.com/engineering</a></li>
+    <li>Model Context Protocol, <em>Specification</em> &mdash; tools, resources and prompts as distinct primitives. <a href="https://modelcontextprotocol.io/">modelcontextprotocol.io</a></li>
+  </ol>
+</div>
+
+</div>

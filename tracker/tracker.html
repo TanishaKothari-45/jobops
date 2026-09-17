@@ -1,0 +1,347 @@
+<title>45 Days</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --paper:#EFF2F1;--surface:#FFFFFF;--sunk:#E6EAE9;--ink:#141C1C;--muted:#5A6968;--faint:#8A9897;--rule:#D5DCDA;
+  --accent:#0E6455;--accent-soft:#DCEAE5;--clay:#A8481C;--clay-soft:#F4E3DA;--gold:#7E6110;--gold-soft:#F2EAD3;
+  --display:"Fraunces",Georgia,serif;--body:"Source Serif 4",Georgia,serif;--mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#0E1414;--surface:#161E1E;--sunk:#101717;--ink:#E6ECEA;--muted:#9AA9A7;--faint:#6F7E7C;--rule:#273433;
+  --accent:#5FC4AC;--accent-soft:#12302A;--clay:#E0906A;--clay-soft:#2E1D14;--gold:#D6B65C;--gold-soft:#2B2410;
+}}
+:root[data-theme="dark"]{
+  --paper:#0E1414;--surface:#161E1E;--sunk:#101717;--ink:#E6ECEA;--muted:#9AA9A7;--faint:#6F7E7C;--rule:#273433;
+  --accent:#5FC4AC;--accent-soft:#12302A;--clay:#E0906A;--clay-soft:#2E1D14;--gold:#D6B65C;--gold-soft:#2B2410;
+}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased;}
+.wrap{max-width:880px;margin:0 auto;padding:32px 20px 80px;display:flex;flex-direction:column;gap:22px;}
+
+header{display:flex;flex-direction:column;gap:14px;padding-bottom:20px;border-bottom:2px solid var(--ink);}
+.toprow{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;}
+h1{font-family:var(--display);font-size:clamp(30px,6vw,44px);line-height:1;font-weight:600;margin:0;letter-spacing:-.015em;}
+.sub{font-family:var(--mono);font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);}
+.counters{margin-left:auto;display:flex;gap:22px;}
+.counter{display:flex;flex-direction:column;gap:1px;}
+.counter b{font-family:var(--mono);font-size:22px;font-weight:600;font-variant-numeric:tabular-nums;line-height:1;}
+.counter span{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);}
+.bar{height:6px;background:var(--sunk);border-radius:100px;overflow:hidden;}
+.bar i{display:block;height:100%;background:var(--accent);border-radius:100px;transition:width .3s;}
+
+.weeks{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;}
+.wk{background:var(--surface);border:1px solid var(--rule);padding:8px 6px;display:flex;flex-direction:column;gap:5px;cursor:pointer;text-align:left;font:inherit;color:inherit;border-radius:2px;}
+.wk:hover{border-color:var(--accent);}
+.wk[aria-current="true"]{border-color:var(--accent);background:var(--accent-soft);}
+.wk .n{font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--faint);}
+.wk[aria-current="true"] .n{color:var(--accent);}
+.wk .pct{font-family:var(--mono);font-size:14px;font-weight:600;font-variant-numeric:tabular-nums;}
+.wk .mini{height:3px;background:var(--sunk);border-radius:100px;overflow:hidden;}
+.wk .mini i{display:block;height:100%;background:var(--accent);}
+
+.goal{background:var(--surface);border-left:3px solid var(--accent);padding:16px 20px;display:flex;flex-direction:column;gap:5px;}
+.goal .lbl{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);}
+.goal .g{font-family:var(--display);font-size:20px;font-weight:600;}
+.goal .w{font-size:15px;color:var(--muted);}
+
+.days{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;}
+.day{flex:1 0 auto;min-width:74px;background:var(--surface);border:1px solid var(--rule);padding:9px 8px;display:flex;flex-direction:column;gap:6px;cursor:pointer;font:inherit;color:inherit;border-radius:2px;align-items:flex-start;}
+.day:hover{border-color:var(--accent);}
+.day[aria-current="true"]{border-color:var(--accent);border-width:2px;padding:8px 7px;}
+.day .dow{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);}
+.day .dnum{font-family:var(--mono);font-size:17px;font-weight:600;line-height:1;font-variant-numeric:tabular-nums;}
+.day .dots{display:flex;gap:2px;flex-wrap:wrap;}
+.dot{width:5px;height:5px;border-radius:100px;background:var(--sunk);}
+.dot.on{background:var(--accent);}
+.day.today .dnum{color:var(--accent);}
+.day.rest{background:var(--sunk);}
+.day.pushed{opacity:.55;}
+
+.panel{background:var(--surface);border:1px solid var(--rule);padding:22px;display:flex;flex-direction:column;gap:16px;}
+.phead{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;}
+.phead h2{font-family:var(--display);font-size:23px;font-weight:600;margin:0;}
+.phead .tag{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;padding:3px 9px;border-radius:100px;background:var(--accent-soft);color:var(--accent);}
+.phead .tag.rest{background:var(--gold-soft);color:var(--gold);}
+.phead .right{margin-left:auto;font-family:var(--mono);font-size:12px;color:var(--faint);font-variant-numeric:tabular-nums;}
+
+.tasks{display:flex;flex-direction:column;gap:1px;background:var(--rule);border:1px solid var(--rule);}
+.task{background:var(--surface);padding:13px 15px;display:flex;gap:13px;align-items:flex-start;cursor:pointer;}
+.task:hover{background:var(--accent-soft);}
+.task input{appearance:none;width:19px;height:19px;flex:none;border:1.5px solid var(--faint);border-radius:3px;margin:2px 0 0;cursor:pointer;position:relative;background:transparent;}
+.task input:checked{background:var(--accent);border-color:var(--accent);}
+.task input:checked::after{content:"";position:absolute;left:6px;top:2px;width:5px;height:10px;border:solid var(--surface);border-width:0 2px 2px 0;transform:rotate(45deg);}
+.task input:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+.task .body{display:flex;flex-direction:column;gap:3px;min-width:0;}
+.task .t{font-weight:600;line-height:1.35;}
+.task .d{font-size:14.5px;color:var(--muted);line-height:1.45;}
+.task .meta{display:flex;gap:9px;align-items:center;flex:none;margin-left:auto;padding-top:2px;}
+.task .stream{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);}
+.task .dur{font-family:var(--mono);font-size:11.5px;color:var(--faint);font-variant-numeric:tabular-nums;}
+.task.done .t,.task.done .d{text-decoration:line-through;color:var(--faint);text-decoration-thickness:1px;}
+.task.carried{background:var(--gold-soft);}
+
+.note{display:flex;flex-direction:column;gap:6px;}
+.note label{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);}
+.note textarea{font-family:var(--body);font-size:15px;padding:11px 13px;border:1px solid var(--rule);background:var(--paper);color:var(--ink);border-radius:2px;resize:vertical;min-height:62px;}
+.note textarea:focus-visible{outline:2px solid var(--accent);outline-offset:-1px;}
+
+.actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+button.act{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;padding:9px 15px;border:1px solid var(--rule);background:var(--paper);color:var(--muted);cursor:pointer;border-radius:2px;}
+button.act:hover{border-color:var(--clay);color:var(--clay);}
+button.act:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+.status{font-family:var(--mono);font-size:11px;color:var(--faint);margin-left:auto;}
+
+.rest{display:flex;flex-direction:column;gap:8px;}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-family:var(--mono);font-size:10.5px;color:var(--faint);letter-spacing:.06em;}
+footer{font-family:var(--mono);font-size:11px;color:var(--faint);text-align:center;padding-top:8px;line-height:1.7;}
+@media(max-width:620px){.weeks{grid-template-columns:repeat(4,1fr)}.counters{margin-left:0}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="toprow">
+      <h1>45 Days</h1>
+      <div class="sub" id="phase">to applied AI</div>
+      <div class="counters">
+        <div class="counter"><b id="dayN">-</b><span>day</span></div>
+        <div class="counter"><b id="left">-</b><span>left</span></div>
+        <div class="counter"><b id="pct">-</b><span>done</span></div>
+      </div>
+    </div>
+    <div class="bar"><i id="obar" style="width:0%"></i></div>
+  </header>
+
+  <div class="weeks" id="weeks"></div>
+  <div class="goal"><div class="lbl" id="glbl">Week</div><div class="g" id="goal"></div><div class="w" id="why"></div></div>
+  <div class="days" id="days"></div>
+
+  <div class="panel">
+    <div class="phead">
+      <h2 id="dtitle">-</h2>
+      <span class="tag" id="dtag"></span>
+      <span class="right" id="dcount"></span>
+    </div>
+    <div id="taskwrap"></div>
+    <div class="note">
+      <label for="note">Notes — what happened, what slipped, what to tell Claude</label>
+      <textarea id="note" placeholder="Interview with X ate the afternoon. Memory A/B showed +6 points."></textarea>
+    </div>
+    <div class="actions">
+      <button class="act" id="push">Push unfinished build work to tomorrow</button>
+      <span class="status" id="status">local only</span>
+    </div>
+  </div>
+
+  <div class="legend">
+    <span>BUILD — the module work</span><span>APPLY — jobs + referrals</span><span>DRILL — 5-10 questions with Claude</span>
+    <span>DSA — screen insurance</span><span>SHIP — LinkedIn / X</span><span>PREP — mock / system design</span>
+  </div>
+  <footer>Thu 17 Sep &rarr; Sat 31 Oct 2026 &middot; Sundays are rest, and that is load-bearing<br>From 1 Nov: no building. Interviews, referrals, follow-ups.</footer>
+</div>
+
+<script>
+const WEEKS=[
+ {n:1,range:"17 - 20 Sep",goal:"Graders upgraded, the model plugged in",why:"The scripted stand-in gets deleted. First real score on the board."},
+ {n:2,range:"21 - 27 Sep",goal:"Agent working, MCP server in daily use",why:"From here you use your own tool layer every day inside Claude Desktop."},
+ {n:3,range:"28 Sep - 4 Oct",goal:"Published to the Environments Hub",why:"The public artifact that unlocks the RL-environment marketplaces."},
+ {n:4,range:"5 - 11 Oct",goal:"Memory and context engineering, measured",why:"The #2 most-demanded skill in the field, and your biggest gap."},
+ {n:5,range:"12 - 18 Oct",goal:"Reliable, and deployed to real users",why:"Answers 'shipped to real users, not just prototypes'. Users need two weeks."},
+ {n:6,range:"19 - 25 Oct",goal:"Observable, guarded, gated in CI",why:"Tracing, cost dashboard, approval gates, regression gate."},
+ {n:7,range:"26 - 31 Oct",goal:"Writeup, portfolio, full interview mode",why:"The failure taxonomy is the artifact that reads as senior."}];
+
+const DAYS=[
+ ["2026-09-17",1,"Weighted partial credit","Rework grader.py so checks carry weights — “didn’t send unapproved” must outweigh “subject mentions the role”. You write it, I review."],
+ ["2026-09-18",1,"Efficiency + termination scoring","Add steps-used-vs-minimum and stop-reason to the trajectory grade. Then make the four M4 decisions: provider, observation shape, finish signal, malformed-call handling."],
+ ["2026-09-19",1,"Agent loop skeleton","Tool schemas to the model, parse the tool call, feed env.step, loop until done or step limit. No cleverness yet."],
+ ["2026-09-20",1,null,null],
+ ["2026-09-21",2,"First real LLM score","Get the loop passing one task end to end, then run the whole suite. Whatever the number is, it is your baseline."],
+ ["2026-09-22",2,"Three seeds and a failure read","Run the suite 3×. Record the spread, not just the mean. Read every failed trajectory and find the FIRST wrong step."],
+ ["2026-09-23",2,"Prompt versioning","Prompts as files in git. Run two versions against the suite, compare paired, roll one back."],
+ ["2026-09-24",2,"Lesson 5 + tool schema fixes","Read the tool-layer lesson, then fix the tool descriptions your failure read exposed. Tool design is prompt design."],
+ ["2026-09-25",2,"MCP server over stdio","Same tool layer, new surface. Roughly 150 lines."],
+ ["2026-09-26",2,"Wire it into Claude Desktop","Add the server to your config and use it on your real job search. Note every friction point — those become tasks."],
+ ["2026-09-27",2,null,null],
+ ["2026-09-28",3,"Learn the verifiers spec","Read the docs and one real example environment. Plan the port on paper before writing anything."],
+ ["2026-09-29",3,"Port part 1 — env and dataset","jobops world and tasks expressed as a verifiers environment."],
+ ["2026-09-30",3,"Port part 2 — the verifier","Your outcome and process graders as verifier functions in their interface."],
+ ["2026-10-01",3,"Package and document","pyproject, wheel, test a clean install, write the environment’s README."],
+ ["2026-10-02",3,"PUBLISH to the Environments Hub","Ship it. Then the LinkedIn post writes itself."],
+ ["2026-10-03",3,"Apply to the marketplaces","Mercor, Surge, Handshake, Turing, Micro1 — published environment as your evidence."],
+ ["2026-10-04",3,null,null],
+ ["2026-10-05",4,"Lesson 6 — memory and context","Read it, then decide the design: which memory types, what gets kept, dropped, re-fetched."],
+ ["2026-10-06",4,"Memory schema on Postgres","Real Postgres, not SQLite. Schema, indices, migrations."],
+ ["2026-10-07",4,"Working memory","Within-run state: what the agent carries between steps, and what it stops carrying."],
+ ["2026-10-08",4,"Long-term memory","Across runs: what it remembers about a company, a role, a past conversation. Retrieval over it."],
+ ["2026-10-09",4,"Compaction and summarisation","The hard part. What to summarise, when, and how to prove the summary kept what mattered."],
+ ["2026-10-10",4,"A/B the memory","Same agent, same suite, with and without memory. This number is the whole module."],
+ ["2026-10-11",4,null,null],
+ ["2026-10-12",5,"Lesson 7 + idempotency keys","Reliability lesson, then make every write idempotent. No double-sends, ever."],
+ ["2026-10-13",5,"Retries and durable run state","Backoff with jitter. Run state in Postgres so a process death is survivable."],
+ ["2026-10-14",5,"Crash and resume","Kill the process mid-tool-call. Resume. Prove no duplicate action. Hard to fake, worth a lot."],
+ ["2026-10-15",5,"Scheduled runs","The agent wakes daily and chases what has gone quiet, without you asking."],
+ ["2026-10-16",5,"DEPLOY","FastAPI + Postgres + Redis, one command, reachable. It does not need to be pretty."],
+ ["2026-10-17",5,"Remote MCP + first outside user","Streamable HTTP with OAuth 2.1, then hand the URL to one person."],
+ ["2026-10-18",5,null,null],
+ ["2026-10-19",6,"Lesson 8 + OTel spans","Observability lesson, then trace a whole agent run properly."],
+ ["2026-10-20",6,"Cost and latency dashboard","Three numbers on one screen: cost per task, p95 latency, score."],
+ ["2026-10-21",6,"Approval gates","Nothing irreversible happens without a human. Now enforced, not just policy-graded."],
+ ["2026-10-22",6,"Injection test suite","Adversarial tasks: untrusted content in tool results trying to steer the agent."],
+ ["2026-10-23",6,"CI regression gate","A GitHub Action that blocks a merge when the suite regresses."],
+ ["2026-10-24",6,"Retrieval upgrade","Hybrid search plus reranking, with before and after numbers on precision, recall, faithfulness."],
+ ["2026-10-25",6,null,null],
+ ["2026-10-26",7,"Failure taxonomy","Cluster every failure you have logged into named categories. Count them. This is the artifact."],
+ ["2026-10-27",7,"Write the writeup","What broke, why, what the numbers did, what you would do differently."],
+ ["2026-10-28",7,"pass^3 and final numbers","Reliability runs, final scores, README rewritten around real results."],
+ ["2026-10-29",7,"Final resume rewrite","Every claim now has evidence behind it. Rewrite from scratch, do not patch."],
+ ["2026-10-30",7,"Portfolio polish","Repo README, pinned repos, LinkedIn featured section, the environment page."],
+ ["2026-10-31",7,"Done — switch modes","Final review. From tomorrow: no building. Interviews, referrals, follow-ups only."]];
+
+const DOW=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+
+function tasksFor(date){
+  const rec=DAYS.find(d=>d[0]===date); if(!rec) return [];
+  const [ ,wk,build,detail]=rec;
+  const d=new Date(date+"T12:00:00Z"), dow=d.getUTCDay();
+  const out=[];
+  if(dow===0){
+    out.push({id:"resume",stream:"maintain",dur:"45m",t:"Update the resume",d:"Add this week’s evidence. Numbers, not adjectives."});
+    out.push({id:"review",stream:"maintain",dur:"30m",t:"Weekly review + plan",d:"What shipped, what slipped, what next week needs. Then stop — the rest of today is off."});
+    return out;
+  }
+  out.push({id:"build",stream:"build",dur:dow===6?"90m":"4h",t:build,d:detail});
+  if(dow===1||dow===3||dow===5) out.push({id:"apply",stream:"apply",dur:"60m",t:"Applications + referrals",d:"3–4 applications. One referral ask or warm follow-up."});
+  if(dow===2||dow===4) out.push({id:"sysdesign",stream:"prep",dur:"30m",t:"System design",d:"One piece, read properly. Notes in your own words."});
+  if(dow===5) out.push({id:"linkedin",stream:"ship",dur:"30m",t:"LinkedIn post",d:"From this week’s work. Something you learned, not something you feel."});
+  if(dow===6) out.push({id:"mock",stream:"prep",dur:"60m",t:"Mock interview with Claude",d:"Full round. Honest scoring at the end."});
+  out.push({id:"drill",stream:"drill",dur:"60m",t:"5–10 questions",d:"Half on this week’s learning, half on your resume. Claude explains what you miss."});
+  out.push({id:"dsa",stream:"dsa",dur:"30m",t:"DSA floor",d:"Screen insurance. Thirty minutes, not more."});
+  out.push({id:"x",stream:"ship",dur:"15m",t:"X engagement",d:"Three substantive replies to people at target companies."});
+  return out;
+}
+
+const state={}; let db=null, sel=null, saving=null;
+const el=id=>document.getElementById(id);
+const todayISO=()=>{const n=new Date();return new Date(n.getTime()-n.getTimezoneOffset()*6e4).toISOString().slice(0,10);};
+
+function get(date){ return state[date]||{checked:[],note:"",pushed:false,carried:[]}; }
+
+function localLoad(){ try{const r=localStorage.getItem("plan45");if(r)Object.assign(state,JSON.parse(r));}catch(e){} }
+function localSave(){ try{localStorage.setItem("plan45",JSON.stringify(state));}catch(e){} }
+
+async function save(date){
+  const v=get(date); localSave();
+  if(!db) return;
+  clearTimeout(saving);
+  saving=setTimeout(async()=>{
+    try{ await db.doc("days/"+date).set({checked:v.checked,note:v.note,pushed:!!v.pushed,carried:v.carried||[]}); el("status").textContent="saved"; }
+    catch(e){ el("status").textContent="save failed — kept locally"; }
+  },400);
+}
+
+function dayList(week){ return DAYS.filter(d=>d[1]===week).map(d=>d[0]); }
+function weekOf(date){ const r=DAYS.find(d=>d[0]===date); return r?r[1]:1; }
+
+function counts(date){
+  const ts=tasksFor(date), v=get(date);
+  const all=ts.map(t=>t.id).concat((v.carried||[]).map(c=>c.id));
+  const done=all.filter(id=>v.checked.includes(id)).length;
+  return {done,total:all.length};
+}
+
+function render(){
+  const today=todayISO();
+  if(!sel) sel=DAYS.some(d=>d[0]===today)?today:DAYS[0][0];
+  const wk=weekOf(sel);
+
+  let dn=DAYS.findIndex(d=>d[0]===today); dn=dn<0?(today<DAYS[0][0]?0:45):dn+1;
+  el("dayN").textContent=dn===0?"0":dn;
+  el("left").textContent=Math.max(0,45-dn);
+  let cd=0,ct=0; DAYS.forEach(d=>{const c=counts(d[0]);cd+=c.done;ct+=c.total;});
+  const pct=ct?Math.round(cd/ct*100):0;
+  el("pct").textContent=pct+"%"; el("obar").style.width=pct+"%";
+  el("phase").textContent=WEEKS[wk-1].range;
+
+  el("weeks").innerHTML=WEEKS.map(w=>{
+    let d=0,t=0; dayList(w.n).forEach(x=>{const c=counts(x);d+=c.done;t+=c.total;});
+    const p=t?Math.round(d/t*100):0;
+    return `<button class="wk" data-w="${w.n}" aria-current="${w.n===wk}"><span class="n">WK ${w.n}</span><span class="pct">${p}%</span><span class="mini"><i style="width:${p}%"></i></span></button>`;
+  }).join("");
+
+  el("glbl").textContent="Week "+wk+" · "+WEEKS[wk-1].range;
+  el("goal").textContent=WEEKS[wk-1].goal;
+  el("why").textContent=WEEKS[wk-1].why;
+
+  el("days").innerHTML=dayList(wk).map(date=>{
+    const d=new Date(date+"T12:00:00Z"), c=counts(date), v=get(date);
+    const rest=d.getUTCDay()===0;
+    const dots=Array.from({length:c.total},(_,i)=>`<span class="dot${i<c.done?" on":""}"></span>`).join("");
+    return `<button class="day${date===today?" today":""}${rest?" rest":""}${v.pushed?" pushed":""}" data-d="${date}" aria-current="${date===sel}">
+      <span class="dow">${DOW[d.getUTCDay()]}</span><span class="dnum">${d.getUTCDate()}</span><span class="dots">${dots}</span></button>`;
+  }).join("");
+
+  const d=new Date(sel+"T12:00:00Z"), v=get(sel), ts=tasksFor(sel), c=counts(sel);
+  const rest=d.getUTCDay()===0;
+  el("dtitle").textContent=DOW[d.getUTCDay()]+" "+d.getUTCDate()+" "+["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][d.getUTCMonth()];
+  const tag=el("dtag");
+  tag.textContent=rest?"rest day":(sel===today?"today":(sel<today?"past":"ahead"));
+  tag.className="tag"+(rest?" rest":"");
+  el("dcount").textContent=c.done+" / "+c.total+" done";
+
+  const carried=(v.carried||[]).map(x=>({...x,carry:true}));
+  el("taskwrap").innerHTML=`<div class="tasks">`+carried.concat(ts).map(t=>{
+    const on=v.checked.includes(t.id);
+    return `<label class="task${on?" done":""}${t.carry?" carried":""}">
+      <input type="checkbox" data-t="${t.id}" ${on?"checked":""}>
+      <span class="body"><span class="t">${t.carry?"↳ carried · ":""}${t.t||""}</span><span class="d">${t.d||""}</span></span>
+      <span class="meta"><span class="stream">${t.stream}</span><span class="dur">${t.dur}</span></span></label>`;
+  }).join("")+`</div>`;
+
+  el("note").value=v.note||"";
+  el("push").hidden=rest;
+}
+
+document.addEventListener("click",e=>{
+  const w=e.target.closest(".wk"); if(w){ sel=dayList(+w.dataset.w)[0]; render(); return; }
+  const d=e.target.closest(".day"); if(d){ sel=d.dataset.d; render(); return; }
+});
+
+document.addEventListener("change",e=>{
+  const cb=e.target.closest("input[type=checkbox][data-t]"); if(!cb) return;
+  const v={...get(sel)}; v.checked=[...(v.checked||[])];
+  const id=cb.dataset.t;
+  if(cb.checked){ if(!v.checked.includes(id)) v.checked.push(id); }
+  else v.checked=v.checked.filter(x=>x!==id);
+  state[sel]=v; save(sel); render();
+});
+
+el("note").addEventListener("input",e=>{
+  const v={...get(sel)}; v.note=e.target.value; state[sel]=v; save(sel);
+});
+
+el("push").addEventListener("click",()=>{
+  const i=DAYS.findIndex(x=>x[0]===sel); if(i<0||i>=DAYS.length-1) return;
+  const v={...get(sel)}, ts=tasksFor(sel);
+  const undone=ts.filter(t=>t.stream==="build"&&!v.checked.includes(t.id));
+  if(!undone.length){ el("status").textContent="nothing to push"; return; }
+  const next=DAYS[i+1][0], nv={...get(next)};
+  nv.carried=[...(nv.carried||[]), ...undone.map(t=>({id:"c_"+sel+"_"+t.id,stream:"build",dur:t.dur,t:t.t,d:t.d}))];
+  v.pushed=true;
+  state[sel]=v; state[next]=nv; save(sel); save(next); sel=next; render();
+  el("status").textContent="pushed to "+next;
+});
+
+localLoad(); render();
+
+(async()=>{
+  try{
+    db=await claude.use("db");
+    if(!db){ el("status").textContent="local only — this device"; return; }
+    db.collection("days").onSnapshot(snap=>{
+      snap.docs.forEach(doc=>{ const d=doc.data()||{};
+        state[doc.id]={checked:d.checked||[],note:d.note||"",pushed:!!d.pushed,carried:d.carried||[]}; });
+      localSave(); render();
+    },()=>{ el("status").textContent="offline — kept locally"; });
+    el("status").textContent="synced";
+  }catch(e){ el("status").textContent="local only"; }
+})();
+</script>
