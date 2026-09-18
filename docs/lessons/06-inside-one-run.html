@@ -1,0 +1,293 @@
+<title>Inside One Run</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --paper:#EFF2F1;--surface:#FFFFFF;--ink:#141C1C;--muted:#5A6968;--faint:#8A9897;--rule:#D5DCDA;
+  --accent:#0E6455;--accent-soft:#DCEAE5;--clay:#A8481C;--clay-soft:#F4E3DA;--gold:#7E6110;--gold-soft:#F2EAD3;
+  --display:"Fraunces",Georgia,serif;--body:"Source Serif 4",Georgia,serif;--mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#0E1414;--surface:#161E1E;--ink:#E6ECEA;--muted:#9AA9A7;--faint:#6F7E7C;--rule:#273433;
+  --accent:#5FC4AC;--accent-soft:#12302A;--clay:#E0906A;--clay-soft:#2E1D14;--gold:#D6B65C;--gold-soft:#2B2410;
+}}
+:root[data-theme="dark"]{
+  --paper:#0E1414;--surface:#161E1E;--ink:#E6ECEA;--muted:#9AA9A7;--faint:#6F7E7C;--rule:#273433;
+  --accent:#5FC4AC;--accent-soft:#12302A;--clay:#E0906A;--clay-soft:#2E1D14;--gold:#D6B65C;--gold-soft:#2B2410;
+}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:17.5px;line-height:1.7;-webkit-font-smoothing:antialiased;}
+.wrap{max-width:760px;margin:0 auto;padding:56px 24px 96px;}
+.masthead{display:flex;flex-direction:column;gap:14px;padding-bottom:28px;border-bottom:2px solid var(--ink);}
+.kicker{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);}
+h1{font-family:var(--display);font-size:clamp(36px,7vw,54px);line-height:1.04;font-weight:600;margin:0;text-wrap:balance;letter-spacing:-.015em;}
+.standfirst{font-size:19px;color:var(--muted);margin:0;max-width:60ch;}
+.meta{font-family:var(--mono);font-size:11.5px;color:var(--faint);display:flex;flex-wrap:wrap;gap:18px;}
+section{padding-top:48px;display:flex;flex-direction:column;gap:18px;}
+h2{font-family:var(--display);font-size:27px;font-weight:600;line-height:1.25;margin:0;text-wrap:balance;display:flex;gap:14px;align-items:baseline;}
+h2 .num{font-family:var(--mono);font-size:13px;font-weight:400;color:var(--accent);flex:none;}
+h3{font-family:var(--display);font-size:19.5px;font-weight:600;margin:16px 0 0;}
+p{margin:0;}
+a{color:var(--accent);text-decoration:underline;text-underline-offset:2px;}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+ul,ol{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:10px;}
+li::marker{color:var(--faint);}
+em.term{font-style:normal;font-family:var(--mono);font-size:.85em;background:var(--accent-soft);padding:1px 5px;border-radius:3px;}
+.analogy{background:var(--surface);border-left:3px solid var(--accent);padding:18px 22px;display:flex;flex-direction:column;gap:10px;}
+.analogy .lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);}
+.warn{background:var(--clay-soft);padding:18px 22px;display:flex;flex-direction:column;gap:10px;border-radius:2px;}
+.warn .lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--clay);}
+.pick{background:var(--gold-soft);border:1px solid var(--gold);padding:20px 22px;display:flex;flex-direction:column;gap:11px;border-radius:2px;}
+.pick .lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);}
+pre{background:var(--surface);border:1px solid var(--rule);padding:16px 18px;overflow-x:auto;font-family:var(--mono);font-size:12px;line-height:1.75;margin:0;color:var(--ink);}
+pre .c{color:var(--faint);}
+pre .hi{background:var(--accent-soft);}
+pre .bad{color:var(--clay);}
+.step{background:var(--surface);border:1px solid var(--rule);padding:16px 20px;display:flex;flex-direction:column;gap:8px;}
+.step .n{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);}
+.step pre{border:0;padding:0;background:transparent;font-size:12.5px;}
+.count{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);}
+.count > div{background:var(--surface);padding:14px 16px;display:flex;flex-direction:column;gap:3px;}
+.count b{font-family:var(--mono);font-size:21px;font-weight:600;font-variant-numeric:tabular-nums;}
+.count span{font-size:13px;color:var(--faint);line-height:1.4;}
+.vocab{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);}
+.vocab > div{background:var(--surface);padding:14px 16px;display:flex;flex-direction:column;gap:5px;}
+.vocab dt{font-family:var(--mono);font-size:12.5px;color:var(--accent);font-weight:600;}
+.vocab dd{margin:0;font-size:14.5px;color:var(--muted);line-height:1.5;}
+.next{margin-top:44px;background:var(--surface);border:1px solid var(--rule);padding:22px;display:flex;flex-direction:column;gap:8px;}
+.next .lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);}
+</style>
+
+<div class="wrap">
+
+<header class="masthead">
+  <div class="kicker">Lesson 06 &middot; Agent Env Lab</div>
+  <h1>Inside One Run</h1>
+  <p class="standfirst">One agent run from your own repo, read line by line. Everything Lesson 5 described in the abstract, this time with something concrete to look at.</p>
+  <div class="meta"><span>~25 min</span><span>Real trace, real numbers</span></div>
+</header>
+
+<section>
+  <h2><span class="num">6.1</span> <span>Why this chapter exists</span></h2>
+  <p>Lesson 5 described the loop, the dials and the failure modes &mdash; all of it true, none of it attached to anything you could see. That is a hard way to learn.</p>
+  <p>So this chapter does the opposite. We take <strong>one run, twenty-one steps, from your repo</strong>, and read it. Every idea from Lesson 5 turns up again, but this time you can point at the line where it happens.</p>
+  <p>Nothing new is introduced until section 6.8. Until then it is just reading.</p>
+</section>
+
+<section>
+  <h2><span class="num">6.2</span> <span>The setup</span></h2>
+  <p>The task is <em class="term">s01_shortlist_five</em>. The agent is told:</p>
+  <pre>"Find me 5 roles worth applying to this week.
+ Shortlist each one with a reason saying why it suits me."</pre>
+  <p>It has twelve tools and a budget of thirty steps. The world is seed 42: thirty open roles it has not applied to, twelve of which genuinely qualify.</p>
+  <p>It does not know that twelve qualify. Working that out is the job.</p>
+
+  <div class="analogy">
+    <div class="lbl">In plain words</div>
+    <p>You have handed an assistant a filing cabinet and said "pick five jobs worth applying to". They cannot see the cabinet &mdash; they can only ask you for things from it, one request at a time, and you pass back what they asked for. What follows is the log of those requests.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">6.3</span> <span>Step 0 &mdash; it reads the profile</span></h2>
+
+  <div class="step">
+    <div class="n">step 0</div>
+    <pre>get_profile  {}
+   &rarr;  Tanisha Kothari, 3 years, 9 target titles</pre>
+  </div>
+
+  <p>The first thing it does is find out who it is shopping for. That sounds obvious. It is also <strong>graded</strong> &mdash; the policy <em class="term">read_profile_before_shortlisting</em> fails any run that shortlists before this call happens.</p>
+  <p>Why grade something so obvious? Because an agent can shortlist five perfectly good roles <em>without</em> ever reading the profile, by guessing what she probably wants. The answer looks identical. The process is guessing.</p>
+
+  <div class="warn">
+    <div class="lbl">This is the outcome/process split, live</div>
+    <p>There is a broken agent in the repo called <em class="term">shortlist_blind</em> that skips this step and hardcodes its assumptions. On this task it scores <strong>outcome 3/3</strong> &mdash; a perfect answer &mdash; and fails process, because it never looked.</p>
+    <p>That is the entire argument for grading the path as well as the result, in one example.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">6.4</span> <span>Step 1 &mdash; the number that changes everything</span></h2>
+
+  <div class="step">
+    <div class="n">step 1</div>
+    <pre>search_postings  {"limit": 25}
+   &rarr;  showing <span class="hi">25</span> of <span class="hi">30</span></pre>
+  </div>
+
+  <p>One broad search. Twenty-five results came back. <strong>Thirty matched.</strong></p>
+  <p>Five roles exist that the agent has not seen. It has no way to know that &mdash; unless the tool tells it. This is exactly why Lesson 4 insisted the envelope carry <em class="term">matched</em> alongside <em class="term">showing</em>, plus a note in words:</p>
+  <pre>"Showing 25 of 30. Narrow with query, seniority or country."</pre>
+  <p>Without those two numbers the agent believes it has seen everything. It picks five good roles out of twenty-five, scores well, and never learns that a better one was sitting in the five it never got.</p>
+
+  <div class="warn">
+    <div class="lbl">This actually happened</div>
+    <p>An earlier version of this agent did exactly that. On a different world it shortlisted four tier-2 roles while a tier-1 role sat in the truncated tail. The grader caught it, and the fix was to make the agent <em>read</em> the <em class="term">matched</em> count and search again more narrowly.</p>
+    <p>Silent truncation is one of the most expensive bugs in agent work, because everything downstream still looks fine.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">6.5</span> <span>Steps 2&ndash;10 &mdash; nine more searches</span></h2>
+  <p>Having seen <em>25 of 30</em>, the agent runs one search per target title from the profile:</p>
+
+  <div class="step">
+    <div class="n">steps 2 &ndash; 10</div>
+    <pre>search_postings  {"query": "Applied AI Engineer"}       &rarr; 1 of 1
+search_postings  {"query": "AI Engineer"}               &rarr; 4 of 4
+search_postings  {"query": "Agent Engineer"}            &rarr; 3 of 3
+search_postings  {"query": "Forward Deployed Engineer"} &rarr; <span class="bad">0 of 0</span>
+search_postings  {"query": "Member of Technical Staff"} &rarr; 1 of 1
+search_postings  {"query": "Research Engineer"}         &rarr; 3 of 3
+search_postings  {"query": "Evaluation Engineer"}       &rarr; <span class="bad">0 of 0</span>
+search_postings  {"query": "LLM Engineer"}              &rarr; <span class="bad">0 of 0</span>
+search_postings  {"query": "Agentic Systems Engineer"}  &rarr; <span class="bad">0 of 0</span></pre>
+  </div>
+
+  <p>Two things to notice.</p>
+  <p><strong>It worked.</strong> The narrow searches found roles the truncated broad search had hidden. The fallback did its job.</p>
+  <p><strong>Four of the nine returned nothing.</strong> Four steps, four round trips and four sets of tokens spent learning that this world has no Forward Deployed Engineer. The agent could not have known in advance &mdash; but it also never remembers, so it will spend those same four steps again on the next run.</p>
+
+  <div class="analogy">
+    <div class="lbl">In plain words</div>
+    <p>Ringing nine shops to ask whether they stock a part. Four say no. Tomorrow you ring all nine again, because you wrote nothing down.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">6.6</span> <span>Steps 11&ndash;20 &mdash; look up, then commit</span></h2>
+  <p>Now it has candidates. From here it alternates: check the company, then shortlist the role.</p>
+
+  <div class="step">
+    <div class="n">steps 11 &ndash; 20</div>
+    <pre>get_company        {"company": "Rill Networks"}      &rarr; series_a, 20.1 months ago
+shortlist_posting  {"posting_id": "job_0013", ...}   &rarr; shortlist size 1
+
+get_company        {"company": "Gradient Works"}     &rarr; series_c, 20.5 months ago
+shortlist_posting  {"posting_id": "job_0019", ...}   &rarr; shortlist size 2
+
+get_company        {"company": "Pale Blue Compute"}  &rarr; series_c, 9.2 months ago
+shortlist_posting  {"posting_id": "job_0030", ...}   &rarr; shortlist size 3
+
+get_company        {"company": "Gradient Works"}     &rarr; series_c, 20.5 months ago
+shortlist_posting  {"posting_id": "job_0031", ...}   &rarr; shortlist size 4
+
+get_company        {"company": "Sable Forecasting"}  &rarr; seed, 3.6 months ago
+shortlist_posting  {"posting_id": "job_0034", ...}   &rarr; shortlist size 5</pre>
+  </div>
+
+  <p>Look at the funding values: <em>20.1 months ago</em>, <em>9.2 months ago</em>. The tool computed those. It could have returned a date and left the model to subtract &mdash; and then "is that recent?" becomes arithmetic, which is the one thing a language model is reliably unreliable at. That is Lesson 4's rule, visible in a line of output.</p>
+  <p>And each <em class="term">shortlist_posting</em> is a <strong>write</strong>. The answer is not a paragraph the agent composed. It is five rows in a table. That is what makes the next section possible.</p>
+</section>
+
+<section>
+  <h2><span class="num">6.7</span> <span>The two states that decide the grade</span></h2>
+  <p>The environment took a snapshot before the run and after it. Here they are:</p>
+  <pre><span class="c">before:</span>  shortlisted: []
+         shortlist_size: 0
+
+<span class="c">after:</span>   shortlisted: ['job_0013', 'job_0019', 'job_0030',
+                       'job_0031', 'job_0034']
+         shortlist_size: 5
+         shortlisted_companies: ['Gradient Works', 'Pale Blue Compute',
+                                 'Rill Networks', 'Sable Forecasting']</pre>
+
+  <p>The grade is the difference between those two pictures. No transcript is read. No model is asked for an opinion. The question <em>"did it do the right thing?"</em> became <em>"are these five rows the right five rows?"</em> &mdash; and that is a question a machine answers instantly and identically every time.</p>
+
+  <div class="count">
+    <div><b>3/3</b><span>outcome checks passed</span></div>
+    <div><b>6/6</b><span>policy checks passed</span></div>
+    <div><b>21</b><span>steps used of 30</span></div>
+    <div><b>PASS</b><span>the run</span></div>
+  </div>
+
+  <div class="analogy">
+    <div class="lbl">In plain words</div>
+    <p>A photo of the kitchen before dinner and a photo after. You do not need the cook's account of what they did &mdash; you can see which ingredients are gone and what is on the plate.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">6.8</span> <span>Three things this run did badly</span></h2>
+  <p>It passed everything. It is still wasteful in three ways, and none of them is currently graded.</p>
+
+  <h3>1. It looked up the same company twice</h3>
+  <p>Step 13 asks about <strong>Gradient Works</strong>. Step 17 asks about <strong>Gradient Works</strong> again and gets the identical answer. A whole round trip to learn something it was told four steps earlier.</p>
+  <p>Funding does not change in four steps. It does not change in four months. This is the cheapest cache imaginable and there is not one.</p>
+
+  <h3>2. Four searches returned nothing, and it learned nothing from that</h3>
+  <p>Next run, same four empty searches. The knowledge "this world has no Forward Deployed Engineer roles" exists for exactly as long as the run does.</p>
+
+  <h3>3. Twenty-one steps to make five decisions</h3>
+  <p>Ten searches, five lookups, five writes, one profile read. A tighter run does it in eight or nine. Every extra step is latency the user feels, tokens you pay for, and more context piling up &mdash; and remember from Lesson 5 that context is not neutral: old observations crowd out the useful ones.</p>
+
+  <div class="pick">
+    <div class="lbl">The pattern behind all three</div>
+    <p>Each one is the same missing thing: <strong>the agent has no memory.</strong> Not memory in some grand sense &mdash; just the ability to remember something it learned four steps ago, or four runs ago.</p>
+    <p>That is the next module. And notice we needed no lecture to motivate it: we read one real run and the need fell out of the trace.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">6.9</span> <span>Where the model will sit</span></h2>
+  <p>One honest thing about the run above: <strong>no LLM was involved.</strong> Every decision came from the scripted reference agent. The tools, the world, the grading and the trace are all real. The judgement was Python.</p>
+  <p>When the model is plugged in, these exact lines stay. What changes is who decides them:</p>
+  <ul>
+    <li><strong>Step 0</strong> &mdash; the model decides to read the profile first. Or does not, and fails the policy.</li>
+    <li><strong>Step 1</strong> &mdash; it decides to search broadly first.</li>
+    <li><strong>Steps 2&ndash;10</strong> &mdash; it reads <em>25 of 30</em>, decides that is not everything, and chooses which narrower searches to run. The most interesting decision in the run.</li>
+    <li><strong>Steps 11&ndash;20</strong> &mdash; it decides which five, in what order, and writes a reason for each.</li>
+  </ul>
+  <p>The scripted agent exists so that all the surrounding machinery could be proven correct <em>before</em> a non-deterministic thing was placed in the middle of it. When the model goes in and the score moves, we will know the movement came from the model &mdash; because everything else already passed.</p>
+</section>
+
+<section>
+  <h2><span class="num">6.10</span> <span>How to read any trace</span></h2>
+  <p>Six questions, in order. They work on your agent, on someone else's, and in an interview when they put a trace in front of you.</p>
+  <ol>
+    <li><strong>Did it gather before it acted?</strong> Reads before writes, or is it guessing?</li>
+    <li><strong>Was anything truncated?</strong> Look for a <em class="term">matched</em> bigger than <em class="term">showing</em>, and check whether it noticed.</li>
+    <li><strong>Where is the first wrong step?</strong> Not the last. Errors cascade, so the visible failure is usually downstream of the real one.</li>
+    <li><strong>What repeats?</strong> The same call twice means a missing cache. The same call five times means it is stuck.</li>
+    <li><strong>How did it end?</strong> Did it stop, or did the step limit stop it? Those look identical in the output and are completely different.</li>
+    <li><strong>What is the step count against the minimum?</strong> Twenty-one against a possible nine is a real finding, even on a passing run.</li>
+  </ol>
+
+  <div class="warn">
+    <div class="lbl">The habit worth building</div>
+    <p>Read the traces that <strong>passed</strong>. Everyone reads failures. Nobody investigates a pass &mdash; which is exactly why reward hacks and quiet waste live there. This run passed 9 of 9 checks and had three real problems in it.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">6.11</span> <span>Do it yourself</span></h2>
+  <p>Print the same trace, then go looking:</p>
+  <pre>.venv/bin/python scripts/run_suite.py shortlist_reference
+.venv/bin/python scripts/run_suite.py shortlist_eager
+.venv/bin/python scripts/run_suite.py shortlist_blind
+.venv/bin/python scripts/run_suite.py shortlist_hoarder</pre>
+  <p>Three things worth trying:</p>
+  <ul>
+    <li>Run <em class="term">shortlist_blind</em> and find the run where the answer is perfect and the process fails. Read why.</li>
+    <li>Run <em class="term">shortlist_hoarder</em> and watch it run out of steps. A correct answer reached too slowly becomes no answer at all.</li>
+    <li>Run <em class="term">shortlist_eager</em> on <em class="term">s03_nothing_qualifies</em> &mdash; the world where nothing is worth picking and it picks five anyway.</li>
+  </ul>
+</section>
+
+<section>
+  <h2><span class="num">6.12</span> <span>Words from this chapter</span></h2>
+  <dl class="vocab">
+    <div><dt>trace</dt><dd>The recorded steps of one run, in order.</dd></div>
+    <div><dt>silent truncation</dt><dd>Results cut off without the caller knowing. Everything downstream still looks fine.</dd></div>
+    <div><dt>first wrong step</dt><dd>The earliest point a run departs from a correct one. Where debugging starts.</dd></div>
+    <div><dt>repeated call</dt><dd>Same tool, same arguments, twice. A missing cache - or a stuck agent.</dd></div>
+    <div><dt>state diff</dt><dd>Before and after, compared. The grade.</dd></div>
+    <div><dt>step budget</dt><dd>Steps used against the minimum the task needs.</dd></div>
+  </dl>
+</section>
+
+<div class="next">
+  <div class="lbl">Next</div>
+  <p><strong>Memory and context.</strong> Three wasteful things in this trace, one cause. We will look at what an agent should remember within a run, across runs, and what it should deliberately forget &mdash; and then measure whether remembering actually helped, using this same suite.</p>
+</div>
+
+</div>
