@@ -132,8 +132,14 @@ PROFILE = (
     1,   # needs_sponsorship: cannot take a role that requires a work visa
     json.dumps(["Python", "FastAPI", "LangGraph", "React", "TypeScript",
                 "RAG", "Pinecone", "MCP", "evaluation", "Redis", "MongoDB"]),
+    # These must cover every TIER1 concept in postings.py. The grader treats a
+    # tier-1 role as one the agent should have found, so a tier-1 keyword with
+    # no matching target title here is a role we punish it for missing while
+    # never telling it to look. test_target_titles_cover_tier1 guards the drift.
     json.dumps(["Applied AI Engineer", "AI Engineer", "Agent Engineer",
-                "Forward Deployed Engineer", "Member of Technical Staff"]),
+                "Forward Deployed Engineer", "Member of Technical Staff",
+                "Research Engineer", "Evaluation Engineer", "LLM Engineer",
+                "Agentic Systems Engineer"]),
 )
 
 
@@ -147,6 +153,17 @@ class WorldSetup:
     fresh: int = 3
     extra_open_postings: int = 30
     staleness_days: int = 7
+
+    # Restrict the title pool for the non-applied postings. A world built only
+    # from excluded or too-senior titles is how we test ABSTENTION - plenty to
+    # look at, nothing worth picking.
+    only_titles: tuple[str, ...] | None = None
+    # Tools that fail on every call, to test error recovery on purpose.
+    broken_tools: tuple[str, ...] = ()
+    # Serve search results in reverse order. Paired with an identical task in
+    # natural order this is a permutation test: an agent reading position
+    # rather than content produces a different shortlist.
+    reverse_search_order: bool = False
 
     @property
     def total_applications(self) -> int:
@@ -197,11 +214,12 @@ def generate(seed: int, setup: WorldSetup, clock: Clock) -> GeneratedWorld:
 
     posting_no = 0
 
-    def add_posting(company_id: str, days_old: float, *, india_only: bool) -> str:
+    def add_posting(company_id: str, days_old: float, *, india_only: bool,
+                    pool: tuple[str, ...] | list[str] = TITLES) -> str:
         nonlocal posting_no
         posting_no += 1
         pid = f"job_{posting_no:04d}"
-        title = rng.choice(TITLES)
+        title = rng.choice(list(pool))
         company = next(c for c in out.companies if c[0] == company_id)
         location, country, work_mode = rng.choice(
             PLACES_INDIA if india_only else PLACES_ALL)
@@ -274,7 +292,9 @@ def generate(seed: int, setup: WorldSetup, clock: Clock) -> GeneratedWorld:
     # Open postings we have NOT applied to. This is the shortlister's search
     # space, so it carries the full spread of locations and titles.
     untouched = [c[0] for c in out.companies[n_applied_companies:]] or applied_companies
+    pool = setup.only_titles or TITLES
     for i in range(setup.extra_open_postings):
-        add_posting(untouched[i % len(untouched)], rng.uniform(1, 40), india_only=False)
+        add_posting(untouched[i % len(untouched)], rng.uniform(1, 40),
+                    india_only=False, pool=pool)
 
     return out

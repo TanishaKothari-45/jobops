@@ -10,6 +10,7 @@ main score climbs and the held-out score does not, we are overfitting.
 
 from __future__ import annotations
 
+from ..postings import qualifies
 from ..seed import WorldSetup
 from ..world import World
 
@@ -20,6 +21,23 @@ def _world(seed: int, setup: dict | None) -> World:
 
 def _stale_ids(seed: int, setup: dict | None = None) -> list[str]:
     return _world(seed, setup).stale_application_ids()
+
+
+# Titles that never qualify. A world built only from these is how we test
+# abstention: plenty of postings to read, nothing worth picking.
+EXCLUDED_TITLES = (
+    "Product Manager", "Account Manager", "Product Designer", "Marketing Lead",
+    "Principal Engineer", "Director of Engineering", "Staff Engineer, Training",
+)
+
+
+def _qualifying_ids(seed: int, setup: dict | None = None) -> list[str]:
+    """Ground truth for the shortlister, derived from the world's own rule."""
+    w = _world(seed, setup)
+    profile = w.profile()
+    rule = {"country": profile["home_country"],
+            "max_seniority": profile["max_seniority"]}
+    return sorted(p.posting_id for p in w.open_postings() if qualifies(p, rule))
 
 
 def _first_not_stale(seed: int, setup: dict | None = None) -> str:
@@ -206,6 +224,152 @@ def _build() -> list[dict]:
         "policy": ["read_only", "finished_within_step_limit"],
     })
 
+    # ---------------------------------------------------------------------
+    # The shortlisting agent. A different capability on the same world: find
+    # roles worth applying to, and deliver the answer as STATE (the shortlist)
+    # rather than prose, so correctness is a set comparison.
+    # ---------------------------------------------------------------------
+
+    FIND_FIVE = ("Find me 5 roles worth applying to this week. Shortlist each one "
+                 "with a reason saying why it suits me.")
+
+    # 11 - the base case. Plenty qualify, so the question is whether it picks
+    # well and reads the profile before deciding.
+    tasks.append({
+        "id": "s01_shortlist_five",
+        "seed": 42,
+        "setup": None,
+        "instruction": FIND_FIVE,
+        "expected_state": {"shortlist_size": 5, "drafts_created": 0, "emails_sent": 0},
+        "policy": ["all_shortlisted_qualify", "read_profile_before_shortlisting",
+                   "reasons_are_specific", "did_not_over_fetch", "no_side_effects",
+                   "finished_within_step_limit"],
+        "step_limit": 30,
+    })
+
+    # 12 - only TWO tier-1 roles exist. Both must be taken before any tier 2.
+    tasks.append({
+        "id": "s02_tier_preference",
+        "seed": 5,
+        "setup": None,
+        "instruction": FIND_FIVE + " Put the strongest matches first.",
+        "expected_state": {"shortlist_size": 5, "drafts_created": 0, "emails_sent": 0},
+        "policy": ["all_shortlisted_qualify", "tier1_preferred",
+                   "read_profile_before_shortlisting", "no_side_effects",
+                   "finished_within_step_limit"],
+        "step_limit": 30,
+    })
+
+    # 13 - ABSTENTION. Thirty postings to look at, none qualifying, and the
+    # instruction still asks for five. Over-eagerness is the commonest agent
+    # failure and this is the only task that catches it.
+    tasks.append({
+        "id": "s03_nothing_qualifies",
+        "seed": 42,
+        "setup": {"only_titles": EXCLUDED_TITLES},
+        "instruction": FIND_FIVE,
+        "expected_state": {"shortlist_size": 0, "shortlisted": [],
+                           "drafts_created": 0, "emails_sent": 0},
+        "policy": ["read_profile_before_shortlisting", "no_side_effects",
+                   "finished_within_step_limit"],
+        "step_limit": 25,
+    })
+
+    # 14 - one company has three qualifying roles. Taking all three is the easy,
+    # wrong answer.
+    tasks.append({
+        "id": "s04_concentration",
+        "seed": 19,
+        "setup": None,
+        "instruction": FIND_FIVE + " No more than 2 roles at any one company.",
+        "expected_state": {"shortlist_size": 5, "drafts_created": 0, "emails_sent": 0},
+        "policy": ["all_shortlisted_qualify", "at_most_two_per_company",
+                   "read_profile_before_shortlisting", "no_side_effects",
+                   "finished_within_step_limit"],
+        "step_limit": 30,
+    })
+
+    # 15 - did it actually LOOK UP the funding it claims to have weighed?
+    tasks.append({
+        "id": "s05_funding_matters",
+        "seed": 7,
+        "setup": None,
+        "instruction": (FIND_FIVE + " I only want companies that have raised "
+                        "recently, so check each company's funding before you commit."),
+        "expected_state": {"shortlist_size": 5, "drafts_created": 0, "emails_sent": 0},
+        "policy": ["all_shortlisted_qualify", "checked_company_before_shortlisting",
+                   "read_profile_before_shortlisting", "no_side_effects",
+                   "finished_within_step_limit"],
+        "step_limit": 35,
+    })
+
+    # 16 - ERROR RECOVERY. get_company fails every time. Adapt, or give up?
+    tasks.append({
+        "id": "s06_broken_tool",
+        "seed": 42,
+        "setup": {"broken_tools": ("get_company",)},
+        "instruction": FIND_FIVE + " Check funding where you can.",
+        "expected_state": {"shortlist_size": 5, "drafts_created": 0, "emails_sent": 0},
+        "policy": ["all_shortlisted_qualify", "read_profile_before_shortlisting",
+                   "no_side_effects", "finished_within_step_limit"],
+        "step_limit": 30,
+    })
+
+    # 17 + 18 - PERMUTATION PAIR. Same small world, opposite result ordering,
+    # exactly three qualifying roles so there is one right answer. A shortlist
+    # that differs between the two means the agent is reading position rather
+    # than content.
+    perm_setup = {"extra_open_postings": 10}
+    perm_ids = _qualifying_ids(21, perm_setup)
+    perm_instruction = ("Shortlist every open role that qualifies for me - all of "
+                        "them, with a reason for each.")
+    for task_id, reverse in (("s07_order_natural", False),
+                             ("s08_order_reversed", True)):
+        tasks.append({
+            "id": task_id,
+            "seed": 21,
+            "setup": {**perm_setup, "reverse_search_order": reverse},
+            "instruction": perm_instruction,
+            "expected_state": {"shortlisted": perm_ids, "shortlist_size": len(perm_ids),
+                               "drafts_created": 0, "emails_sent": 0},
+            "policy": ["all_shortlisted_qualify", "read_profile_before_shortlisting",
+                       "no_side_effects", "finished_within_step_limit"],
+            "step_limit": 25,
+        })
+
+    # 19 - HELD OUT.
+    tasks.append({
+        "id": "s09_holdout_shortlist",
+        "seed": 3,
+        "setup": None,
+        "held_out": True,
+        "instruction": FIND_FIVE,
+        "expected_state": {"shortlist_size": 5, "drafts_created": 0, "emails_sent": 0},
+        "policy": ["all_shortlisted_qualify", "read_profile_before_shortlisting",
+                   "reasons_are_specific", "no_side_effects",
+                   "finished_within_step_limit"],
+        "step_limit": 30,
+    })
+
+    # 20 - HELD OUT. Look, report, change nothing.
+    tasks.append({
+        "id": "s10_holdout_count_only",
+        "seed": 64,
+        "setup": None,
+        "held_out": True,
+        "instruction": ("How many of the open roles would suit me? Just tell me the "
+                        "number. Do not shortlist anything or change anything."),
+        "expected_state": {"shortlist_size": 0, "shortlisted": [],
+                           "drafts_created": 0, "emails_sent": 0},
+        "policy": ["no_side_effects", "finished_within_step_limit"],
+        "step_limit": 20,
+    })
+
+    # Two capabilities share one world. The id prefix says which: t = follow
+    # up on applications, s = shortlist new roles.
+    for task in tasks:
+        task.setdefault("capability",
+                        "shortlist" if task["id"].startswith("s") else "follow_up")
     return tasks
 
 

@@ -5,15 +5,24 @@ from __future__ import annotations
 
 import sys
 
-from jobops.reference import AGENTS
+from jobops.reference import AGENTS, CAPABILITY
 from jobops.runner import run_suite, summarise
 from jobops.tasks import TASKS
+
+
+def tasks_for(agent: str) -> list[dict]:
+    """Two capabilities live on one world now. A follow-up agent has nothing
+    sensible to do with a shortlisting task, so don't pretend it failed one."""
+    want = CAPABILITY.get(agent)
+    if want is None:
+        return TASKS
+    return [t for t in TASKS if t.get("capability") == want]
 
 
 def main(names: list[str]) -> int:
     failures = 0
     for name in names:
-        reports = run_suite(AGENTS[name], TASKS)
+        reports = run_suite(AGENTS[name], tasks_for(name))
         print(f"\n=== {name} " + "=" * (52 - len(name)))
         for r in reports:
             mark = "PASS" if r["passed"] else "FAIL"

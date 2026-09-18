@@ -272,7 +272,16 @@ class SimBackend:
 
     def call(self, tool: str, args: dict) -> Any:
         if tool not in TOOL_NAMES:
-            raise ToolError(f"no such tool: {tool}")
+            raise ToolError(
+                f"No tool named {tool!r}. Available: {', '.join(TOOL_NAMES)}.")
+        # Deliberately broken tools, so error recovery is something we test
+        # rather than something we hope about. The message reads like a real
+        # outage - recoverable, and it says so.
+        if tool in (self.world.setup.broken_tools or ()):
+            self.world.record_event(tool, args, ok=False, result="upstream unavailable")
+            raise ToolError(
+                f"{tool} is temporarily unavailable (upstream error). "
+                "Continue without it if you can.")
         handler = getattr(self, f"_{tool}")
         try:
             result = handler(**args)
@@ -305,6 +314,11 @@ class SimBackend:
         out = search(self.world.open_postings(), today=self.world.now(), **kwargs)
         if "error" in out:
             raise ToolError(out["error"])
+        if self.world.setup.reverse_search_order:
+            # Same set, opposite order. Paired with the natural-order task, a
+            # differing shortlist means the agent is reading position, not
+            # content.
+            out = {**out, "results": list(reversed(out["results"]))}
         return out
 
     def _fetch_posting(self, posting_id):

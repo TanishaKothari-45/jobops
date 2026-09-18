@@ -400,6 +400,23 @@ def title_tier(title: str) -> str | None:
 _SENIORITY_RANK = {"junior": 0, "mid": 1, "senior": 2, "staff_plus": 3}
 
 
+def qualifies_row(row: dict, profile: dict) -> bool:
+    """`qualifies` over a search RESULT dict - what an agent actually sees.
+
+    The grader judges `Posting` objects read from the world; an agent only ever
+    holds result rows. Both must reach the same verdict, so both go through the
+    same rule rather than two implementations that can drift apart.
+    """
+    return qualifies(Posting(
+        posting_id=row.get("posting_id", ""), company=row.get("company", ""),
+        title=row.get("title", ""), seniority=row.get("seniority", "mid"),
+        work_mode=row.get("work_mode", "onsite"), location=row.get("location", ""),
+        country=row.get("country"),
+        requires_relocation=bool(row.get("requires_relocation")),
+        posted_at="", url=row.get("url", ""), source=row.get("source", ""),
+    ), profile)
+
+
 def qualifies(posting: Posting, profile: dict) -> bool:
     """All four rules must hold. See docs/specs/search_postings.md section 7.
 
