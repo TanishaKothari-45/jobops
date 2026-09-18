@@ -1,0 +1,394 @@
+<title>Memory and Context</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --paper:#EFF2F1;--surface:#FFFFFF;--ink:#141C1C;--muted:#5A6968;--faint:#8A9897;--rule:#D5DCDA;
+  --accent:#0E6455;--accent-soft:#DCEAE5;--clay:#A8481C;--clay-soft:#F4E3DA;--gold:#7E6110;--gold-soft:#F2EAD3;
+  --display:"Fraunces",Georgia,serif;--body:"Source Serif 4",Georgia,serif;--mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#0E1414;--surface:#161E1E;--ink:#E6ECEA;--muted:#9AA9A7;--faint:#6F7E7C;--rule:#273433;
+  --accent:#5FC4AC;--accent-soft:#12302A;--clay:#E0906A;--clay-soft:#2E1D14;--gold:#D6B65C;--gold-soft:#2B2410;
+}}
+:root[data-theme="dark"]{
+  --paper:#0E1414;--surface:#161E1E;--ink:#E6ECEA;--muted:#9AA9A7;--faint:#6F7E7C;--rule:#273433;
+  --accent:#5FC4AC;--accent-soft:#12302A;--clay:#E0906A;--clay-soft:#2E1D14;--gold:#D6B65C;--gold-soft:#2B2410;
+}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.65;-webkit-font-smoothing:antialiased;}
+.wrap{max-width:790px;margin:0 auto;padding:56px 24px 96px;}
+.masthead{display:flex;flex-direction:column;gap:14px;padding-bottom:28px;border-bottom:2px solid var(--ink);}
+.kicker{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);}
+h1{font-family:var(--display);font-size:clamp(36px,7vw,54px);line-height:1.04;font-weight:600;margin:0;text-wrap:balance;letter-spacing:-.015em;}
+.standfirst{font-size:19px;color:var(--muted);margin:0;max-width:62ch;}
+.meta{font-family:var(--mono);font-size:11.5px;color:var(--faint);display:flex;flex-wrap:wrap;gap:18px;}
+section{padding-top:46px;display:flex;flex-direction:column;gap:16px;}
+h2{font-family:var(--display);font-size:27px;font-weight:600;line-height:1.2;margin:0;text-wrap:balance;display:flex;gap:14px;align-items:baseline;}
+h2 .num{font-family:var(--mono);font-size:13px;font-weight:400;color:var(--accent);flex:none;}
+h3{font-family:var(--display);font-size:19.5px;font-weight:600;margin:18px 0 0;}
+h4{font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin:14px 0 -4px;font-weight:600;}
+p{margin:0;}
+a{color:var(--accent);text-decoration:underline;text-underline-offset:2px;text-decoration-thickness:1px;}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+ul,ol{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:9px;}
+li::marker{color:var(--faint);}
+em.term{font-style:normal;font-family:var(--mono);font-size:.86em;background:var(--accent-soft);padding:1px 5px;border-radius:3px;}
+.analogy{background:var(--surface);border-left:3px solid var(--accent);padding:18px 22px;display:flex;flex-direction:column;gap:9px;}
+.analogy .lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);}
+.warn{background:var(--clay-soft);padding:18px 22px;display:flex;flex-direction:column;gap:9px;border-radius:2px;}
+.warn .lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--clay);}
+.pick{background:var(--gold-soft);border:1px solid var(--gold);padding:20px 22px;display:flex;flex-direction:column;gap:11px;border-radius:2px;}
+.pick .lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);}
+.case{background:var(--surface);border:1px solid var(--rule);padding:20px 22px;display:flex;flex-direction:column;gap:11px;}
+.case .name{font-family:var(--display);font-size:20px;font-weight:600;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;}
+.case .tag{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);background:var(--accent-soft);padding:2px 8px;border-radius:100px;}
+.case .row{display:flex;gap:10px;font-size:15px;}
+.case .row b{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);min-width:84px;flex:none;padding-top:4px;font-weight:400;}
+.cases{display:flex;flex-direction:column;gap:14px;}
+.scroll{overflow-x:auto;}
+table{border-collapse:collapse;width:100%;font-size:14.5px;min-width:580px;}
+th,td{text-align:left;vertical-align:top;padding:10px 13px;border-bottom:1px solid var(--rule);}
+th{font-family:var(--mono);font-size:10px;letter-spacing:.11em;text-transform:uppercase;color:var(--muted);font-weight:400;border-bottom:1px solid var(--ink);}
+td:first-child{font-weight:600;}
+pre{background:var(--surface);border:1px solid var(--rule);padding:16px 18px;overflow-x:auto;font-family:var(--mono);font-size:12.5px;line-height:1.6;margin:0;color:var(--ink);}
+.ask{display:flex;flex-direction:column;gap:7px;padding:16px 0;border-bottom:1px solid var(--rule);}
+.ask .q{font-weight:600;}
+.ask .a{color:var(--muted);font-size:15.5px;}
+.vocab{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);}
+.vocab > div{background:var(--surface);padding:14px 16px;display:flex;flex-direction:column;gap:5px;}
+.vocab dt{font-family:var(--mono);font-size:12.5px;color:var(--accent);font-weight:600;}
+.vocab dd{margin:0;font-size:14.5px;color:var(--muted);line-height:1.5;}
+.next{margin-top:44px;background:var(--surface);border:1px solid var(--rule);padding:22px;display:flex;flex-direction:column;gap:8px;}
+.next .lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);}
+.sources{padding-top:40px;border-top:1px solid var(--rule);margin-top:52px;display:flex;flex-direction:column;gap:14px;}
+.sources h2{font-size:19px;}
+.sources ol{font-size:14px;color:var(--muted);gap:9px;}
+</style>
+
+<div class="wrap">
+
+<header class="masthead">
+  <div class="kicker">Lesson 07 &middot; Agent Env Lab</div>
+  <h1>Memory and Context</h1>
+  <p class="standfirst">Why a bigger context window does not fix forgetting, the four kinds of memory an agent needs, how the real systems build them &mdash; and how anyone honestly measures whether memory helped.</p>
+  <div class="meta"><span>The #2 skill in the postings</span><span>~40 min</span><span>Sources at the end</span></div>
+</header>
+
+<section>
+  <h2><span class="num">7.1</span> <span>Context is a budget, not a container</span></h2>
+  <p>The instinct everyone starts with: models have million-token context windows now, so memory is solved &mdash; just put everything in.</p>
+  <p>Anthropic's framing in their context-engineering guidance is the correction: treat the context window as a <strong>finite resource with diminishing marginal returns</strong>, and treat the job as curating <em>the smallest set of high-signal tokens that maximises the chance of the outcome you want</em>.</p>
+  <p>Two words matter there. <strong>Finite</strong> &mdash; obviously. And <strong>diminishing</strong> &mdash; which is the part people miss. Adding tokens does not merely stop helping at some point. It starts hurting, well before you reach the limit.</p>
+
+  <div class="analogy">
+    <div class="lbl">In plain words</div>
+    <p>A desk. A bigger desk lets you spread out more papers, and for a while that helps. Past a point the papers you need are buried under papers you don't, and you start working from whatever is nearest your hands. The desk got bigger; your ability to find things got worse.</p>
+    <p>Nobody solves a messy desk by buying a bigger desk.</p>
+  </div>
+
+  <p>The discipline of deciding what goes on the desk is <strong>context engineering</strong>. It is the successor to prompt engineering: prompt engineering asks what to write in one message; context engineering asks what the model should be holding at every step of a long task.</p>
+</section>
+
+<section>
+  <h2><span class="num">7.2</span> <span>The evidence: context rot</span></h2>
+  <p>This is not a matter of taste. It has been measured twice, three years apart.</p>
+
+  <h4>Lost in the Middle (2023)</h4>
+  <p>Liu et al. placed the same relevant document at different positions inside a long context and measured retrieval accuracy. Performance traced a <strong>U-shape</strong>: strong when the answer sat near the beginning or the end, notably worse when it sat in the middle. The effect held across six model families including GPT-3.5-Turbo, GPT-4 and Claude, with drops of tens of points in the worst positions.</p>
+  <p>Read that again, because it is stranger than it sounds. <em>The information was in the context. The model could not use it, because of where it was.</em></p>
+
+  <h4>Context Rot (2025)</h4>
+  <p>Chroma's follow-up tested eighteen models across many input lengths and found degradation <strong>at every increment</strong>, not only near the limit &mdash; including on tasks so simple they were almost trivial. A model advertising a million-token window was already degrading at a small fraction of it.</p>
+
+  <div class="warn">
+    <div class="lbl">The sentence to remember</div>
+    <p><strong>Advertised context length is a capacity, not a competence.</strong> "It fits in the window" and "the model can use it reliably" are different claims, and only the first one is on the spec sheet.</p>
+    <p>This is also why Lesson 5's finding &mdash; that pruned contexts can <em>outperform</em> full history, not merely cost less &mdash; is not a paradox. Removing stale tokens removes distractors.</p>
+  </div>
+
+  <div class="analogy">
+    <div class="lbl">In plain words</div>
+    <p>Handing someone a 400-page report and asking about one sentence on page 190. They'll do well if it's in the summary or the conclusion. Buried in chapter seven, they skim past it &mdash; not because they can't read, but because attention is finite and the middle is where attention goes to die.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">7.3</span> <span>Four kinds of memory</span></h2>
+  <p>"Memory" is doing too much work as a word. The taxonomy most frameworks now share comes from <strong>CoALA</strong> (Cognitive Architectures for Language Agents); Letta, Mem0 and LangChain all build on it. Four types, and they behave completely differently.</p>
+
+  <div class="scroll">
+  <table>
+    <thead><tr><th>Type</th><th>Holds</th><th>Lives</th><th>In our agent</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>Working</td>
+        <td>What's in play right now: the task, recent tool results, current state</td>
+        <td>One run. Dies at the end.</td>
+        <td>The message list. Already exists.</td>
+      </tr>
+      <tr>
+        <td>Episodic</td>
+        <td>What happened, in sequence &mdash; past runs, decisions, outcomes</td>
+        <td>Across runs</td>
+        <td>"I shortlisted this role three weeks ago and heard nothing."</td>
+      </tr>
+      <tr>
+        <td>Semantic</td>
+        <td>Facts about the world, abstracted from any one episode</td>
+        <td>Across runs, indefinitely</td>
+        <td>"Gradient Works is Series C, raised 20 months ago."</td>
+      </tr>
+      <tr>
+        <td>Procedural</td>
+        <td>How to do things &mdash; skills, instructions, the agent's own playbook</td>
+        <td>Across everything</td>
+        <td>"Search per target title; one broad search truncates."</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <p>The distinction people blur most is <strong>episodic vs semantic</strong>, and it matters. Episodic is instance-specific with its context preserved: <em>on 14 September, a search for "Forward Deployed Engineer" returned nothing</em>. Semantic is the abstraction: <em>this pipeline has no forward-deployed roles</em>. One is a diary entry; the other is a fact distilled from many diary entries.</p>
+
+  <div class="analogy">
+    <div class="lbl">In plain words</div>
+    <p>A doctor. <strong>Working</strong> memory is the patient in front of them right now. <strong>Episodic</strong> is "this patient came in with the same complaint last March". <strong>Semantic</strong> is "this drug interacts badly with that one" &mdash; learned from many patients, attached to none of them. <strong>Procedural</strong> is how they run an examination, which improved over twenty years without them ever writing it down.</p>
+    <p>Lose any one of the four and you get a recognisably broken doctor.</p>
+  </div>
+
+  <p>Procedural memory is the one worth noticing, because it is newest and most interesting. LangChain's LangMem implements it as a <strong>prompt optimiser</strong>: the agent updates its own instructions based on how previous runs went. The prompt stops being a fixed artefact and becomes something the agent edits.</p>
+</section>
+
+<section>
+  <h2><span class="num">7.4</span> <span>Three operations, and when to run them</span></h2>
+  <p>Every memory system does three things: <strong>write</strong>, <strong>update</strong>, <strong>retrieve</strong>. The design decision that actually matters is <em>when</em> the writing happens.</p>
+
+  <h4>Hot path</h4>
+  <p>The agent writes memories during the run, as part of its work. Immediate, and the agent controls what is worth keeping. Cost: latency on every run, and the model spending attention on bookkeeping instead of the task.</p>
+
+  <h4>Background</h4>
+  <p>A separate process reads finished conversations and extracts memories afterwards. No latency cost to the user, and it can afford to be thorough. Cost: complexity, plus a window in which something learned is not yet available.</p>
+
+  <div class="analogy">
+    <div class="lbl">In plain words</div>
+    <p>Taking notes during the meeting versus writing the minutes after. Notes during keep you honest but slow the meeting. Minutes after are better written and arrive too late to help anyone still in the room.</p>
+    <p>Serious systems do both: rough notes in the moment, proper consolidation later. Which is also, roughly, what sleep is for.</p>
+  </div>
+
+  <p>And <strong>retrieval</strong> is where most memory systems quietly fail. Storing is easy. Deciding <em>which three memories out of four thousand belong in this turn's context</em> is the same hard problem as retrieval in RAG &mdash; which is why memory and retrieval are one discipline wearing two names.</p>
+</section>
+
+<section>
+  <h2><span class="num">7.5</span> <span>The context ladder</span></h2>
+  <p>Before reaching for a memory system, work down this list. Each rung is cheaper and safer than the one below it, and most teams jump straight to the bottom.</p>
+
+  <ol>
+    <li><strong>Don't create the problem.</strong> Bounded tool returns, pagination, pre-computed fields, explicit truncation counts. Lesson 4. Free, and it removes most of the pressure.</li>
+    <li><strong>Tool result clearing.</strong> Drop the bodies of old tool results, keep the record that the call happened. Anthropic describes this as one of the safest lightweight forms of compaction, and it now ships as a platform feature rather than something you hand-roll.</li>
+    <li><strong>Compaction.</strong> Summarise the conversation so far and continue from the summary. Powerful and <em>lossy</em> &mdash; you are deciding, irreversibly, what mattered.</li>
+    <li><strong>Structured note-taking.</strong> The agent writes notes to a file outside the context and pulls them back when needed. Anthropic calls this agentic memory and highlights it as persistence with minimal overhead. Closer to a notebook than a database.</li>
+    <li><strong>An external memory store.</strong> A real system with write, update, retrieve and forgetting. Everything below this line is a component you now own and must evaluate.</li>
+  </ol>
+
+  <div class="warn">
+    <div class="lbl">Why the order matters</div>
+    <p>Compaction is a one-way door. Once the transcript is a summary, whatever the summariser dropped is gone and no later step recovers it.</p>
+    <p>Anthropic's managed-agent design avoids exactly this: the session log lives <em>outside</em> the context window and the agent interrogates it on demand via <em class="term">getEvents()</em>, so it never has to make an irreversible decision about what to keep. Keeping the raw record and retrieving from it beats summarising it away.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">7.6</span> <span>What the platforms actually ship</span></h2>
+  <p>Named primitives, so you can say them precisely.</p>
+
+  <div class="cases">
+    <div class="case">
+      <div class="name">Context editing <span class="tag">Anthropic</span></div>
+      <div class="row"><b>Does</b><span>Automatically clears stale tool calls and results from the window as it fills, keeping the conversational thread intact.</span></div>
+      <div class="row"><b>Why</b><span>Tool outputs are the bulk of what accumulates, and old ones are the least useful tokens present.</span></div>
+    </div>
+
+    <div class="case">
+      <div class="name">The memory tool <span class="tag">Anthropic</span></div>
+      <div class="row"><b>Does</b><span>Lets the model write to and read from files that persist outside the context window, so it can learn across sessions.</span></div>
+      <div class="row"><b>Shape</b><span>A file system, not a vector store. The agent decides what to write and what to call it.</span></div>
+    </div>
+
+    <div class="case">
+      <div class="name">Memory for Managed Agents <span class="tag">Anthropic &middot; Apr 2026</span></div>
+      <div class="row"><b>Does</b><span>Stores what agents learn across sessions as files, with per-write audit logs, programmatic access, and one agent able to share findings with another.</span></div>
+      <div class="row"><b>Notice</b><span>The <em>audit log per write</em>. Memory that changes an agent's future behaviour is production state, and production state needs provenance. Almost no open framework does this yet.</span></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">7.7</span> <span>The framework landscape</span></h2>
+  <p>Four names worth knowing, and what each is actually for.</p>
+
+  <div class="scroll">
+  <table>
+    <thead><tr><th>System</th><th>Shape</th><th>Best at</th></tr></thead>
+    <tbody>
+      <tr><td>Mem0</td><td>Managed extract-and-store memory layer</td><td>Personalisation. Largest community, strongest compliance posture.</td></tr>
+      <tr><td>Zep / Graphiti</td><td>Temporal knowledge graph</td><td>Temporal reasoning &mdash; facts that change over time and need "as of when".</td></tr>
+      <tr><td>Letta</td><td>Agent runtime with memory as a first-class part of the agent</td><td>Long-running agents that live for months.</td></tr>
+      <tr><td>LangMem</td><td>Library inside LangChain / LangGraph</td><td>Semantic, episodic and procedural memory if you are already in that ecosystem.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <p>Zep's temporal-graph approach has measured better than flat extraction on reasoning that depends on <em>when</em> something was true &mdash; a reported <strong>63.8% against 49.0% on LongMemEval</strong>, roughly a fifteen-point gap, in a comparison run on the same setup.</p>
+
+  <div class="warn">
+    <div class="lbl">How to read vendor benchmark numbers &mdash; the interview-grade point</div>
+    <p>Those same two vendors now publish figures around <strong>92.5%</strong> and <strong>94.7%</strong>. Those numbers are <em>not comparable to each other</em>: different underlying models, different evaluation setups, each measured by the vendor selling the thing.</p>
+    <p>Everything from Lesson 3 applies. A score without the model, the dataset version and the harness beside it is marketing, not measurement. When someone quotes a memory benchmark at you, the correct question is "against which model, on which split, scored by whom?"</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">7.8</span> <span>How memory is measured</span></h2>
+  <p>Three benchmarks are the standard vocabulary.</p>
+  <ul>
+    <li><strong>LoCoMo</strong> &mdash; very long multi-session conversations; can the agent answer questions spanning them?</li>
+    <li><strong>LongMemEval</strong> &mdash; long-term memory across sessions, with categories for information extraction, multi-session reasoning, temporal reasoning and knowledge updates. The temporal and update categories are where flat storage falls over.</li>
+    <li><strong>BEAM</strong> &mdash; the newer entrant, aimed at the same space.</li>
+  </ul>
+  <p>The category that matters most in production is <strong>knowledge updates</strong>: she <em>was</em> targeting frontend roles, she is <em>now</em> targeting applied AI. A memory system that stores both facts and retrieves the stale one is worse than no memory, because the agent now acts confidently on something false.</p>
+
+  <div class="pick">
+    <div class="lbl">The measurement that actually matters for you</div>
+    <p>Public benchmarks tell you whether a system is credible. They cannot tell you whether memory helps <em>your</em> agent on <em>your</em> tasks.</p>
+    <p>That answer comes from the thing you already built: run your suite with memory and without, same tasks, same seeds, and report the difference with its variance. That A/B is exactly what Wispr Flow's posting means by <em>"enhance how context, instructions, skills, and memory are delivered to agents while measuring performance improvements."</em></p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">7.9</span> <span>Forgetting is a feature</span></h2>
+  <p>Every memory system is eventually judged on what it throws away. Four mechanisms:</p>
+  <ul>
+    <li><strong>Staleness / TTL.</strong> Facts have shelf lives. Funding stage is good for months; "currently interviewing at X" is good for weeks.</li>
+    <li><strong>Contradiction resolution.</strong> When a new fact conflicts with an old one, something must decide. Newest-wins is the usual default and is wrong often enough to matter.</li>
+    <li><strong>Provenance.</strong> Every memory should carry where it came from and when. Without it you cannot audit a bad decision backwards &mdash; and Anthropic shipping per-write audit logs is a signal about where this is heading.</li>
+    <li><strong>Decay by usefulness.</strong> Memories never retrieved are noise paying rent.</li>
+  </ul>
+
+  <div class="analogy">
+    <div class="lbl">In plain words</div>
+    <p>A colleague who remembers everything you ever told them, including the bit you corrected six months ago, and cannot tell which version came later. That is not a good memory. That is a liability with a filing cabinet.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">7.10</span> <span>How memory systems fail</span></h2>
+  <div class="scroll">
+  <table>
+    <thead><tr><th>Failure</th><th>What it looks like</th><th>Defence</th></tr></thead>
+    <tbody>
+      <tr><td>Stale retrieval</td><td>Acts on a fact that was true last month</td><td>TTL, timestamps on every memory, temporal retrieval</td></tr>
+      <tr><td>Memory poisoning</td><td>Something false gets written, then treated as fact forever</td><td>Provenance, confidence, never writing from untrusted content unchecked</td></tr>
+      <tr><td>Bloat</td><td>Thousands of memories, retrieval precision collapses</td><td>Consolidation, decay, retrieval limits</td></tr>
+      <tr><td>Wrong retrieval</td><td>Stores the right thing, fetches the wrong three</td><td>This is a retrieval problem. Evaluate it as one.</td></tr>
+      <tr><td>Lossy compaction</td><td>The summariser dropped the one line that mattered</td><td>Keep the raw log, retrieve from it, summarise last</td></tr>
+      <tr><td>Silent divergence</td><td>Two runs behave differently and nobody knows why</td><td>Memory is state: version it, log writes, keep runs replayable</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="warn">
+    <div class="lbl">The one that will bite your evals</div>
+    <p><strong>Memory breaks determinism.</strong> Lesson 2's whole argument was a world that behaves identically every run &mdash; and memory is, by design, state that persists between runs. Run the same task twice and the second run differs, because the first one happened.</p>
+    <p>So memory must be part of the seeded world, resettable by <em class="term">reset()</em> like everything else. An eval suite that leaks memory between tasks is measuring an accident.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">7.11</span> <span>Vocabulary you now own</span></h2>
+  <dl class="vocab">
+    <div><dt>context engineering</dt><dd>Curating the smallest high-signal token set for each step.</dd></div>
+    <div><dt>context rot</dt><dd>Accuracy degrading as input length grows, at every increment.</dd></div>
+    <div><dt>lost in the middle</dt><dd>The U-shaped curve: ends attended to, middle neglected.</dd></div>
+    <div><dt>working memory</dt><dd>What is in play this run. Dies at the end.</dd></div>
+    <div><dt>episodic memory</dt><dd>What happened, in sequence, with its context kept.</dd></div>
+    <div><dt>semantic memory</dt><dd>Facts abstracted away from any one episode.</dd></div>
+    <div><dt>procedural memory</dt><dd>How to do things. The agent's own improving playbook.</dd></div>
+    <div><dt>hot path vs background</dt><dd>Writing memories during the run, or after it.</dd></div>
+    <div><dt>compaction</dt><dd>Summarising history to continue. Lossy, one-way.</dd></div>
+    <div><dt>context editing</dt><dd>Automatically clearing stale tool results from the window.</dd></div>
+    <div><dt>structured note-taking</dt><dd>Agent writes notes outside the context, reads them back.</dd></div>
+    <div><dt>temporal knowledge graph</dt><dd>Memory that knows when each fact was true.</dd></div>
+    <div><dt>knowledge update</dt><dd>A new fact replacing an old one. Where flat memory fails.</dd></div>
+    <div><dt>provenance</dt><dd>Where a memory came from, and when.</dd></div>
+    <div><dt>memory poisoning</dt><dd>A false memory written once and trusted forever.</dd></div>
+  </dl>
+</section>
+
+<section>
+  <h2><span class="num">7.12</span> <span>Interview answers, out loud</span></h2>
+  <div class="ask">
+    <div class="q">"Context windows are huge now. Isn't memory solved?"</div>
+    <div class="a">No &mdash; capacity isn't competence. Liu et al. showed a U-shaped curve where information in the middle of a long context gets used far worse than the same information at either end, across six model families. Chroma's follow-up found degradation at every input-length increment, not just near the limit. So the discipline is curating the smallest high-signal context, not filling the biggest one.</div>
+  </div>
+  <div class="ask">
+    <div class="q">"What kinds of memory does an agent need?"</div>
+    <div class="a">Four, and CoALA is the shared vocabulary. Working memory is the current run. Episodic is what happened and when, context preserved. Semantic is facts abstracted from episodes. Procedural is how to do things &mdash; and that one is interesting because systems like LangMem implement it as the agent rewriting its own instructions based on how past runs went. They fail differently, so they need storing and retrieving differently.</div>
+  </div>
+  <div class="ask">
+    <div class="q">"Would you use compaction?"</div>
+    <div class="a">Last, not first. I'd go bounded tool returns, then tool-result clearing, then structured notes outside the window, and only then compaction &mdash; because compaction is a one-way door: whatever the summariser dropped is unrecoverable. Anthropic's managed-agent design makes that point by keeping the session log outside the context and letting the agent query it on demand, so it never has to decide irreversibly what to keep.</div>
+  </div>
+  <div class="ask">
+    <div class="q">"A vendor says their memory system scores 94% on LoCoMo. Thoughts?"</div>
+    <div class="a">I'd ask which model, which split, and who ran the harness &mdash; those figures are usually self-reported on different setups, so two vendors' headline numbers aren't comparable to each other. An earlier like-for-like comparison put a temporal-graph system about fifteen points above flat extraction on LongMemEval, which is more informative than either headline. And none of it tells me whether memory helps my agent, which is an A/B on my own suite.</div>
+  </div>
+  <div class="ask">
+    <div class="q">"How would you evaluate memory?"</div>
+    <div class="a">Same agent, same task suite, same seeds, with memory and without, several runs each, and report the delta with its variance. Then break it down by category &mdash; especially knowledge updates, where a stale fact retrieved confidently is worse than no memory at all. And I'd make memory part of the seeded world so it resets between tasks, otherwise the suite measures leakage rather than capability.</div>
+  </div>
+  <div class="ask">
+    <div class="q">"What's the most dangerous memory failure?"</div>
+    <div class="a">Poisoning. Something false &mdash; or something planted in untrusted tool output &mdash; gets written once and is then treated as established fact in every future run. Because it arrives as memory rather than as input, nothing downstream questions it. Defences are provenance on every write, confidence levels, and never writing to memory straight from untrusted content.</div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">7.13</span> <span>What we build</span></h2>
+  <p>We already have the evidence for what is needed, from a run of our own that <em>passed every check</em>: the agent looked up the same company twice, ran four searches that returned nothing and learned nothing from them, and spent twenty-one steps making five decisions.</p>
+
+  <div class="pick">
+    <div class="lbl">Decisions for our memory module</div>
+    <ul>
+      <li><strong>Start at rung one, not rung five.</strong> Our tool returns are already bounded with truncation counts. The next cheapest win is a within-run cache so <em class="term">get_company</em> is never called twice for the same company.</li>
+      <li><strong>Semantic memory first</strong>, because it is the clearest win: company facts with a TTL. Funding does not change in four steps and barely changes in twelve months.</li>
+      <li><strong>Then episodic</strong> &mdash; which roles were shortlisted before and what came of them. That is the memory that makes the product genuinely useful to you daily.</li>
+      <li><strong>Procedural is a stretch goal.</strong> "This pipeline has no forward-deployed roles" is a real learned procedure, and it would remove four wasted steps per run.</li>
+      <li><strong>Memory lives in the seeded world and resets with it.</strong> Non-negotiable, or every eval number after this point is noise.</li>
+      <li><strong>Every memory carries provenance and a timestamp</strong> from the first row written. Retrofitting provenance is the same trap as retrofitting prompt versions.</li>
+      <li><strong>The deliverable is the A/B</strong>, not the feature. Same suite, same seeds, with and without, reported with variance. That number <em>is</em> the module.</li>
+    </ul>
+  </div>
+</section>
+
+<div class="next">
+  <div class="lbl">Next</div>
+  <p>You pick which memory types we build and in what order. Then the design, the failing tests, and the A/B that says whether any of it helped.</p>
+</div>
+
+<div class="sources">
+  <h2>Sources</h2>
+  <ol>
+    <li>Liu, Lin, Hewitt, Paranjape, Bevilacqua, Petroni, Liang, <em>Lost in the Middle: How Language Models Use Long Contexts</em>, TACL 2024 &mdash; the U-shaped position curve across six model families. <a href="https://arxiv.org/abs/2307.03172">arxiv.org/abs/2307.03172</a> &middot; <a href="https://aclanthology.org/2024.tacl-1.9/">ACL Anthology</a></li>
+    <li>Chroma Research, <em>Context Rot: How Increasing Input Tokens Impacts LLM Performance</em> &mdash; degradation measured at every input-length increment across eighteen models, not only near the limit. <a href="https://research.trychroma.com/context-rot">research.trychroma.com/context-rot</a></li>
+    <li>Anthropic, <em>Effective context engineering for AI agents</em> &mdash; context as a finite resource with diminishing returns; compaction, structured note-taking, and tool-result clearing as the safest lightweight compaction. <a href="https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents">anthropic.com/engineering</a></li>
+    <li>Anthropic, <em>Scaling Managed Agents: Decoupling the brain from the hands</em> &mdash; the session log kept outside the context window and interrogated via <em>getEvents()</em>, avoiding irreversible compaction. <a href="https://www.anthropic.com/engineering/managed-agents">anthropic.com/engineering/managed-agents</a></li>
+    <li>Anthropic, <em>Context management on the Claude Developer Platform</em> &mdash; the memory tool and context editing; Memory for Managed Agents (public beta, April 2026) with per-write audit logs and cross-agent sharing. <a href="https://www.anthropic.com/news/context-management">anthropic.com/news/context-management</a></li>
+    <li>Sumers, Yao, Narasimhan, Griffiths, <em>Cognitive Architectures for Language Agents (CoALA)</em> &mdash; the working / episodic / semantic / procedural taxonomy most frameworks build on. <a href="https://arxiv.org/abs/2309.02427">arxiv.org/abs/2309.02427</a></li>
+    <li>LangChain, <em>Memory for agents</em>, and the LangMem documentation &mdash; hot-path vs background writing, and procedural memory as a prompt optimiser. <a href="https://www.langchain.com/blog/memory-for-agents">langchain.com/blog/memory-for-agents</a> &middot; <a href="https://docs.langchain.com/oss/python/concepts/memory">docs.langchain.com</a></li>
+    <li>Wu et al., <em>LongMemEval: Benchmarking Chat Assistants on Long-Term Interactive Memory</em> &mdash; information extraction, multi-session reasoning, temporal reasoning, knowledge updates. <a href="https://arxiv.org/abs/2410.10813">arxiv.org/abs/2410.10813</a></li>
+    <li>Maharana et al., <em>Evaluating Very Long-Term Conversational Memory of LLM Agents (LoCoMo)</em>. <a href="https://arxiv.org/abs/2402.17753">arxiv.org/abs/2402.17753</a></li>
+    <li>Rasmussen et al., <em>Zep: A Temporal Knowledge Graph Architecture for Agent Memory</em> &mdash; the like-for-like LongMemEval comparison against flat extraction. <a href="https://arxiv.org/abs/2501.13956">arxiv.org/abs/2501.13956</a></li>
+    <li>Mem0, <em>LoCoMo vs LongMemEval vs BEAM: the 2026 AI memory benchmark guide</em> &mdash; vendor-published figures, and why the setups differ. <a href="https://mem0.ai/blog/ai-memory-benchmarks-in-2026">mem0.ai/blog</a></li>
+  </ol>
+</div>
+
+</div>
