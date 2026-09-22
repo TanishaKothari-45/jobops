@@ -1,0 +1,390 @@
+<title>Retrieval and RAG</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --paper:#EFF2F1;--surface:#FFFFFF;--ink:#141C1C;--muted:#5A6968;--faint:#8A9897;--rule:#D5DCDA;
+  --accent:#0E6455;--accent-soft:#DCEAE5;--clay:#A8481C;--clay-soft:#F4E3DA;--gold:#7E6110;--gold-soft:#F2EAD3;
+  --display:"Fraunces",Georgia,serif;--body:"Source Serif 4",Georgia,serif;--mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#0E1414;--surface:#161E1E;--ink:#E6ECEA;--muted:#9AA9A7;--faint:#6F7E7C;--rule:#273433;
+  --accent:#5FC4AC;--accent-soft:#12302A;--clay:#E0906A;--clay-soft:#2E1D14;--gold:#D6B65C;--gold-soft:#2B2410;
+}}
+:root[data-theme="dark"]{
+  --paper:#0E1414;--surface:#161E1E;--ink:#E6ECEA;--muted:#9AA9A7;--faint:#6F7E7C;--rule:#273433;
+  --accent:#5FC4AC;--accent-soft:#12302A;--clay:#E0906A;--clay-soft:#2E1D14;--gold:#D6B65C;--gold-soft:#2B2410;
+}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.65;-webkit-font-smoothing:antialiased;}
+.wrap{max-width:790px;margin:0 auto;padding:56px 24px 96px;}
+.masthead{display:flex;flex-direction:column;gap:14px;padding-bottom:28px;border-bottom:2px solid var(--ink);}
+.kicker{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);}
+h1{font-family:var(--display);font-size:clamp(36px,7vw,54px);line-height:1.04;font-weight:600;margin:0;text-wrap:balance;letter-spacing:-.015em;}
+.standfirst{font-size:19px;color:var(--muted);margin:0;max-width:62ch;}
+.meta{font-family:var(--mono);font-size:11.5px;color:var(--faint);display:flex;flex-wrap:wrap;gap:18px;}
+section{padding-top:46px;display:flex;flex-direction:column;gap:16px;}
+h2{font-family:var(--display);font-size:27px;font-weight:600;line-height:1.2;margin:0;text-wrap:balance;display:flex;gap:14px;align-items:baseline;}
+h2 .num{font-family:var(--mono);font-size:13px;font-weight:400;color:var(--accent);flex:none;}
+h3{font-family:var(--display);font-size:19.5px;font-weight:600;margin:18px 0 0;}
+h4{font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin:14px 0 -4px;font-weight:600;}
+p{margin:0;}
+a{color:var(--accent);text-decoration:underline;text-underline-offset:2px;text-decoration-thickness:1px;}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+ul,ol{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:9px;}
+li::marker{color:var(--faint);}
+em.term{font-style:normal;font-family:var(--mono);font-size:.86em;background:var(--accent-soft);padding:1px 5px;border-radius:3px;}
+.analogy{background:var(--surface);border-left:3px solid var(--accent);padding:18px 22px;display:flex;flex-direction:column;gap:9px;}
+.analogy .lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);}
+.warn{background:var(--clay-soft);padding:18px 22px;display:flex;flex-direction:column;gap:9px;border-radius:2px;}
+.warn .lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--clay);}
+.pick{background:var(--gold-soft);border:1px solid var(--gold);padding:20px 22px;display:flex;flex-direction:column;gap:11px;border-radius:2px;}
+.pick .lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);}
+.ladder{display:flex;flex-direction:column;gap:1px;background:var(--rule);border:1px solid var(--rule);}
+.ladder > div{background:var(--surface);padding:14px 18px;display:flex;gap:16px;align-items:baseline;flex-wrap:wrap;}
+.ladder .what{font-weight:600;flex:1;min-width:210px;}
+.ladder .rate{font-family:var(--mono);font-size:17px;font-weight:600;color:var(--accent);font-variant-numeric:tabular-nums;}
+.ladder .cut{font-family:var(--mono);font-size:12px;color:var(--faint);min-width:92px;text-align:right;}
+.scroll{overflow-x:auto;}
+table{border-collapse:collapse;width:100%;font-size:14.5px;min-width:600px;}
+th,td{text-align:left;vertical-align:top;padding:10px 13px;border-bottom:1px solid var(--rule);}
+th{font-family:var(--mono);font-size:10px;letter-spacing:.11em;text-transform:uppercase;color:var(--muted);font-weight:400;border-bottom:1px solid var(--ink);}
+td:first-child{font-weight:600;}
+.ask{display:flex;flex-direction:column;gap:7px;padding:16px 0;border-bottom:1px solid var(--rule);}
+.ask .q{font-weight:600;}
+.ask .a{color:var(--muted);font-size:15.5px;}
+.vocab{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);}
+.vocab > div{background:var(--surface);padding:14px 16px;display:flex;flex-direction:column;gap:5px;}
+.vocab dt{font-family:var(--mono);font-size:12.5px;color:var(--accent);font-weight:600;}
+.vocab dd{margin:0;font-size:14.5px;color:var(--muted);line-height:1.5;}
+.next{margin-top:44px;background:var(--surface);border:1px solid var(--rule);padding:22px;display:flex;flex-direction:column;gap:8px;}
+.next .lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);}
+.sources{padding-top:40px;border-top:1px solid var(--rule);margin-top:52px;display:flex;flex-direction:column;gap:14px;}
+.sources h2{font-size:19px;}
+.sources ol{font-size:14px;color:var(--muted);gap:9px;}
+</style>
+
+<div class="wrap">
+
+<header class="masthead">
+  <div class="kicker">Lesson 10 &middot; Agent Env Lab</div>
+  <h1>Retrieval and RAG</h1>
+  <p class="standfirst">Five stages, each with its own class of bug. How to tell a retrieval failure from a generation failure &mdash; and the measured ladder that takes a retrieval system from mediocre to good.</p>
+  <div class="meta"><span>~40 min</span><span>Sources at the end</span></div>
+</header>
+
+<section>
+  <h2><span class="num">10.1</span> <span>What retrieval is for &mdash; and when not to</span></h2>
+  <p>Retrieval exists to put <em>the right few hundred tokens</em> in front of a model that has no idea your data exists. That is the whole job. Everything else is implementation.</p>
+  <p>Which means the first question is not "how do I build RAG", it is <strong>do I need retrieval at all?</strong> Four alternatives, each better than RAG in its own case:</p>
+
+  <div class="scroll">
+  <table>
+    <thead><tr><th>Instead of RAG</th><th>Use when</th><th>Why it wins</th></tr></thead>
+    <tbody>
+      <tr><td>A database query</td><td>The answer is a row, not a passage</td><td>"How many applications are open?" is SQL. Embedding it is absurd and less accurate.</td></tr>
+      <tr><td>Stuffing the whole document</td><td>The corpus is small and stable &mdash; one policy doc, one spec</td><td>No pipeline, no chunking bugs, no retrieval failures. Costs tokens; caching makes that cheap.</td></tr>
+      <tr><td>A tool call</td><td>The data is live and structured</td><td>An API returns today's truth. An index returns whenever you last rebuilt it.</td></tr>
+      <tr><td>Fine-tuning</td><td>You need a <em>behaviour</em> or format, not a fact</td><td>Fine-tuning teaches style and structure. It is a poor way to teach facts, which change.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="analogy">
+    <div class="lbl">In plain words</div>
+    <p>Retrieval is a library. If the answer is in one book you already own, hand over the book. If the answer is a number in a ledger, look it up in the ledger. You build a library when there is genuinely more material than one person can hold and you cannot predict which page will matter.</p>
+  </div>
+
+  <p><strong>Worth saying in an interview:</strong> the most common failure in RAG projects is building one for a problem that was a SQL query.</p>
+</section>
+
+<section>
+  <h2><span class="num">10.2</span> <span>Five stages, five classes of bug</span></h2>
+  <p>A retrieval pipeline is five steps, and a failure at any one looks identical from outside &mdash; a wrong answer. Knowing which stage broke is most of the skill.</p>
+
+  <div class="scroll">
+  <table>
+    <thead><tr><th>Stage</th><th>Does</th><th>Fails as</th></tr></thead>
+    <tbody>
+      <tr><td>1. Chunk</td><td>Split documents into retrievable units</td><td>The answer is split across two chunks, so neither one answers the question</td></tr>
+      <tr><td>2. Embed &amp; index</td><td>Turn chunks into vectors, store them</td><td>Domain vocabulary the embedding model never saw; a stale index</td></tr>
+      <tr><td>3. Retrieve</td><td>Find candidates for a query</td><td>The right chunk exists and is not returned</td></tr>
+      <tr><td>4. Rerank</td><td>Reorder candidates by true relevance</td><td>The right chunk is returned at rank 19 and gets cut</td></tr>
+      <tr><td>5. Generate</td><td>Answer using the chunks</td><td>The right chunk was supplied and the model ignored or contradicted it</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="warn">
+    <div class="lbl">The single most useful diagnostic habit</div>
+    <p>When an answer is wrong, ask one question first: <strong>was the correct chunk in the context?</strong></p>
+    <p>If <em>no</em> &mdash; it is a retrieval bug, and nothing you do to the prompt will fix it. If <em>yes</em> &mdash; it is a generation bug, and nothing you do to the retriever will fix it.</p>
+    <p>People burn weeks tuning chunk sizes to fix what was a prompt problem, and rewriting prompts to fix what was a chunking problem. One check tells you which half of the system to work on.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">10.3</span> <span>Chunking decides everything downstream</span></h2>
+  <p>The most consequential and least glamorous decision. A chunk is the unit that gets retrieved, so a badly cut chunk cannot be rescued by anything later in the pipeline.</p>
+
+  <h4>The core trade-off</h4>
+  <ul>
+    <li><strong>Small chunks</strong> &mdash; precise, high signal density, and they lose the context that made them meaningful. A paragraph reading "this does not apply to enterprise customers" is dangerous without the section it qualifies.</li>
+    <li><strong>Large chunks</strong> &mdash; keep context, and dilute it. One relevant sentence in two thousand tokens drags the embedding toward everything else in the chunk.</li>
+  </ul>
+  <p><strong>Overlap</strong> is the usual mitigation: chunks share a window so a boundary cannot cleanly sever an idea. It costs storage and creates near-duplicates, which is one more thing for the reranker to sort out.</p>
+
+  <h4>The strategies, in increasing sophistication</h4>
+  <div class="scroll">
+  <table>
+    <thead><tr><th>Strategy</th><th>Splits on</th><th>Good for</th><th>Weakness</th></tr></thead>
+    <tbody>
+      <tr><td>Fixed size</td><td>Token count</td><td>A baseline; uniform corpora</td><td>Cuts mid-sentence, mid-table, mid-idea</td></tr>
+      <tr><td>Recursive</td><td>Paragraph, then sentence, then word</td><td>The sensible default for prose</td><td>Still blind to meaning</td></tr>
+      <tr><td>Document structure</td><td>Headings, sections, list items</td><td>Docs, specs, policies &mdash; anything with real structure</td><td>Needs a parser per format; sections vary wildly in size</td></tr>
+      <tr><td>Semantic</td><td>Where the topic shifts, detected by embeddings</td><td>Unstructured long-form text</td><td>Costs an embedding pass over everything; boundaries still surprise you</td></tr>
+      <tr><td>Late chunking</td><td>Embed the whole document first, <em>then</em> split and pool</td><td>Long documents with long-range dependencies</td><td>Needs a long-context embedding model</td></tr>
+      <tr><td>Agentic chunking</td><td>A model chooses boundaries from structure and intent</td><td>Heterogeneous corpora where one splitter cannot fit all</td><td>Expensive, non-deterministic, needs its own evaluation</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <p><strong>Late chunking</strong> is worth understanding because it inverts the usual order. Classic pipelines chunk then embed, so each chunk embedding only ever saw its own text. Late chunking embeds the full document first and splits the token sequence afterwards, pooling each slice &mdash; so every chunk embedding <em>saw the whole surrounding document</em>. Long-range dependencies survive, which is exactly the failure that sinks chunk-then-embed.</p>
+
+  <div class="analogy">
+    <div class="lbl">In plain words</div>
+    <p>Cutting a film into clips. Cut every 90 seconds and you slice through the middle of scenes. Cut on scene boundaries and each clip stands alone. Watch the whole film first and <em>then</em> cut, and you can label each clip with what it means in the story &mdash; which is what late chunking buys.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">10.4</span> <span>Embeddings</span></h2>
+  <ul>
+    <li><strong>Model choice matters more than dimensionality.</strong> A model that has seen your domain's vocabulary beats a larger one that has not.</li>
+    <li><strong>Dimensions trade recall against cost.</strong> More dimensions mean better separation, more storage, slower search. Many current models allow truncating dimensions with graceful degradation &mdash; measure rather than assume you need full width.</li>
+    <li><strong>Changing model means re-embedding everything.</strong> Vectors from different models are not comparable at all. Budget that migration before you choose, because you will want to switch.</li>
+    <li><strong>Symmetric vs asymmetric.</strong> Queries are short, documents long. Retrieval-trained models expect that asymmetry, often with separate query and document prefixes. Using them wrongly costs accuracy silently.</li>
+  </ul>
+  <div class="warn">
+    <div class="lbl">What embeddings are genuinely bad at</div>
+    <p>Exact identifiers. <em>"job_0041"</em>, an error code, a part number, a surname. Embeddings capture <em>meaning</em>, and an identifier's meaning is that it is that exact string &mdash; a property vectors represent poorly. This is not a tuning problem; it is what the representation is for. It is also the whole reason for the next section.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">10.5</span> <span>Dense, sparse, hybrid</span></h2>
+  <div class="scroll">
+  <table>
+    <thead><tr><th>Method</th><th>Matches on</th><th>Finds</th><th>Misses</th></tr></thead>
+    <tbody>
+      <tr><td>Dense (embeddings)</td><td>Semantic similarity</td><td>Paraphrase: "how do I get money back" &rarr; the refund policy</td><td>Exact tokens: an error code, an id, a rare name</td></tr>
+      <tr><td>Sparse (BM25)</td><td>Keyword overlap, weighted by rarity</td><td>Exact terms, identifiers, jargon</td><td>Anything phrased differently from the document</td></tr>
+      <tr><td>Hybrid</td><td>Both, scores fused</td><td>Both of the above</td><td>Needs two indexes and a fusion rule</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>They fail in <em>opposite</em> directions, which is why combining them works so well. The standard fusion is <strong>reciprocal rank fusion</strong> &mdash; combine by rank position rather than raw score, because the two systems' scores are not on comparable scales.</p>
+
+  <div class="analogy">
+    <div class="lbl">In plain words</div>
+    <p>Two librarians. One knows what every book is <em>about</em>, and will find you something on grief when you ask about bereavement. The other has memorised the catalogue and will find the book whose title contains exactly "ISBN 0-19-853453". Asking only one is how you fail half your queries.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">10.6</span> <span>Contextual retrieval &mdash; the measured ladder</span></h2>
+  <p>The clearest published demonstration that these techniques stack, and the numbers are worth memorising because they let you argue with evidence rather than taste.</p>
+  <p>The problem being solved: a chunk reading <em>"revenue grew 3% over the previous quarter"</em> is useless in isolation. Which company? Which quarter? Naive chunking strips exactly the context that made the sentence meaningful.</p>
+  <p><strong>Contextual retrieval</strong> prepends a short, chunk-specific explanation to each chunk <em>before</em> it is embedded and indexed. Anthropic measured the effect on top-20 retrieval failure rate:</p>
+
+  <div class="ladder">
+    <div><span class="what">Baseline &mdash; embeddings only</span><span class="rate">5.7%</span><span class="cut">&mdash;</span></div>
+    <div><span class="what">+ contextual embeddings</span><span class="rate">3.7%</span><span class="cut">&minus;35%</span></div>
+    <div><span class="what">+ contextual BM25 (hybrid)</span><span class="rate">2.9%</span><span class="cut">&minus;49%</span></div>
+    <div><span class="what">+ reranking</span><span class="rate">1.9%</span><span class="cut">&minus;67%</span></div>
+  </div>
+
+  <p>Three things to take from that. Each layer <strong>compounds</strong> rather than replacing the one before. Hybrid search alone is worth roughly as much as the contextual trick. And reranking &mdash; the cheapest change on the list to implement &mdash; removes a further third of what remained.</p>
+</section>
+
+<section>
+  <h2><span class="num">10.7</span> <span>Reranking</span></h2>
+  <p>Retrieval is optimised to be fast over millions of documents, which means it is approximate. Reranking is a second, slower, more accurate pass over the shortlist.</p>
+  <p>The mechanism matters. A <strong>bi-encoder</strong> &mdash; ordinary embedding search &mdash; encodes query and document <em>separately</em> and compares vectors, which is what makes indexing millions of chunks possible. A <strong>cross-encoder</strong> reranker reads query and document <em>together</em> and scores the pair directly. Far more accurate, far too slow for the whole corpus, exactly right for the top 50.</p>
+  <p>The standard shape: retrieve 50&ndash;100 candidates cheaply, rerank them, keep the top 5&ndash;10 for the model.</p>
+
+  <div class="analogy">
+    <div class="lbl">In plain words</div>
+    <p>Hiring. A keyword filter over four thousand CVs, then a human actually reads the fifty that survive. Nobody reads four thousand, and nobody hires straight from the keyword filter. Two stages, different jobs, different costs &mdash; that is the whole design.</p>
+  </div>
+
+  <div class="warn">
+    <div class="lbl">Why reranking is usually the best first upgrade</div>
+    <p>It needs no re-indexing, no re-embedding and no change to chunking. It is a component you insert. For most teams with a mediocre RAG system it is the largest quality gain available per hour of work &mdash; and the ladder above puts a number on it.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">10.8</span> <span>Retrieval vs long context</span></h2>
+  <p>With million-token windows, "just put everything in" is a real option, and sometimes the right one. The honest comparison:</p>
+  <div class="scroll">
+  <table>
+    <thead><tr><th></th><th>Retrieval</th><th>Long context</th></tr></thead>
+    <tbody>
+      <tr><td>Cost</td><td>Scales with what you retrieve</td><td>Scales with everything, every call &mdash; though caching changes this sharply for stable corpora</td></tr>
+      <tr><td>Accuracy</td><td>Depends on the retriever finding it</td><td>Degrades with length &mdash; the context rot from Lesson 7, at every increment</td></tr>
+      <tr><td>Freshness</td><td>As fresh as your last index build</td><td>As fresh as what you pasted in</td></tr>
+      <tr><td>Attribution</td><td>You know which chunk it used</td><td>You do not, without extra work</td></tr>
+      <tr><td>Scale ceiling</td><td>Effectively unbounded corpus</td><td>A hard limit, reached quickly in enterprise data</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p><strong>The rule:</strong> long context for a corpus that is small, stable and entirely relevant &mdash; one policy document, one file, one contract. Retrieval when the corpus exceeds the window, changes often, or when you need to <em>cite</em> the source. That last one is underrated: in a regulated setting, attribution is not optional.</p>
+  <p>And they combine: retrieve the relevant documents, then use a long window to reason across all of them at once.</p>
+</section>
+
+<section>
+  <h2><span class="num">10.9</span> <span>Agentic retrieval</span></h2>
+  <p>The shift that matters most for agent work: retrieval stops being a fixed pipeline step and becomes <em>something the agent decides to do</em>.</p>
+  <p>Classic RAG: one query in, one retrieval, one answer. Agentic retrieval: the agent searches, reads what came back, notices a gap, searches again with better terms, and stops when it has enough. A loop, not a stage.</p>
+  <p>What it buys:</p>
+  <ul>
+    <li><strong>Query reformulation.</strong> The user's words are often not the corpus's words. The agent can try several phrasings &mdash; exactly the "search several titles separately" advice from Lesson 4, generalised.</li>
+    <li><strong>Iterative narrowing.</strong> Broad search, then targeted follow-ups based on what the first pass revealed.</li>
+    <li><strong>Knowing when to stop</strong> &mdash; or when to say it cannot find the answer. Abstention, which is a measurable capability.</li>
+  </ul>
+  <p>What it costs: more steps, so more latency and quadratically more tokens (Lesson 9), plus non-determinism in what gets retrieved &mdash; which means <strong>you can no longer evaluate the retriever in isolation</strong>. Retrieval decisions are now part of the agent's trajectory and have to be graded there.</p>
+
+  <div class="pick">
+    <div class="lbl">The 2026 framing worth knowing</div>
+    <p>With very large context windows widely available, the question has shifted from <em>"what do I retrieve?"</em> toward <em>"what do I chunk into retrievable units in the first place?"</em> &mdash; because the constraint moved from how much you can fit to what a usefully retrievable unit actually is.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">10.10</span> <span>Measuring it: two different questions</span></h2>
+  <p>The most important structural point in this lesson. Retrieval metrics and generation metrics answer <strong>different questions</strong>, and conflating them is why so many teams cannot debug their own systems.</p>
+
+  <h4>Retrieval metrics &mdash; did we find it?</h4>
+  <ul>
+    <li><strong>Context recall</strong> &mdash; of the information needed to answer, how much appeared in the retrieved chunks? Below 100% means something required is simply missing, and no prompt fixes that.</li>
+    <li><strong>Context precision</strong> &mdash; of the chunks retrieved, how many were relevant? Low precision dilutes the signal and invites reasoning from noise.</li>
+    <li><strong>recall@k</strong> &mdash; is the right document in the top k? The plainest version of the same question.</li>
+    <li><strong>MRR / nDCG</strong> &mdash; rank-aware: not just whether it was found, but how high. This is what reranking moves.</li>
+  </ul>
+
+  <h4>Generation metrics &mdash; did we use it properly?</h4>
+  <ul>
+    <li><strong>Faithfulness</strong> &mdash; what proportion of claims in the answer can be verified against the retrieved context? Your hallucination detector.</li>
+    <li><strong>Answer relevance</strong> &mdash; did it actually address the question asked?</li>
+    <li><strong>Answer correctness</strong> &mdash; if you have gold answers, the ordinary thing.</li>
+  </ul>
+
+  <div class="warn">
+    <div class="lbl">Read them together, or they lie to you</div>
+    <p><strong>High recall, low faithfulness</strong> &rarr; retrieval works, the model is ignoring it. A prompt or model problem.<br>
+    <strong>Low recall, high faithfulness</strong> &rarr; the model is faithfully using chunks that do not contain the answer. A retriever problem wearing a disguise.<br>
+    <strong>Both low</strong> &rarr; start with retrieval. Fixing generation on top of bad retrieval is building on sand.</p>
+    <p>Faithfulness and context precision are the pair that disagree most often in practice, and their disagreement is where the diagnosis lives.</p>
+  </div>
+
+  <p>One caution connecting back to Lesson 3: most of these metrics are themselves computed by an LLM judge over decomposed claims. Every judge caveat applies &mdash; bias, variance, cost &mdash; and almost nobody calibrates them. A RAGAS score with no kappa behind it is a directional signal, not a measurement.</p>
+</section>
+
+<section>
+  <h2><span class="num">10.11</span> <span>How retrieval systems fail</span></h2>
+  <div class="scroll">
+  <table>
+    <thead><tr><th>Failure</th><th>Symptom</th><th>Fix</th></tr></thead>
+    <tbody>
+      <tr><td>Split answer</td><td>Two chunks each hold half; neither is retrieved</td><td>Overlap, larger chunks, or structure-aware splitting</td></tr>
+      <tr><td>Context-stripped chunk</td><td>"Revenue grew 3%" &mdash; whose? when?</td><td>Contextual retrieval: prepend a chunk-specific summary before embedding</td></tr>
+      <tr><td>Identifier miss</td><td>Searching an error code returns nothing useful</td><td>Hybrid search. Embeddings cannot do exact tokens.</td></tr>
+      <tr><td>Stale index</td><td>Confidently returns last month's policy</td><td>Re-index on write, or TTL plus a freshness field the model can see</td></tr>
+      <tr><td>Near-duplicate flood</td><td>Top 10 are ten copies of one passage</td><td>Deduplicate after retrieval; diversity-aware selection</td></tr>
+      <tr><td>Lost in the middle</td><td>The right chunk was at position 12 of 20 and got ignored</td><td>Retrieve fewer, rerank so the best is first &mdash; Lesson 7's U-curve applies here too</td></tr>
+      <tr><td>No abstention</td><td>Nothing relevant retrieved; it answers anyway</td><td>A relevance threshold, and a prompt that permits "I don't know"</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">10.12</span> <span>Vocabulary you now own</span></h2>
+  <dl class="vocab">
+    <div><dt>chunk</dt><dd>The unit that gets retrieved. The decision everything downstream inherits.</dd></div>
+    <div><dt>overlap</dt><dd>Shared window between chunks so a boundary cannot sever an idea.</dd></div>
+    <div><dt>late chunking</dt><dd>Embed the whole document, then split and pool. Keeps long-range context.</dd></div>
+    <div><dt>dense retrieval</dt><dd>Embedding similarity. Finds paraphrase, misses identifiers.</dd></div>
+    <div><dt>BM25 / sparse</dt><dd>Keyword matching weighted by rarity. The opposite failure mode.</dd></div>
+    <div><dt>hybrid search</dt><dd>Both, fused - usually by reciprocal rank fusion.</dd></div>
+    <div><dt>contextual retrieval</dt><dd>Prepending chunk-specific context before embedding. 5.7% to 2.9% failure.</dd></div>
+    <div><dt>bi-encoder</dt><dd>Encodes query and document separately. Fast, approximate.</dd></div>
+    <div><dt>cross-encoder</dt><dd>Reads query and document together. Accurate, slow. The reranker.</dd></div>
+    <div><dt>context recall</dt><dd>Did the needed information appear in what we retrieved?</dd></div>
+    <div><dt>context precision</dt><dd>How much of what we retrieved was relevant?</dd></div>
+    <div><dt>faithfulness</dt><dd>What share of the answer's claims the context supports.</dd></div>
+    <div><dt>agentic retrieval</dt><dd>The agent decides what and when to search, iteratively.</dd></div>
+    <div><dt>abstention</dt><dd>Saying "not found" rather than answering from nothing.</dd></div>
+  </dl>
+</section>
+
+<section>
+  <h2><span class="num">10.13</span> <span>Interview answers, out loud</span></h2>
+  <div class="ask">
+    <div class="q">"Walk me through designing a RAG system."</div>
+    <div class="a">First I'd check it needs to be RAG &mdash; if the answer is a row it's a database query, and if the corpus is small and stable I'd stuff it and cache it. Assuming retrieval is right: structure-aware chunking with overlap, contextual retrieval so chunks keep the context naive splitting strips, hybrid dense plus BM25 because they fail in opposite directions, then a cross-encoder reranker over the top 50. And I'd measure retrieval and generation separately from day one, because otherwise you cannot tell which half is broken.</div>
+  </div>
+  <div class="ask">
+    <div class="q">"Your RAG system gives a wrong answer. How do you debug it?"</div>
+    <div class="a">One question first: was the correct chunk in the context? If no, it's a retrieval bug and no prompt change fixes it &mdash; I'd look at recall@k and context recall, and work out whether it's a chunking problem or an identifier problem. If yes, it's a generation bug &mdash; faithfulness will be low, and the fix is in the prompt or the model, possibly too many chunks so the right one got lost in the middle. People lose weeks tuning chunk size to fix prompt problems.</div>
+  </div>
+  <div class="ask">
+    <div class="q">"Why hybrid search? Isn't semantic strictly better?"</div>
+    <div class="a">No &mdash; they fail in opposite directions. Embeddings capture meaning, so they find paraphrase and miss exact tokens; an error code or an id has no meaning beyond being that exact string, which vectors represent badly. BM25 does exact terms and misses rephrasing. Anthropic's contextual retrieval numbers show it concretely: contextual embeddings alone took top-20 failure from 5.7% to 3.7%, adding contextual BM25 took it to 2.9%, and reranking to 1.9% &mdash; 67% overall, each layer compounding.</div>
+  </div>
+  <div class="ask">
+    <div class="q">"Context windows are a million tokens. Is RAG dead?"</div>
+    <div class="a">No, for three reasons. Accuracy degrades with length &mdash; Chroma measured it at every increment, not just near the limit. Enterprise corpora exceed any window. And retrieval gives attribution: you know which source the answer came from, which in a regulated setting isn't optional. Long context is right for a small stable corpus, especially with caching. Often the answer is both &mdash; retrieve the relevant documents, then use a long window to reason across all of them.</div>
+  </div>
+  <div class="ask">
+    <div class="q">"What's the cheapest improvement to a mediocre RAG system?"</div>
+    <div class="a">Add a reranker. No re-indexing, no re-embedding, no chunking change &mdash; you insert a cross-encoder over the top 50 candidates. In Anthropic's published ladder it removed a further third of the remaining failures after hybrid search. Best quality gain per hour of work available.</div>
+  </div>
+  <div class="ask">
+    <div class="q">"How is retrieval different inside an agent?"</div>
+    <div class="a">It stops being a pipeline stage and becomes a decision. The agent searches, reads, notices a gap, reformulates, searches again, and decides when it has enough &mdash; or that it can't find it, which is abstention and worth measuring. The cost is more steps, so more latency and quadratically more tokens, plus you can't evaluate the retriever in isolation any more: retrieval decisions are part of the trajectory and have to be graded there.</div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">10.14</span> <span>What this means for our project</span></h2>
+  <div class="pick">
+    <div class="lbl">Decisions</div>
+    <ul>
+      <li><strong>Our search is deliberately not semantic</strong> &mdash; it is a substring match, and the tool description says so explicitly. That is honest tooling: the agent knows synonyms will not work and compensates by searching several titles. A semantic search that quietly missed "ML Engineer" for a query of "Machine Learning" would be worse <em>and</em> harder to debug.</li>
+      <li><strong>When we add semantic matching</strong>, it is hybrid from the start &mdash; job titles are full of exact tokens (company names, posting ids) that embeddings handle badly.</li>
+      <li><strong>The agent already does agentic retrieval.</strong> Reading <em class="term">matched</em> against <em class="term">showing</em> and issuing narrower follow-up searches <em>is</em> query reformulation. It just happens over a database rather than a vector store.</li>
+      <li><strong>Retrieval quality gets its own metric</strong>, separate from task score. Otherwise a drop in shortlist quality is ambiguous between "it searched badly" and "it judged badly" &mdash; and those need different fixes.</li>
+      <li><strong>Abstention is already in the suite</strong> &mdash; <em class="term">s03_nothing_qualifies</em> tests exactly the "found nothing, answered anyway" failure, in shortlisting form.</li>
+    </ul>
+  </div>
+</section>
+
+<div class="next">
+  <div class="lbl">Next</div>
+  <p><strong>Lesson 11 &mdash; Reliability and Observability.</strong> Idempotency, retries with backoff, durable state and crash recovery; then tracing, spans, and the three numbers worth a dashboard.</p>
+</div>
+
+<div class="sources">
+  <h2>Sources</h2>
+  <ol>
+    <li>Anthropic, <em>Introducing Contextual Retrieval</em> &mdash; contextual embeddings plus contextual BM25 and reranking; top-20 retrieval failure falling 5.7% &rarr; 3.7% &rarr; 2.9% &rarr; 1.9% (a 67% reduction). <a href="https://www.anthropic.com/engineering/contextual-retrieval">anthropic.com/engineering/contextual-retrieval</a></li>
+    <li>Günther et al. (Jina AI), <em>Late Chunking: Contextual Chunk Embeddings Using Long-Context Embedding Models</em> &mdash; embed first, split after, so chunk embeddings retain document-level context. <a href="https://arxiv.org/abs/2409.04701">arxiv.org/abs/2409.04701</a></li>
+    <li>Lewis et al., <em>Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks</em> &mdash; the original RAG formulation. <a href="https://arxiv.org/abs/2005.11401">arxiv.org/abs/2005.11401</a></li>
+    <li>Es et al., <em>RAGAS: Automated Evaluation of Retrieval Augmented Generation</em> &mdash; faithfulness, context precision, context recall and answer relevance as separate measurements. <a href="https://arxiv.org/abs/2309.15217">arxiv.org/abs/2309.15217</a></li>
+    <li>Cormack, Clarke, Büttcher, <em>Reciprocal Rank Fusion outperforms Condorcet and individual rank learning methods</em> &mdash; fusing ranked lists by position rather than incomparable scores. <a href="https://dl.acm.org/doi/10.1145/1571941.1572114">dl.acm.org</a></li>
+    <li>Liu et al., <em>Lost in the Middle: How Language Models Use Long Contexts</em> &mdash; why chunk <em>ordering</em> inside the context matters, not only chunk selection. <a href="https://arxiv.org/abs/2307.03172">arxiv.org/abs/2307.03172</a></li>
+    <li>Chroma Research, <em>Context Rot</em> &mdash; degradation with input length at every increment; the counterweight to "just use long context". <a href="https://research.trychroma.com/context-rot">research.trychroma.com/context-rot</a></li>
+  </ol>
+</div>
+
+</div>
