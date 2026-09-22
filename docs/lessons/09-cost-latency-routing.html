@@ -1,0 +1,362 @@
+<title>Cost, Latency and Routing</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --paper:#EFF2F1;--surface:#FFFFFF;--ink:#141C1C;--muted:#5A6968;--faint:#8A9897;--rule:#D5DCDA;
+  --accent:#0E6455;--accent-soft:#DCEAE5;--clay:#A8481C;--clay-soft:#F4E3DA;--gold:#7E6110;--gold-soft:#F2EAD3;
+  --display:"Fraunces",Georgia,serif;--body:"Source Serif 4",Georgia,serif;--mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#0E1414;--surface:#161E1E;--ink:#E6ECEA;--muted:#9AA9A7;--faint:#6F7E7C;--rule:#273433;
+  --accent:#5FC4AC;--accent-soft:#12302A;--clay:#E0906A;--clay-soft:#2E1D14;--gold:#D6B65C;--gold-soft:#2B2410;
+}}
+:root[data-theme="dark"]{
+  --paper:#0E1414;--surface:#161E1E;--ink:#E6ECEA;--muted:#9AA9A7;--faint:#6F7E7C;--rule:#273433;
+  --accent:#5FC4AC;--accent-soft:#12302A;--clay:#E0906A;--clay-soft:#2E1D14;--gold:#D6B65C;--gold-soft:#2B2410;
+}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.65;-webkit-font-smoothing:antialiased;}
+.wrap{max-width:790px;margin:0 auto;padding:56px 24px 96px;}
+.masthead{display:flex;flex-direction:column;gap:14px;padding-bottom:28px;border-bottom:2px solid var(--ink);}
+.kicker{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);}
+h1{font-family:var(--display);font-size:clamp(36px,7vw,54px);line-height:1.04;font-weight:600;margin:0;text-wrap:balance;letter-spacing:-.015em;}
+.standfirst{font-size:19px;color:var(--muted);margin:0;max-width:62ch;}
+.meta{font-family:var(--mono);font-size:11.5px;color:var(--faint);display:flex;flex-wrap:wrap;gap:18px;}
+section{padding-top:46px;display:flex;flex-direction:column;gap:16px;}
+h2{font-family:var(--display);font-size:27px;font-weight:600;line-height:1.2;margin:0;text-wrap:balance;display:flex;gap:14px;align-items:baseline;}
+h2 .num{font-family:var(--mono);font-size:13px;font-weight:400;color:var(--accent);flex:none;}
+h3{font-family:var(--display);font-size:19.5px;font-weight:600;margin:18px 0 0;}
+h4{font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin:14px 0 -4px;font-weight:600;}
+p{margin:0;}
+a{color:var(--accent);text-decoration:underline;text-underline-offset:2px;text-decoration-thickness:1px;}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+ul,ol{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:9px;}
+li::marker{color:var(--faint);}
+em.term{font-style:normal;font-family:var(--mono);font-size:.86em;background:var(--accent-soft);padding:1px 5px;border-radius:3px;}
+.analogy{background:var(--surface);border-left:3px solid var(--accent);padding:18px 22px;display:flex;flex-direction:column;gap:9px;}
+.analogy .lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);}
+.warn{background:var(--clay-soft);padding:18px 22px;display:flex;flex-direction:column;gap:9px;border-radius:2px;}
+.warn .lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--clay);}
+.pick{background:var(--gold-soft);border:1px solid var(--gold);padding:20px 22px;display:flex;flex-direction:column;gap:11px;border-radius:2px;}
+.pick .lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);}
+.nums{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);}
+.nums > div{background:var(--surface);padding:15px 17px;display:flex;flex-direction:column;gap:4px;}
+.nums b{font-family:var(--mono);font-size:21px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--accent);line-height:1.1;}
+.nums span{font-size:13.5px;color:var(--muted);line-height:1.45;}
+.scroll{overflow-x:auto;}
+table{border-collapse:collapse;width:100%;font-size:14.5px;min-width:580px;}
+th,td{text-align:left;vertical-align:top;padding:10px 13px;border-bottom:1px solid var(--rule);}
+th{font-family:var(--mono);font-size:10px;letter-spacing:.11em;text-transform:uppercase;color:var(--muted);font-weight:400;border-bottom:1px solid var(--ink);}
+td:first-child{font-weight:600;}
+.ask{display:flex;flex-direction:column;gap:7px;padding:16px 0;border-bottom:1px solid var(--rule);}
+.ask .q{font-weight:600;}
+.ask .a{color:var(--muted);font-size:15.5px;}
+.vocab{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);}
+.vocab > div{background:var(--surface);padding:14px 16px;display:flex;flex-direction:column;gap:5px;}
+.vocab dt{font-family:var(--mono);font-size:12.5px;color:var(--accent);font-weight:600;}
+.vocab dd{margin:0;font-size:14.5px;color:var(--muted);line-height:1.5;}
+.next{margin-top:44px;background:var(--surface);border:1px solid var(--rule);padding:22px;display:flex;flex-direction:column;gap:8px;}
+.next .lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);}
+.sources{padding-top:40px;border-top:1px solid var(--rule);margin-top:52px;display:flex;flex-direction:column;gap:14px;}
+.sources h2{font-size:19px;}
+.sources ol{font-size:14px;color:var(--muted);gap:9px;}
+</style>
+
+<div class="wrap">
+
+<header class="masthead">
+  <div class="kicker">Lesson 09 &middot; Agent Env Lab</div>
+  <h1>Cost, Latency and Routing</h1>
+  <p class="standfirst">Where an agent's money and time actually go, the levers that move them in order of cheapness, and how to route work between models without simply making errors cheaper to produce.</p>
+  <div class="meta"><span>~35 min</span><span>Sources at the end</span></div>
+</header>
+
+<section>
+  <h2><span class="num">9.1</span> <span>Three currencies, and you cannot max all three</span></h2>
+  <p>Every agent decision trades between <strong>quality</strong>, <strong>cost</strong> and <strong>latency</strong>. Most engineering conversations go wrong because someone optimises one and never says which of the other two they spent.</p>
+  <p>"It's 3% more accurate" is half a sentence. The full one is <em>"3% more accurate, at 2.4&times; the cost and 900ms more latency"</em> &mdash; and only that version is a decision a team can actually make.</p>
+
+  <div class="analogy">
+    <div class="lbl">In plain words</div>
+    <p>Shipping a parcel. Fast, cheap, reliable &mdash; pick two, and the courier makes you say which. Nobody finds that controversial. Agent engineering is the same trade, except the industry mostly quotes one number and hopes nobody asks about the others.</p>
+  </div>
+
+  <p>So the discipline here is not "make it cheap". It is <strong>make the trade explicit, then measure it</strong>.</p>
+</section>
+
+<section>
+  <h2><span class="num">9.2</span> <span>Where the money actually goes</span></h2>
+  <p>Four facts that reshape most people's intuition.</p>
+
+  <h4>1 &middot; Input and output are priced differently</h4>
+  <p>Output tokens typically cost several times what input tokens cost. But agents are <em>input-heavy</em>: the system prompt, every tool schema and the entire accumulated conversation are re-sent on every turn. A twenty-step run re-sends the same tool definitions twenty times.</p>
+
+  <h4>2 &middot; Tool results dominate the input</h4>
+  <p>From Lesson 5: roughly <strong>84% of a typical agent's context is observation tokens</strong> &mdash; tool output, accumulating. You are paying to re-send search results the agent already read, on every later turn.</p>
+
+  <h4>3 &middot; Cost is quadratic in steps, not linear</h4>
+  <p>The one people get wrong. Each step appends its output to the history, and the whole history is re-sent next step. Twenty steps is not twice the cost of ten &mdash; it is nearer four times, because you pay for a growing context repeatedly.</p>
+
+  <div class="analogy">
+    <div class="lbl">In plain words</div>
+    <p>Re-reading the entire meeting transcript aloud before anyone says a new sentence. The tenth sentence costs ten readings. The twentieth costs twenty. A meeting that runs twice as long does not cost twice as much.</p>
+  </div>
+
+  <h4>4 &middot; Retries and failures are pure loss</h4>
+  <p>A malformed tool call that gets retried costs a full round trip and produces nothing. A run that hits its step limit and fails costs everything it spent. Neither appears in "cost per call", which is exactly why that metric misleads &mdash; &sect;9.7.</p>
+</section>
+
+<section>
+  <h2><span class="num">9.3</span> <span>The cost levers, cheapest first</span></h2>
+  <p>Work down this list. The first three are close to free, and most teams skip to the fourth.</p>
+
+  <h4>1 &middot; Don't send it in the first place</h4>
+  <p>Bounded tool returns, pagination, pre-computed fields, truncation counts &mdash; Lesson 4. A tool returning 8 rows with a count instead of 34 with full descriptions is the single largest cost lever available, and it improves quality at the same time by reducing context rot.</p>
+
+  <h4>2 &middot; Prompt caching</h4>
+  <p>The stable prefix of your prompt &mdash; system prompt, tool schemas, long documents &mdash; is cached and re-read at a steep discount rather than reprocessed.</p>
+  <div class="nums">
+    <div><b>90%</b><span>discount on cached input reads &mdash; cached tokens at 10% of the standard rate</span></div>
+    <div><b>25%</b><span>one-time write premium to place the prefix in the cache</span></div>
+    <div><b>85%</b><span>latency reduction reported on cached prompts</span></div>
+    <div><b>11.5s &rarr; 2.4s</b><span>the published example: summarising a 100K-token book</span></div>
+  </div>
+  <p>For an agent this is close to free money, because the expensive stable part &mdash; system prompt plus twelve tool schemas &mdash; is <em>identical on every turn of every run</em>. That is the ideal cache shape.</p>
+  <p><strong>The catch:</strong> it caches a <em>prefix</em>. Anything that changes near the front invalidates everything after it. Put stable content first and volatile content last &mdash; a timestamp injected into your system prompt can silently cost you the entire cache, with no error anywhere.</p>
+
+  <h4>3 &middot; Batch processing</h4>
+  <p>Work nobody is waiting on &mdash; running an eval suite, nightly enrichment, bulk classification &mdash; goes through a batch API at roughly <strong>50% off</strong>, typically returning within 24 hours. Both major providers offer it.</p>
+  <p>And the discounts stack: batch plus cached reads reaches around <strong>95% savings on the repeated portion</strong>. Your eval suite is precisely this workload.</p>
+
+  <h4>4 &middot; Use a smaller model</h4>
+  <p>Before building a router, check whether the small model simply does the job &mdash; measured on your own suite, not assumed. This is the step people skip on the way to something more interesting.</p>
+
+  <h4>5 &middot; Route between models</h4>
+  <p>Section 9.5. Real savings, real complexity, and a failure mode worth understanding before you build one.</p>
+</section>
+
+<section>
+  <h2><span class="num">9.4</span> <span>Where the time actually goes</span></h2>
+  <p>Latency in an agent is not one number. It decomposes, and the decomposition tells you what to fix.</p>
+  <ul>
+    <li><strong>Time to first token (TTFT)</strong> &mdash; how long before anything appears. This is what a user experiences as "is it working?"</li>
+    <li><strong>Generation time</strong> &mdash; tokens per second &times; output length. Shorter outputs are faster outputs.</li>
+    <li><strong>Tool execution</strong> &mdash; your own code, your own databases, your own APIs. Often the largest slice, and the one people forget is theirs to fix.</li>
+    <li><strong>Round trips</strong> &mdash; the multiplier. A twenty-step run pays all of the above twenty times, <em>in series</em>.</li>
+  </ul>
+
+  <div class="warn">
+    <div class="lbl">The step count is the latency budget</div>
+    <p>If one turn takes 3 seconds, a 20-step run takes a minute. No amount of model-level optimisation fixes that. The fix is fewer steps.</p>
+    <p>Which reframes something from Lesson 4: better tool design is a <em>latency</em> intervention. A tool returning pre-computed fields removes a step. A tool that answers in one call instead of three removes two.</p>
+  </div>
+
+  <h4>Latency levers</h4>
+  <ul>
+    <li><strong>Stream.</strong> Does not reduce total time; transforms the experience of it. TTFT is the number users feel.</li>
+    <li><strong>Parallelise reads.</strong> Three independent lookups in parallel cost one lookup of wall-clock time. Never parallelise writes (Lesson 8).</li>
+    <li><strong>Cache.</strong> The same 85% that saves money saves time.</li>
+    <li><strong>Fewer, fatter tools.</strong> Every round trip removed is a whole turn of latency.</li>
+    <li><strong>Smaller models for easy steps.</strong> Often several times faster, not merely cheaper.</li>
+    <li><strong>Speculative prefetch.</strong> Start the likely next tool call while the model is still generating. Powerful, and it wastes work when you guess wrong.</li>
+  </ul>
+</section>
+
+<section>
+  <h2><span class="num">9.5</span> <span>Routing: three designs</span></h2>
+  <p>Routing means using a cheap model where it suffices and an expensive one where it does not. The savings are real and well documented, and the three designs fail differently.</p>
+
+  <div class="scroll">
+  <table>
+    <thead><tr><th>Design</th><th>How it decides</th><th>Cost</th><th>Fails when</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>Predictive router</td>
+        <td>A classifier reads the request <em>before</em> any model call and picks a tier</td>
+        <td>Adds roughly <strong>300&ndash;500ms</strong> to every request</td>
+        <td>It is confidently wrong on exactly the hard edge cases that most needed the strong model</td>
+      </tr>
+      <tr>
+        <td>Cascade / escalation</td>
+        <td>Cheap model answers first; escalate if the answer fails a check</td>
+        <td>Double latency and double cost on whatever escalates</td>
+        <td>The check is weak &mdash; then you pay twice and still ship the wrong answer</td>
+      </tr>
+      <tr>
+        <td>Semantic router</td>
+        <td>Embed the query, route by similarity to reference prompts per tier</td>
+        <td>One embedding call, no model call</td>
+        <td>Novel phrasings fall outside every reference cluster</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>What the research says</h3>
+  <p>RouteLLM reported roughly an <strong>85% cost reduction on MT-Bench while retaining about 95% of GPT-4's quality</strong>, and the wider literature puts routing savings in the <strong>40&ndash;85%</strong> range depending on workload. The strongest routers are <em>learned</em>, and the most effective training signal is preference data &mdash; pairs of responses labelled by which was better.</p>
+
+  <div class="warn">
+    <div class="lbl">The finding that should change your design</div>
+    <p><strong>LLM self-reported confidence is poorly calibrated.</strong> A model will produce a fluent, authoritative answer with high token probabilities while being factually wrong.</p>
+    <p>So a cascade gated on "the model said it wasn't sure" escalates the wrong requests. The gate has to be <em>external</em>: a schema validation failure, a checkable fact that did not check out, a verifier's verdict, a known-hard task type.</p>
+    <p>Put plainly: <strong>routing is only safe if something independent checks the cheap answer.</strong> Otherwise you have not saved money &mdash; you have made errors cheaper to produce, which is worse than expensive correctness.</p>
+  </div>
+
+  <div class="analogy">
+    <div class="lbl">In plain words</div>
+    <p>A junior handling the easy tickets. That works if someone reviews the hard ones they misjudged as easy. Without review you have not built a triage system &mdash; you have built a system that gets the difficult cases wrong, faster and cheaper than before.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">9.6</span> <span>Caching, properly</span></h2>
+  <p>Three distinct things share the word, and confusing them causes real bugs.</p>
+  <div class="scroll">
+  <table>
+    <thead><tr><th>Kind</th><th>Caches</th><th>Hits when</th><th>Risk</th></tr></thead>
+    <tbody>
+      <tr><td>Prompt cache</td><td>The provider's processing of a stable prefix</td><td>The prefix is byte-identical</td><td>Any change near the front invalidates everything after it</td></tr>
+      <tr><td>Exact-match cache</td><td>Whole responses, keyed on the exact request</td><td>Identical input seen before</td><td>Staleness &mdash; the world moved and your answer did not</td></tr>
+      <tr><td>Semantic cache</td><td>Responses keyed on embedding similarity</td><td>A <em>similar</em> question was asked</td><td>False hits: "similar" is not "same", and the difference may be the whole question</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>Semantic caching is the one to be careful with. <em>"What's my refund status?"</em> and <em>"What's my refund policy?"</em> embed closely and have completely different answers. If you use it: set the similarity threshold high, exclude anything user-specific, and <em>measure</em> the false-hit rate rather than assuming it is small.</p>
+</section>
+
+<section>
+  <h2><span class="num">9.7</span> <span>The metric that changes the conversation</span></h2>
+  <div class="pick">
+    <div class="lbl">Cost per <em>successful task</em>, not cost per call</div>
+    <p>A cheap model that answers, fails verification and escalates costs <strong>more</strong> than going straight to the strong model &mdash; two calls instead of one, plus the verification. Per-call cost records this as a saving. Per-successful-task records it as the loss it is.</p>
+  </div>
+  <p>The same correction applies to latency (<em>time to a correct answer</em>, including retries and escalations) and to every optimisation you will ever be asked to justify. Measured per successful outcome is the only framing in which the three currencies trade honestly.</p>
+
+  <p>Things a per-call view hides entirely:</p>
+  <ul>
+    <li>Retries after malformed output</li>
+    <li>Runs that hit the step limit and produced nothing</li>
+    <li>Escalations from a cheap tier that did not work</li>
+    <li>Human time spent fixing a wrong answer &mdash; usually the largest cost in the system, and almost never counted</li>
+  </ul>
+</section>
+
+<section>
+  <h2><span class="num">9.8</span> <span>Measuring it</span></h2>
+  <h4>Percentiles, not averages</h4>
+  <p>Report <strong>p50, p95 and p99</strong>. An average hides the tail completely, and the tail is what users remember and what pages your on-call. A system with a 2-second average and a 40-second p99 has a serious problem that the average denies.</p>
+
+  <div class="analogy">
+    <div class="lbl">In plain words</div>
+    <p>"The average wait here is twenty minutes" tells you nothing about whether one patient in twenty waits six hours. The average is the number on the brochure; the p99 is the number in the complaint.</p>
+  </div>
+
+  <h4>Attribute per span</h4>
+  <p>Record tokens, cost and duration <em>per step</em>, not per run. A run that cost &#8377;40 tells you nothing actionable. A run where one <em class="term">fetch_posting</em> call accounted for 60% of the tokens tells you exactly what to fix.</p>
+
+  <h4>Track the shape, not only the total</h4>
+  <ul>
+    <li><strong>Steps per run</strong> &mdash; the strongest single predictor of both cost and latency</li>
+    <li><strong>Cache hit rate</strong> &mdash; a sudden fall usually means a prompt change near the prefix</li>
+    <li><strong>Escalation rate</strong> &mdash; if most requests escalate, your routing is a tax</li>
+    <li><strong>Retry rate</strong> &mdash; pure waste, and usually fixable in the tool layer</li>
+    <li><strong>Cost per successful task over time</strong> &mdash; the one number for a dashboard</li>
+  </ul>
+</section>
+
+<section>
+  <h2><span class="num">9.9</span> <span>How optimisation goes wrong</span></h2>
+  <div class="scroll">
+  <table>
+    <thead><tr><th>Mistake</th><th>What happens</th></tr></thead>
+    <tbody>
+      <tr><td>Optimising before measuring</td><td>You speed up the 5% and leave the 60% untouched. Profile the trace first.</td></tr>
+      <tr><td>Routing without verification</td><td>Errors become cheaper to produce. The worst outcome on this list.</td></tr>
+      <tr><td>Cache killed by a timestamp</td><td>A dynamic value near the prefix silently costs every cache hit, with no error.</td></tr>
+      <tr><td>Semantic cache false hits</td><td>A confidently wrong answer to a question nobody asked.</td></tr>
+      <tr><td>Optimising the average</td><td>p50 improves, p99 worsens, users are angrier than before.</td></tr>
+      <tr><td>Cutting quality invisibly</td><td>Cost halves and nobody notices the score fell, because nobody ran the suite.</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="warn">
+    <div class="lbl">The rule that prevents the last one</div>
+    <p><strong>Every cost or latency change is re-run against the eval suite before it ships.</strong> An optimisation that cannot show its quality delta is not an optimisation &mdash; it is a bet, and the entire point of building the suite was to stop betting.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">9.10</span> <span>Vocabulary you now own</span></h2>
+  <dl class="vocab">
+    <div><dt>TTFT</dt><dd>Time to first token. What users perceive as responsiveness.</dd></div>
+    <div><dt>prompt caching</dt><dd>Re-using the provider's processing of a stable prefix at a discount.</dd></div>
+    <div><dt>cache prefix</dt><dd>The stable front of a prompt. Change it and everything after is invalidated.</dd></div>
+    <div><dt>batch API</dt><dd>Asynchronous processing, roughly half price, usually within 24 hours.</dd></div>
+    <div><dt>predictive router</dt><dd>A classifier that picks a model before any call.</dd></div>
+    <div><dt>cascade</dt><dd>Cheap model first, escalate when a check fails.</dd></div>
+    <div><dt>semantic router</dt><dd>Routes by embedding similarity to reference prompts.</dd></div>
+    <div><dt>semantic cache</dt><dd>Returns a stored answer for a similar question. False hits are the risk.</dd></div>
+    <div><dt>escalation rate</dt><dd>Share of requests climbing a tier. High means routing is a tax.</dd></div>
+    <div><dt>cost per successful task</dt><dd>The honest denominator. Counts retries and failures.</dd></div>
+    <div><dt>p95 / p99</dt><dd>Tail latency. What users remember.</dd></div>
+    <div><dt>speculative prefetch</dt><dd>Starting a likely tool call before it is requested.</dd></div>
+  </dl>
+</section>
+
+<section>
+  <h2><span class="num">9.11</span> <span>Interview answers, out loud</span></h2>
+  <div class="ask">
+    <div class="q">"Your agent costs too much. What do you do first?"</div>
+    <div class="a">Measure before touching anything &mdash; tokens per step, not per run, because the culprit is usually one tool returning far too much. Then in order: bound the tool returns, turn on prompt caching for the stable prefix, move anything asynchronous to batch. Those three are close to free. Only then smaller models or routing, which add real complexity. And cost is roughly quadratic in steps, so cutting step count usually beats everything else.</div>
+  </div>
+  <div class="ask">
+    <div class="q">"How does model routing work, and when does it hurt?"</div>
+    <div class="a">Cheap model first, escalate on a signal. The literature puts savings around 40&ndash;85% &mdash; RouteLLM reported about 85% cost reduction while holding roughly 95% of GPT-4's quality. It hurts when the escalation gate is the model's own confidence, because self-reported confidence is poorly calibrated: models are fluent and authoritative while wrong. The gate has to be external &mdash; schema validation, a verifier, a checkable fact. Routing is only safe if something independent checks the cheap answer; otherwise you have just made errors cheaper to produce.</div>
+  </div>
+  <div class="ask">
+    <div class="q">"Why is prompt caching such a big deal for agents specifically?"</div>
+    <div class="a">Because the expensive stable part &mdash; system prompt plus every tool schema &mdash; is identical on every turn of every run, which is the ideal cache shape. Cached reads run about 90% cheaper with a 25% write premium, and up to 85% faster. The catch is that it caches a <em>prefix</em>, so anything volatile near the front invalidates the rest &mdash; a timestamp in the system prompt can cost you the whole cache without any error appearing anywhere.</div>
+  </div>
+  <div class="ask">
+    <div class="q">"Your p50 latency is 2 seconds. Good?"</div>
+    <div class="a">I don't know yet &mdash; tell me the p95 and p99. Averages and medians hide the tail, and the tail is what users remember and what wakes on-call. For an agent I'd want steps per run alongside it, because if one turn is 2 seconds then a 20-step run is 40, and no model-level optimisation fixes that. Fewer steps does.</div>
+  </div>
+  <div class="ask">
+    <div class="q">"How do you know an optimisation didn't hurt quality?"</div>
+    <div class="a">Re-run the eval suite, paired on the same tasks and seeds, and report the delta with its variance. An optimisation that can't show its quality delta isn't an optimisation, it's a bet. And I'd report cost per <em>successful</em> task rather than per call, because a cheap model that fails and escalates costs more than going straight to the strong one &mdash; per-call cost records that as a saving.</div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">9.12</span> <span>What this means for our project</span></h2>
+  <div class="pick">
+    <div class="lbl">Decisions</div>
+    <ul>
+      <li><strong>We already pulled lever one.</strong> Bounded returns, truncation counts and pre-computed fields were tool-design choices &mdash; they are also the biggest cost lever, taken before we knew it.</li>
+      <li><strong>Record tokens and duration per step from the very first LLM run.</strong> The trajectory already has fields for both; populating them later makes every earlier run unattributable.</li>
+      <li><strong>Structure the prompt for caching</strong> &mdash; system prompt and tool schemas first, task and history after. Free, and impossible to retrofit without invalidating past measurements.</li>
+      <li><strong>The eval suite runs on batch</strong> where latency does not matter. Half price for work nobody is waiting on.</li>
+      <li><strong>No routing until there is a verifier.</strong> We have graders, which is exactly the external check routing requires &mdash; so the escalation gate must be a grader verdict, never the model's own confidence.</li>
+      <li><strong>Report cost per successful task</strong> in the dashboard, beside p95 and score. Three numbers, one screen.</li>
+    </ul>
+  </div>
+</section>
+
+<div class="next">
+  <div class="lbl">Next</div>
+  <p><strong>Lesson 10 &mdash; Retrieval and RAG.</strong> Chunking, embeddings, hybrid search, reranking, the metrics that separate a retrieval bug from a generation bug &mdash; and when not to retrieve at all.</p>
+</div>
+
+<div class="sources">
+  <h2>Sources</h2>
+  <ol>
+    <li>Anthropic, <em>Prompt caching</em> documentation &mdash; cached input at 10% of the standard rate (a 90% discount) with a 25% write premium, and reported latency reductions up to 85%, including the 100K-token example falling from 11.5s to 2.4s. <a href="https://docs.claude.com/en/docs/build-with-claude/prompt-caching">docs.claude.com</a></li>
+    <li>Anthropic, <em>Message Batches API</em> &mdash; asynchronous processing at roughly 50% of standard cost, typically within 24 hours. <a href="https://docs.claude.com/en/docs/build-with-claude/batch-processing">docs.claude.com</a></li>
+    <li>OpenAI, <em>Prompt caching</em> and <em>Batch API</em> documentation &mdash; automatic prefix caching and the 50% batch discount. <a href="https://platform.openai.com/docs/guides/prompt-caching">platform.openai.com</a></li>
+    <li>Ong et al., <em>RouteLLM: Learning to Route LLMs with Preference Data</em> &mdash; routers trained on preference data; roughly 85% cost reduction on MT-Bench while retaining about 95% of GPT-4 quality. <a href="https://arxiv.org/abs/2406.18665">arxiv.org/abs/2406.18665</a></li>
+    <li>Chen, Zaharia, Zou, <em>FrugalGPT: How to Use Large Language Models While Reducing Cost and Improving Performance</em> &mdash; the cascade pattern and its economics. <a href="https://arxiv.org/abs/2305.05176">arxiv.org/abs/2305.05176</a></li>
+    <li>Anthropic, <em>Effective context engineering for AI agents</em> &mdash; context as a finite budget, and the accumulation that drives input cost. <a href="https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents">anthropic.com/engineering</a></li>
+    <li>Anthropic, <em>How we built our multi-agent research system</em> &mdash; the ~15&times; token cost of the orchestrator&ndash;worker design, and token usage explaining ~80% of performance variance. <a href="https://www.anthropic.com/engineering/multi-agent-research-system">anthropic.com/engineering</a></li>
+  </ol>
+</div>
+
+</div>
