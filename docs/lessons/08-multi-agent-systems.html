@@ -1,0 +1,311 @@
+<title>Multi-Agent Systems</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --paper:#EFF2F1;--surface:#FFFFFF;--ink:#141C1C;--muted:#5A6968;--faint:#8A9897;--rule:#D5DCDA;
+  --accent:#0E6455;--accent-soft:#DCEAE5;--clay:#A8481C;--clay-soft:#F4E3DA;--gold:#7E6110;--gold-soft:#F2EAD3;
+  --display:"Fraunces",Georgia,serif;--body:"Source Serif 4",Georgia,serif;--mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#0E1414;--surface:#161E1E;--ink:#E6ECEA;--muted:#9AA9A7;--faint:#6F7E7C;--rule:#273433;
+  --accent:#5FC4AC;--accent-soft:#12302A;--clay:#E0906A;--clay-soft:#2E1D14;--gold:#D6B65C;--gold-soft:#2B2410;
+}}
+:root[data-theme="dark"]{
+  --paper:#0E1414;--surface:#161E1E;--ink:#E6ECEA;--muted:#9AA9A7;--faint:#6F7E7C;--rule:#273433;
+  --accent:#5FC4AC;--accent-soft:#12302A;--clay:#E0906A;--clay-soft:#2E1D14;--gold:#D6B65C;--gold-soft:#2B2410;
+}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.65;-webkit-font-smoothing:antialiased;}
+.wrap{max-width:790px;margin:0 auto;padding:56px 24px 96px;}
+.masthead{display:flex;flex-direction:column;gap:14px;padding-bottom:28px;border-bottom:2px solid var(--ink);}
+.kicker{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);}
+h1{font-family:var(--display);font-size:clamp(36px,7vw,54px);line-height:1.04;font-weight:600;margin:0;text-wrap:balance;letter-spacing:-.015em;}
+.standfirst{font-size:19px;color:var(--muted);margin:0;max-width:62ch;}
+.meta{font-family:var(--mono);font-size:11.5px;color:var(--faint);display:flex;flex-wrap:wrap;gap:18px;}
+section{padding-top:46px;display:flex;flex-direction:column;gap:16px;}
+h2{font-family:var(--display);font-size:27px;font-weight:600;line-height:1.2;margin:0;text-wrap:balance;display:flex;gap:14px;align-items:baseline;}
+h2 .num{font-family:var(--mono);font-size:13px;font-weight:400;color:var(--accent);flex:none;}
+h3{font-family:var(--display);font-size:19.5px;font-weight:600;margin:18px 0 0;}
+h4{font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin:14px 0 -4px;font-weight:600;}
+p{margin:0;}
+a{color:var(--accent);text-decoration:underline;text-underline-offset:2px;text-decoration-thickness:1px;}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+ul,ol{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:9px;}
+li::marker{color:var(--faint);}
+em.term{font-style:normal;font-family:var(--mono);font-size:.86em;background:var(--accent-soft);padding:1px 5px;border-radius:3px;}
+.analogy{background:var(--surface);border-left:3px solid var(--accent);padding:18px 22px;display:flex;flex-direction:column;gap:9px;}
+.analogy .lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);}
+.warn{background:var(--clay-soft);padding:18px 22px;display:flex;flex-direction:column;gap:9px;border-radius:2px;}
+.warn .lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--clay);}
+.pick{background:var(--gold-soft);border:1px solid var(--gold);padding:20px 22px;display:flex;flex-direction:column;gap:11px;border-radius:2px;}
+.pick .lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);}
+.camp{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.camp > div{background:var(--surface);border:1px solid var(--rule);padding:18px 20px;display:flex;flex-direction:column;gap:9px;}
+.camp .who{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);}
+.camp .claim{font-family:var(--display);font-size:18px;font-weight:600;line-height:1.3;}
+.camp .ev{font-size:15px;color:var(--muted);line-height:1.5;}
+@media(max-width:640px){.camp{grid-template-columns:1fr}}
+.scroll{overflow-x:auto;}
+table{border-collapse:collapse;width:100%;font-size:14.5px;min-width:580px;}
+th,td{text-align:left;vertical-align:top;padding:10px 13px;border-bottom:1px solid var(--rule);}
+th{font-family:var(--mono);font-size:10px;letter-spacing:.11em;text-transform:uppercase;color:var(--muted);font-weight:400;border-bottom:1px solid var(--ink);}
+td:first-child{font-weight:600;}
+.ask{display:flex;flex-direction:column;gap:7px;padding:16px 0;border-bottom:1px solid var(--rule);}
+.ask .q{font-weight:600;}
+.ask .a{color:var(--muted);font-size:15.5px;}
+.vocab{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);}
+.vocab > div{background:var(--surface);padding:14px 16px;display:flex;flex-direction:column;gap:5px;}
+.vocab dt{font-family:var(--mono);font-size:12.5px;color:var(--accent);font-weight:600;}
+.vocab dd{margin:0;font-size:14.5px;color:var(--muted);line-height:1.5;}
+.next{margin-top:44px;background:var(--surface);border:1px solid var(--rule);padding:22px;display:flex;flex-direction:column;gap:8px;}
+.next .lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);}
+.sources{padding-top:40px;border-top:1px solid var(--rule);margin-top:52px;display:flex;flex-direction:column;gap:14px;}
+.sources h2{font-size:19px;}
+.sources ol{font-size:14px;color:var(--muted);gap:9px;}
+</style>
+
+<div class="wrap">
+
+<header class="masthead">
+  <div class="kicker">Lesson 08 &middot; Agent Env Lab</div>
+  <h1>Multi-Agent Systems</h1>
+  <p class="standfirst">The field's two loudest voices disagree about this, both with evidence. The synthesis they have converged on is one sentence long &mdash; and it answers the "many agents, one dashboard" question directly.</p>
+  <div class="meta"><span>~35 min</span><span>Your assignment's premise</span><span>Sources at the end</span></div>
+</header>
+
+<section>
+  <h2><span class="num">8.1</span> <span>The question is not "how many agents"</span></h2>
+  <p>Teams reach for multiple agents for the wrong reason almost every time: the system feels big, so it seems like it should be split. That is org-chart thinking applied to software.</p>
+  <p>The real question is narrower and much more answerable: <strong>what does a handoff buy, and what does it cost?</strong> Everything below is an attempt to price those two things, because once you can price them the architecture decides itself.</p>
+
+  <div class="analogy">
+    <div class="lbl">In plain words</div>
+    <p>Adding people to a project. Sometimes it genuinely doubles the work done. Sometimes it means four people now have to agree on what they are doing, and everything slows while everyone writes status updates to each other.</p>
+    <p>You already know which is which in human teams. The same intuition applies, for the same reason: coordination is not free.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">8.2</span> <span>Two camps, both with evidence</span></h2>
+  <p>This is unusually well documented for an architecture debate, because both sides published numbers.</p>
+
+  <div class="camp">
+    <div>
+      <div class="who">Anthropic &middot; Research system</div>
+      <div class="claim">Split it. The gain is large.</div>
+      <div class="ev">An orchestrator&ndash;worker design with parallel subagents beat single-agent Claude Opus 4 by <strong>90.2%</strong> on their internal research eval.<br><br>The mechanism they identify: <strong>token usage alone explains about 80% of the variance</strong> in performance. Subagents work because each gets its own context window &mdash; you are buying <em>more attention</em>, not more intelligence.</div>
+    </div>
+    <div>
+      <div class="who">Cognition &middot; Devin</div>
+      <div class="claim">Don't. It fragments context.</div>
+      <div class="ev">Their position: multi-agent systems today are brittle, because splitting work splits <em>context</em>. Even when each subagent gets the full task description, none of them sees the others' intermediate decisions and assumptions.<br><br>Their prescription: default to single-threaded linear agents, and rule out multi-agent designs unless they clear a high bar.</div>
+    </div>
+  </div>
+
+  <p>Both are right, and they appear to disagree because they built <em>different kinds of system</em>.</p>
+
+  <div class="warn">
+    <div class="lbl">The cost nobody quotes alongside the 90.2%</div>
+    <p>That same Anthropic system uses roughly <strong>15&times; the tokens</strong> of a normal chat interaction.</p>
+    <p>So the honest sentence is not "multi-agent is better". It is: <em>multi-agent bought a large quality gain for fifteen times the cost, on a task where breadth of search was the bottleneck.</em> If your bottleneck is something else, you have bought the cost without the gain.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">8.3</span> <span>What a handoff actually costs</span></h2>
+  <p>Four costs, and the first is the one people miss.</p>
+
+  <h4>1 &middot; Implicit decisions don't travel</h4>
+  <p>This is Cognition's core point and it is subtle. When an agent does something, that action <em>encodes a decision it never stated</em> &mdash; it chose this reading of an ambiguous instruction, it assumed that format, it decided an edge case did not matter. Hand the task to a second agent and it receives the words, not the reasoning behind them. So it makes its own, different, unstated assumption.</p>
+  <p>Two agents, both behaving reasonably, producing work that does not fit together.</p>
+
+  <div class="analogy">
+    <div class="lbl">In plain words</div>
+    <p>Two developers given "build a login page", working in separate rooms, no communication. One builds the front end assuming email login. One builds the backend assuming phone number. Neither made a mistake. Neither wrote their assumption down. The system does not work.</p>
+  </div>
+
+  <h4>2 &middot; Context duplication</h4>
+  <p>Every subagent needs enough background to do its job, so shared context gets copied into every window. That is where the 15&times; comes from.</p>
+
+  <h4>3 &middot; Attribution collapses</h4>
+  <p>When a five-agent system produces a wrong answer, which agent was wrong? Debugging one trace is hard enough; debugging five interleaved ones &mdash; where the failure may live in the <em>handoff</em> rather than in any agent &mdash; is materially harder. This is the cost that hits in month three, not week one.</p>
+
+  <h4>4 &middot; Write conflicts</h4>
+  <p>Two agents acting on the same record at the same time is a data-integrity bug you usually cannot reproduce. It also has the cleanest solution, which is section 8.5.</p>
+</section>
+
+<section>
+  <h2><span class="num">8.4</span> <span>The patterns, and what each is for</span></h2>
+  <div class="scroll">
+  <table>
+    <thead><tr><th>Pattern</th><th>Shape</th><th>Use when</th><th>Main risk</th></tr></thead>
+    <tbody>
+      <tr><td>Router</td><td>Classify, then dispatch to one specialist</td><td>Genuinely distinct request types needing different tools or prompts</td><td>Misclassification sends it somewhere confidently wrong</td></tr>
+      <tr><td>Sequential chain</td><td>A &rarr; B &rarr; C, fixed order, gates between</td><td>The steps are known in advance</td><td>It is not really multi-agent; it is a pipeline. That is usually good.</td></tr>
+      <tr><td>Orchestrator&ndash;workers</td><td>A lead decomposes, workers execute, lead synthesises</td><td>Subtasks are unpredictable up front and genuinely <em>independent</em></td><td>Cost; and a wrong plan makes every worker wrong</td></tr>
+      <tr><td>Parallel + vote</td><td>Same task n times, aggregate</td><td>You want consensus or breadth of search</td><td>n&times; cost for a variance reduction you should measure first</td></tr>
+      <tr><td>Evaluator&ndash;optimiser</td><td>Generator plus critic, loop until it passes</td><td>Clear criteria, and iteration genuinely improves the output</td><td>Loops forever if the critic is never satisfiable</td></tr>
+      <tr><td>Handoff / swarm</td><td>Agents pass control to each other freely</td><td>Rarely. Looks elegant in a diagram.</td><td>Control flow becomes unpredictable and untestable</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <p>Notice that the two most reliable patterns &mdash; router and sequential chain &mdash; are barely multi-agent at all. You wrote the control flow; the models fill in the steps. That is a feature.</p>
+</section>
+
+<section>
+  <h2><span class="num">8.5</span> <span>The synthesis: read wide, write narrow</span></h2>
+  <p>Cognition's more recent position, after running these systems in production, sharpens into one sentence &mdash; the most useful thing in this lesson:</p>
+
+  <div class="pick">
+    <div class="lbl">The line to remember</div>
+    <p><strong>Multi-agent systems work best when writes stay single-threaded and the additional agents contribute intelligence rather than actions.</strong></p>
+  </div>
+
+  <p>Unpack it. Parallel agents are excellent at <em>gathering</em>: searching, reading, analysing, proposing. Each fills its own context window with material, which is exactly the mechanism behind Anthropic's gain. Parallel agents are dangerous at <em>acting</em>: two writes racing on one record, two refunds issued, two emails sent.</p>
+  <p>So: <strong>fan out to read, funnel to write.</strong> Many agents may investigate; one path commits.</p>
+
+  <div class="analogy">
+    <div class="lbl">In plain words</div>
+    <p>A newsroom. Ten reporters chase ten leads in parallel &mdash; that is the whole point of having ten reporters. But one editor decides what goes to print. Nobody runs a paper where any reporter can publish directly, and it is not because reporters are untrustworthy.</p>
+  </div>
+
+  <p>Notice this is the same rule as <strong>parallelise reads, serialise writes</strong> from tool design, arrived at independently at a different layer. When a principle shows up twice from different directions, it is usually load-bearing.</p>
+</section>
+
+<section>
+  <h2><span class="num">8.6</span> <span>What agents share, and what they must not</span></h2>
+  <p>"Multiple agents on one dashboard" is really a question about shared state, and Lesson 7's memory taxonomy answers it cleanly &mdash; the rule differs per type.</p>
+
+  <div class="scroll">
+  <table>
+    <thead><tr><th>Memory</th><th>Shared?</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td>Working</td><td><strong>Never</strong></td><td>It is one run's scratch state. Sharing it is how a billing agent's half-formed notes end up steering a support agent.</td></tr>
+      <tr><td>Semantic</td><td><strong>Yes</strong></td><td>Facts about the customer. If two agents hold different facts they tell the same person different things &mdash; the exact failure a unified dashboard exists to prevent.</td></tr>
+      <tr><td>Episodic</td><td><strong>Read-only</strong></td><td>"Billing already credited this customer yesterday" has to be visible, or two agents do the same thing twice. Readable by all, writable only by the agent whose episode it is.</td></tr>
+      <tr><td>Procedural</td><td><strong>Carefully</strong></td><td>Shared playbooks drift and affect everyone at once. Version them and treat a change like a deploy.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="warn">
+    <div class="lbl">The unified-dashboard trap</div>
+    <p>Putting several agents behind one interface makes them <em>look</em> like one system to the customer &mdash; so the customer now expects them to behave like one. They will notice immediately when the billing agent has not heard what the support agent promised.</p>
+    <p>The dashboard is therefore not a UI change. It is a commitment to shared semantic memory and visible episodic history. Skip that, and the unified interface actively makes the product worse than separate ones were, because it puts the inconsistency in one place.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">8.7</span> <span>When splitting genuinely helps</span></h2>
+  <p>Five good reasons. If none applies, use one agent with better tools.</p>
+  <ol>
+    <li><strong>Genuine parallelism over independent work.</strong> Ten sources to read, none depending on another. Anthropic's case, and where the gain is real.</li>
+    <li><strong>Different permissions.</strong> A read-only research agent and an agent that can move money should not be the same principal. This is a security boundary, and the strongest reason on the list.</li>
+    <li><strong>Different tools entirely.</strong> When one agent's tool list would otherwise reach forty and selection accuracy collapses.</li>
+    <li><strong>Different models.</strong> A cheap model for triage, an expensive one for the hard step &mdash; a routing decision that happens to look like multi-agent.</li>
+    <li><strong>Context isolation for safety.</strong> Keeping untrusted content inside a subagent that cannot act limits what a prompt injection can reach.</li>
+  </ol>
+  <p>Notice how few are "the problem is big". Size is not a reason. Independence, permissions and blast radius are.</p>
+</section>
+
+<section>
+  <h2><span class="num">8.8</span> <span>How multi-agent systems fail</span></h2>
+  <div class="scroll">
+  <table>
+    <thead><tr><th>Failure</th><th>Looks like</th><th>Defence</th></tr></thead>
+    <tbody>
+      <tr><td>Assumption divergence</td><td>Two agents' outputs do not fit together; neither is wrong</td><td>Share decisions, not just tasks. Make assumptions explicit artefacts.</td></tr>
+      <tr><td>Lost handoff</td><td>Work vanishes between agents; nobody reports an error</td><td>Handoffs are state transitions. Log them; make incomplete ones visible.</td></tr>
+      <tr><td>Duplicate action</td><td>Two credits, two emails, two tickets</td><td>Single-threaded writes and idempotency keys.</td></tr>
+      <tr><td>Orchestrator bottleneck</td><td>Lead agent's context fills; the whole system degrades</td><td>The lead holds a plan and pointers, not every worker's output.</td></tr>
+      <tr><td>Infinite delegation</td><td>Agents hand work in circles</td><td>Depth limits, plus a global step budget rather than per-agent only.</td></tr>
+      <tr><td>Attribution loss</td><td>It failed; nobody can say where</td><td>One trace id across every agent, and grade each handoff.</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">8.9</span> <span>Evaluating one is harder</span></h2>
+  <p>Everything from Lessons 1&ndash;3 still applies, plus three new problems.</p>
+  <ul>
+    <li><strong>Attribution.</strong> The end state tells you the system failed, not which agent failed. You need per-agent sub-scores, or you are debugging blind.</li>
+    <li><strong>Handoffs are gradeable objects.</strong> Did agent A pass enough for B to succeed? That is a check, and almost nobody writes it &mdash; which is why "lost in the handoff" failures survive so long.</li>
+    <li><strong>Variance compounds.</strong> Five non-deterministic components in series produce far more spread than one, and <em class="term">pass^k</em> falls fast: if each agent is 90% reliable, five in a row are about 59%.</li>
+  </ul>
+  <p>That last number is the argument against unnecessary splitting, stated arithmetically. Every agent you add multiplies in another probability below one.</p>
+</section>
+
+<section>
+  <h2><span class="num">8.10</span> <span>Vocabulary you now own</span></h2>
+  <dl class="vocab">
+    <div><dt>orchestrator-workers</dt><dd>A lead decomposes and delegates, then synthesises.</dd></div>
+    <div><dt>subagent</dt><dd>A worker with its own context window, tools and trajectory.</dd></div>
+    <div><dt>handoff</dt><dd>Control passing between agents. A state transition worth logging.</dd></div>
+    <div><dt>context fragmentation</dt><dd>Splitting work splits context; assumptions stop travelling.</dd></div>
+    <div><dt>implicit decision</dt><dd>A choice encoded in an action but never stated.</dd></div>
+    <div><dt>single-threaded writes</dt><dd>Many agents may read; one path commits.</dd></div>
+    <div><dt>attribution</dt><dd>Knowing which agent caused the failure.</dd></div>
+    <div><dt>depth limit</dt><dd>Cap on delegation chains, so agents cannot loop.</dd></div>
+    <div><dt>orchestrator bottleneck</dt><dd>The lead's context fills with worker output and degrades.</dd></div>
+    <div><dt>compounding variance</dt><dd>Five 90% components in series are about 59%.</dd></div>
+  </dl>
+</section>
+
+<section>
+  <h2><span class="num">8.11</span> <span>Interview answers, out loud</span></h2>
+  <div class="ask">
+    <div class="q">"When would you use multiple agents?"</div>
+    <div class="a">When there is genuine independent parallelism, when parts need different permissions, when one agent's tool list would grow large enough to hurt selection, or when I want untrusted content isolated in something that cannot act. Not because the problem is large &mdash; size is not a reason. I default to one agent with good tools, because every agent I add multiplies in another probability below one: five 90%-reliable steps in series is about 59%.</div>
+  </div>
+  <div class="ask">
+    <div class="q">"Anthropic says multi-agent beat single-agent by 90%. Doesn't that settle it?"</div>
+    <div class="a">It settles it for that task. The same system used about fifteen times the tokens, and their own analysis says token usage explains roughly 80% of the variance &mdash; so what the architecture bought was more context windows, on a task where breadth of search was the bottleneck. Cognition's counter-argument concerns a different bottleneck: splitting work splits context, and agents stop seeing each other's implicit decisions. Both are right about their own system.</div>
+  </div>
+  <div class="ask">
+    <div class="q">"Multiple agents share one dashboard. How do you stop them contradicting each other?"</div>
+    <div class="a">Split memory by type. Working memory is never shared &mdash; it is one run's scratch state. Semantic facts about the customer must be shared, or two agents tell the same person different things, which is exactly what a unified interface makes visible. Episodic history is shared read-only so nobody repeats what another already did. And the dashboard is not a UI change &mdash; it is a commitment to that shared state, because the customer now expects one system.</div>
+  </div>
+  <div class="ask">
+    <div class="q">"Two agents might both issue a refund. How do you prevent it?"</div>
+    <div class="a">Single-threaded writes. Many agents may investigate and propose; one path commits. Plus idempotency keys, so even a retry does the work once. It is the same rule as parallelise-reads-serialise-writes at the tool layer, which is a decent sign it is load-bearing rather than a preference.</div>
+  </div>
+  <div class="ask">
+    <div class="q">"How do you debug a five-agent system?"</div>
+    <div class="a">One trace id across every agent, per-agent sub-scores so attribution does not collapse, and I would grade the <em>handoffs</em> themselves &mdash; did A pass enough for B to succeed? Almost nobody writes that check, which is why "lost in the handoff" failures survive so long. And more runs than you would expect, because variance compounds across the chain.</div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">8.12</span> <span>Applied to the dashboard problem</span></h2>
+  <div class="pick">
+    <div class="lbl">How to answer "make these agents work well together"</div>
+    <ul>
+      <li><strong>Do not merge them into one agent</strong>, and do not let them act independently either. Keep them separate for permissions and tool-set reasons, and put one commit path in front of every write.</li>
+      <li><strong>Shared semantic memory</strong> about the customer, or the unified interface makes the product worse than separate ones were, because now the inconsistency is visible in one place.</li>
+      <li><strong>Episodic history readable by all</strong>, so no agent repeats an action another already took. The cheapest fix for the most embarrassing failure.</li>
+      <li><strong>One trace id</strong> spanning every agent, so a failure is attributable rather than a shrug.</li>
+      <li><strong>Grade the handoffs</strong>, not just the outcome. A system that ends in the right state having lost work in the middle is one bad day from ending in the wrong one.</li>
+      <li><strong>Depth and global budget limits</strong>, so delegation cannot loop.</li>
+    </ul>
+    <p>And the sentence that ties it together, worth saying almost verbatim: <em>fan out to read, funnel to write &mdash; the extra agents contribute intelligence, not actions.</em></p>
+  </div>
+</section>
+
+<div class="next">
+  <div class="lbl">Next</div>
+  <p><strong>Lesson 9 &mdash; Cost, latency and routing.</strong> The 15&times; number from this lesson is the whole subject: what agents actually cost, where the time goes, and how to route work between cheap and expensive models without simply making errors cheaper to produce.</p>
+</div>
+
+<div class="sources">
+  <h2>Sources</h2>
+  <ol>
+    <li>Anthropic, <em>How we built our multi-agent research system</em> &mdash; the orchestrator&ndash;worker architecture, the 90.2% internal-eval improvement over single-agent Claude Opus 4, the ~15&times; token cost, and the finding that token usage alone explains about 80% of performance variance. <a href="https://www.anthropic.com/engineering/multi-agent-research-system">anthropic.com/engineering/multi-agent-research-system</a></li>
+    <li>Walden Yan (Cognition), <em>Don't Build Multi-Agents</em> &mdash; context fragmentation, implicit decisions failing to travel across handoffs, and the case for single-threaded linear agents. <a href="https://cognition.ai/blog/dont-build-multi-agents">cognition.ai/blog/dont-build-multi-agents</a></li>
+    <li>Walden Yan (Cognition), <em>Multi-Agents: What's Actually Working</em> &mdash; the updated position: multi-agent works best when writes stay single-threaded and extra agents contribute intelligence rather than actions. <a href="https://x.com/walden_yan/article/2047054401341370639">the updated essay</a></li>
+    <li>Anthropic, <em>Building effective agents</em> &mdash; the workflow patterns (routing, parallelisation, orchestrator&ndash;workers, evaluator&ndash;optimiser) and the argument for the simplest thing that works. <a href="https://www.anthropic.com/engineering/building-effective-agents">anthropic.com/engineering/building-effective-agents</a></li>
+    <li>Anthropic, <em>Effective context engineering for AI agents</em> &mdash; sub-agent architectures as a context-isolation technique. <a href="https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents">anthropic.com/engineering</a></li>
+  </ol>
+</div>
+
+</div>
