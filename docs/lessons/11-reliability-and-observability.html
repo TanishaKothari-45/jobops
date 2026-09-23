@@ -1,0 +1,438 @@
+<title>Reliability and Observability</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --paper:#EFF2F1;--surface:#FFFFFF;--ink:#141C1C;--muted:#5A6968;--faint:#8A9897;--rule:#D5DCDA;
+  --accent:#0E6455;--accent-soft:#DCEAE5;--clay:#A8481C;--clay-soft:#F4E3DA;--gold:#7E6110;--gold-soft:#F2EAD3;
+  --display:"Fraunces",Georgia,serif;--body:"Source Serif 4",Georgia,serif;--mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#0E1414;--surface:#161E1E;--ink:#E6ECEA;--muted:#9AA9A7;--faint:#6F7E7C;--rule:#273433;
+  --accent:#5FC4AC;--accent-soft:#12302A;--clay:#E0906A;--clay-soft:#2E1D14;--gold:#D6B65C;--gold-soft:#2B2410;
+}}
+:root[data-theme="dark"]{
+  --paper:#0E1414;--surface:#161E1E;--ink:#E6ECEA;--muted:#9AA9A7;--faint:#6F7E7C;--rule:#273433;
+  --accent:#5FC4AC;--accent-soft:#12302A;--clay:#E0906A;--clay-soft:#2E1D14;--gold:#D6B65C;--gold-soft:#2B2410;
+}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.65;-webkit-font-smoothing:antialiased;}
+.wrap{max-width:790px;margin:0 auto;padding:56px 24px 96px;}
+.masthead{display:flex;flex-direction:column;gap:14px;padding-bottom:28px;border-bottom:2px solid var(--ink);}
+.kicker{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);}
+h1{font-family:var(--display);font-size:clamp(34px,6.6vw,52px);line-height:1.04;font-weight:600;margin:0;text-wrap:balance;letter-spacing:-.015em;}
+.standfirst{font-size:19px;color:var(--muted);margin:0;max-width:62ch;}
+.meta{font-family:var(--mono);font-size:11.5px;color:var(--faint);display:flex;flex-wrap:wrap;gap:18px;}
+section{padding-top:46px;display:flex;flex-direction:column;gap:16px;}
+h2{font-family:var(--display);font-size:27px;font-weight:600;line-height:1.2;margin:0;text-wrap:balance;display:flex;gap:14px;align-items:baseline;}
+h2 .num{font-family:var(--mono);font-size:13px;font-weight:400;color:var(--accent);flex:none;}
+h3{font-family:var(--display);font-size:19.5px;font-weight:600;margin:18px 0 0;}
+h4{font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin:14px 0 -4px;font-weight:600;}
+.band{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);display:flex;align-items:center;gap:14px;padding-top:40px;}
+.band::after{content:"";flex:1;height:1px;background:var(--rule);}
+p{margin:0;}
+a{color:var(--accent);text-decoration:underline;text-underline-offset:2px;text-decoration-thickness:1px;}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+ul,ol{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:9px;}
+li::marker{color:var(--faint);}
+em.term{font-style:normal;font-family:var(--mono);font-size:.86em;background:var(--accent-soft);padding:1px 5px;border-radius:3px;}
+.analogy{background:var(--surface);border-left:3px solid var(--accent);padding:18px 22px;display:flex;flex-direction:column;gap:9px;}
+.analogy .lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);}
+.warn{background:var(--clay-soft);padding:18px 22px;display:flex;flex-direction:column;gap:9px;border-radius:2px;}
+.warn .lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--clay);}
+.pick{background:var(--gold-soft);border:1px solid var(--gold);padding:20px 22px;display:flex;flex-direction:column;gap:11px;border-radius:2px;}
+.pick .lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);}
+.scroll{overflow-x:auto;}
+table{border-collapse:collapse;width:100%;font-size:14.5px;min-width:580px;}
+th,td{text-align:left;vertical-align:top;padding:10px 13px;border-bottom:1px solid var(--rule);}
+th{font-family:var(--mono);font-size:10px;letter-spacing:.11em;text-transform:uppercase;color:var(--muted);font-weight:400;border-bottom:1px solid var(--ink);}
+td:first-child{font-weight:600;}
+pre{background:var(--surface);border:1px solid var(--rule);padding:16px 18px;overflow-x:auto;font-family:var(--mono);font-size:12.5px;line-height:1.7;margin:0;color:var(--ink);}
+pre .c{color:var(--faint);}
+.ask{display:flex;flex-direction:column;gap:7px;padding:16px 0;border-bottom:1px solid var(--rule);}
+.ask .q{font-weight:600;}
+.ask .a{color:var(--muted);font-size:15.5px;}
+.vocab{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);}
+.vocab > div{background:var(--surface);padding:14px 16px;display:flex;flex-direction:column;gap:5px;}
+.vocab dt{font-family:var(--mono);font-size:12.5px;color:var(--accent);font-weight:600;}
+.vocab dd{margin:0;font-size:14.5px;color:var(--muted);line-height:1.5;}
+.next{margin-top:44px;background:var(--surface);border:1px solid var(--rule);padding:22px;display:flex;flex-direction:column;gap:8px;}
+.next .lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);}
+.sources{padding-top:40px;border-top:1px solid var(--rule);margin-top:52px;display:flex;flex-direction:column;gap:14px;}
+.sources h2{font-size:19px;}
+.sources ol{font-size:14px;color:var(--muted);gap:9px;}
+</style>
+
+<div class="wrap">
+
+<header class="masthead">
+  <div class="kicker">Lesson 11 &middot; Agent Env Lab</div>
+  <h1>Reliability and Observability</h1>
+  <p class="standfirst">What keeps an agent working when things fail, and what lets you see why when they do. The two subjects are one subject: you cannot make reliable what you cannot observe.</p>
+  <div class="meta"><span>~40 min</span><span>Sources at the end</span></div>
+</header>
+
+<section>
+  <h2><span class="num">11.1</span> <span>The gap between a demo and a product</span></h2>
+  <p>A demo runs once, on a good network, with a cooperative model, while someone watches. A product runs ten thousand times, at 3am, while an API is rate-limiting, a database is failing over, and nobody is looking.</p>
+  <p>Almost everything in this lesson exists to handle the second case. And the reason it is one lesson rather than two is that the halves depend on each other: <strong>you cannot make reliable what you cannot observe</strong>, and observability over an unreliable system just produces more detailed reports of the same mystery.</p>
+
+  <div class="analogy">
+    <div class="lbl">In plain words</div>
+    <p>A restaurant that cooks one perfect dish for a critic is not a restaurant. A restaurant is what happens on a Saturday when the fridge breaks, two staff call in sick and forty covers arrive at once. Nobody judges a kitchen by its best night.</p>
+  </div>
+</section>
+
+<div class="band">Part one &middot; Reliability</div>
+
+<section>
+  <h2><span class="num">11.2</span> <span>Transient or terminal: the classification everything rests on</span></h2>
+  <p>Every failure is one of two kinds, and confusing them causes both of the classic mistakes.</p>
+  <div class="scroll">
+  <table>
+    <thead><tr><th></th><th>Transient</th><th>Terminal</th></tr></thead>
+    <tbody>
+      <tr><td>Examples</td><td>Timeout, 503, rate limit, connection reset, database failover</td><td>Invalid arguments, record does not exist, permission denied, malformed output</td></tr>
+      <tr><td>Will retrying help?</td><td>Yes &mdash; the world changes</td><td>No &mdash; the same call fails identically forever</td></tr>
+      <tr><td>Who handles it</td><td><strong>Your code</strong>, automatically</td><td><strong>The agent</strong> &mdash; hand it the error and let it adapt</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <p>This is Lesson 5's rule stated precisely: <strong>retry the transport, not the judgement.</strong> Auto-retrying a validation error burns money to fail identically. Handing a network blip to the model wastes a reasoning step on something it cannot fix.</p>
+
+  <div class="warn">
+    <div class="lbl">The third category people forget</div>
+    <p><strong>Ambiguous failures.</strong> A request timed out &mdash; did the server process it or not? You genuinely do not know. Treat it as transient and retry, and you risk doing the work twice; treat it as terminal, and you risk not doing it at all.</p>
+    <p>There is no way to resolve this from outside, which is exactly why the next section exists. Idempotency is not a nice-to-have &mdash; it is the only honest answer to a timeout.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">11.3</span> <span>Idempotency</span></h2>
+  <p>An operation is <strong>idempotent</strong> when doing it twice has the same effect as doing it once. Reads are naturally idempotent. Writes are not, and that is the whole problem.</p>
+  <p>The standard mechanism: the caller generates a key, the server records it, and a second call with the same key returns the first result instead of repeating the work.</p>
+
+  <pre>send_message(draft_id="msg_0003",
+             idempotency_key="run_8821:step_14:send")
+
+<span class="c"># first call   -> sends, stores the key, returns {sent: true}</span>
+<span class="c"># second call  -> key seen, returns the SAME result, sends nothing</span></pre>
+
+  <p>Three properties the key must have:</p>
+  <ul>
+    <li><strong>Deterministic from the intent</strong>, not random. Derived from the run and the step, so a resumed run generates the <em>same</em> key rather than a new one. A random key defeats the entire mechanism while looking like it works.</li>
+    <li><strong>Stored with the result</strong>, so a repeat returns what the first call returned.</li>
+    <li><strong>Retained longer than your retry window</strong> &mdash; and longer than any plausible crash-recovery gap.</li>
+  </ul>
+
+  <div class="analogy">
+    <div class="lbl">In plain words</div>
+    <p>A cheque number. Hand the bank the same cheque twice and they pay once, because the number is on it and they have seen it. Not because the teller was attentive &mdash; because the system was designed so attention is not required.</p>
+  </div>
+
+  <div class="pick">
+    <div class="lbl">The design rule</div>
+    <p>Make every write idempotent <em>before</em> you add retries. Retries on non-idempotent writes do not improve reliability; they convert an occasional failure into an occasional double-charge, which is strictly worse.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">11.4</span> <span>Retries, done properly</span></h2>
+  <p>Naive retries are worse than none, because they arrive all at once at the moment a system is least able to cope.</p>
+
+  <h4>Exponential backoff</h4>
+  <p>Wait 1s, then 2s, then 4s, then 8s. Gives a struggling dependency room to recover instead of hammering it.</p>
+
+  <h4>Jitter &mdash; the part people omit</h4>
+  <p>If a thousand clients all fail at the same instant and all back off by exactly 1s, they all retry at the same instant. You have rebuilt the stampede one second later. <strong>Jitter</strong> randomises each delay, spreading the retries out.</p>
+
+  <div class="analogy">
+    <div class="lbl">In plain words</div>
+    <p>A power cut. If every fridge and heater in the city restarts the instant power returns, the grid trips again. Utilities stagger reconnection on purpose. Jitter is the same idea, and skipping it is how a short outage becomes a long one.</p>
+  </div>
+
+  <h4>A retry budget</h4>
+  <p>Cap retries globally, not only per call. Three attempts each across twelve steps is thirty-six potential calls from one run. Budget the run, or a bad afternoon becomes a bill.</p>
+
+  <h4>Never retry</h4>
+  <ul>
+    <li>A non-idempotent write without an idempotency key. Charging a card twice is not a transient error; it is a legal problem.</li>
+    <li>A validation failure &mdash; identical input, identical rejection.</li>
+    <li>Anything a human has already been told failed. Two apologies for one problem is its own incident.</li>
+  </ul>
+</section>
+
+<section>
+  <h2><span class="num">11.5</span> <span>Timeouts, circuit breakers, bulkheads</span></h2>
+  <p>Three patterns that stop one slow dependency taking down everything.</p>
+
+  <h4>Timeouts</h4>
+  <p>Every external call gets one. A call without a timeout can hang forever, and in an agent that means a run holding resources indefinitely while producing nothing. Set them per dependency: a database in milliseconds, a model call in seconds, a browser fetch in tens of seconds.</p>
+
+  <h4>Circuit breakers</h4>
+  <p>After N consecutive failures, stop calling the dependency at all for a cooling-off period, then let one probe through. If it succeeds, resume.</p>
+  <p>The point is not to protect you from the dependency &mdash; it is to stop you making the outage worse, and to fail <em>fast</em> so the agent can degrade rather than wait.</p>
+
+  <div class="analogy">
+    <div class="lbl">In plain words</div>
+    <p>An electrical circuit breaker does not fix the fault. It trips so the fault does not burn the house down, and it lets you test the line once you think it is fixed. Software borrowed both the name and the logic.</p>
+  </div>
+
+  <h4>Bulkheads</h4>
+  <p>Separate resource pools per dependency, so a slow search API cannot exhaust the connections the payments API needs. Named after ship compartments: one floods, the vessel stays up.</p>
+</section>
+
+<section>
+  <h2><span class="num">11.6</span> <span>Durable execution</span></h2>
+  <p>The problem in one sentence: a twelve-step agent run in a single process, interrupted at step seven by a deploy, a crash or a rate limit, <strong>starts again from step one</strong> &mdash; repeating every side effect it already performed.</p>
+  <p><strong>Durable execution</strong> persists state at every step, so an interrupted run resumes from the last completed checkpoint rather than the beginning. It is the defining property of workflow engines, and several &mdash; Temporal, Restate, Inngest, Azure Durable Task, AWS Step Functions &mdash; now position these primitives explicitly for agents.</p>
+
+  <h4>What has to be persisted</h4>
+  <ul>
+    <li>The message history so far</li>
+    <li>Which steps completed, and what each returned</li>
+    <li>Idempotency keys already issued</li>
+    <li>The step count and any budget consumed</li>
+  </ul>
+
+  <div class="warn">
+    <div class="lbl">Resume is only safe with idempotency</div>
+    <p>Crash recovery <em>re-executes</em> the boundary step, because you cannot know whether it completed. Without idempotency keys, every resume risks repeating the last action &mdash; and the last action is disproportionately likely to be a write, because writes are slow and slow things are where crashes land.</p>
+    <p>So the order is fixed: idempotency first, retries second, durable execution third. Built the other way round, each layer amplifies the previous one's bug.</p>
+  </div>
+
+  <h4>Do you need a workflow engine?</h4>
+  <p>Not always. For short runs, checkpointing to your own database at each step is often enough and much simpler. Reach for an engine when you have work measured in hours or days, human-in-the-loop waits, complex compensation logic, or a need to replay history exactly. The honest position is that the <em>property</em> matters and the engine is an implementation choice.</p>
+</section>
+
+<section>
+  <h2><span class="num">11.7</span> <span>"Exactly-once" is a lie</span></h2>
+  <p>Distributed systems cannot guarantee exactly-once delivery. What they offer is <strong>at-least-once delivery</strong>, and what you build on top is <strong>idempotent handling</strong> &mdash; and the combination <em>behaves</em> as exactly-once from outside.</p>
+  <div class="pick">
+    <div class="lbl">The sentence</div>
+    <p><em>"Exactly-once delivery isn't available. At-least-once delivery plus idempotent handlers gives you exactly-once <strong>effects</strong>, which is what anyone actually wanted."</em></p>
+  </div>
+  <p>The same reasoning disposes of the ambiguous timeout from &sect;11.2. You never learn whether the first call landed. You stop needing to know.</p>
+</section>
+
+<section>
+  <h2><span class="num">11.8</span> <span>Degrading instead of dying</span></h2>
+  <p>When something is unavailable, the choice is not fail or succeed. It is <em>what smaller thing can we still do?</em></p>
+  <div class="scroll">
+  <table>
+    <thead><tr><th>Broken</th><th>Bad response</th><th>Degraded response</th></tr></thead>
+    <tbody>
+      <tr><td>Enrichment API down</td><td>Fail the run</td><td>Proceed without that field; mark the output incomplete</td></tr>
+      <tr><td>Primary model rate-limited</td><td>Fail the run</td><td>Fall back to another model; record which one answered</td></tr>
+      <tr><td>Search returns nothing</td><td>Invent an answer</td><td>Abstain, and say what was searched</td></tr>
+      <tr><td>Approval queue stalled</td><td>Act without approval</td><td>Queue the action and report it as pending</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>Note the last row. <strong>Degradation must never cross a safety boundary.</strong> "The approval service was down so we proceeded" is not graceful degradation &mdash; it is a guardrail failing open, and a guardrail that fails open under load fails exactly when it was most needed.</p>
+  <p>And whenever you degrade, <strong>say so in the output</strong>. A silently degraded answer is indistinguishable from a good one, which means nobody ever learns the dependency was down.</p>
+</section>
+
+<div class="band">Part two &middot; Observability</div>
+
+<section>
+  <h2><span class="num">11.9</span> <span>Why agents are harder to observe</span></h2>
+  <p>Ordinary software fails deterministically and leaves a stack trace. Agents do neither.</p>
+  <ul>
+    <li><strong>No stack trace.</strong> The "bug" is a decision, and decisions do not raise exceptions. Nothing threw; it simply chose wrongly.</li>
+    <li><strong>Non-deterministic.</strong> The same input produces a different path, so "just reproduce it" is not straightforwardly available.</li>
+    <li><strong>Failures are semantic, not structural.</strong> Every call returned 200. The answer is still wrong.</li>
+    <li><strong>The unit of debugging is the trajectory</strong>, not the line &mdash; and errors cascade, so the visible failure is usually downstream of the real one.</li>
+  </ul>
+  <p>Which is why the trace is not a debugging aid for agents. It is <em>the primary artefact</em>, and it has to be designed rather than collected as an afterthought.</p>
+</section>
+
+<section>
+  <h2><span class="num">11.10</span> <span>The standard: OpenTelemetry GenAI conventions</span></h2>
+  <p>Until recently every vendor invented its own trace format. That has converged: OpenTelemetry's <strong>GenAI Special Interest Group</strong>, formed in April 2024 under the Semantic Conventions SIG and backed by the CNCF, defines a standard schema for AI telemetry &mdash; and the major observability vendors now support it natively.</p>
+
+  <h4>The span tree</h4>
+  <pre>invoke_agent                      <span class="c"># the whole run</span>
+├── chat                          <span class="c"># one LLM call</span>
+├── execute_tool  search_postings <span class="c"># one tool call</span>
+├── chat
+├── execute_tool  get_company
+└── chat</pre>
+
+  <h4>The attributes</h4>
+  <p>Names worth knowing, because using the standard ones means any compatible backend understands your traces with no custom work:</p>
+  <div class="scroll">
+  <table>
+    <thead><tr><th>Attribute</th><th>Carries</th></tr></thead>
+    <tbody>
+      <tr><td><em class="term">gen_ai.operation.name</em></td><td>What this span is &mdash; <em>chat</em>, <em>execute_tool</em>, <em>invoke_agent</em></td></tr>
+      <tr><td><em class="term">gen_ai.request.model</em></td><td>Which model was asked</td></tr>
+      <tr><td><em class="term">gen_ai.provider.name</em></td><td>Which provider &mdash; so results compare across vendors</td></tr>
+      <tr><td><em class="term">gen_ai.usage.input_tokens</em></td><td>Input tokens for this call</td></tr>
+      <tr><td><em class="term">gen_ai.usage.output_tokens</em></td><td>Output tokens for this call</td></tr>
+      <tr><td><em class="term">gen_ai.response.finish_reasons</em></td><td>Why generation stopped &mdash; <em>stop</em>, <em>tool_calls</em>, length</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>The scope has since expanded across agent orchestration, MCP tool calling, content capture and quality evaluation. As of early 2026 most of these conventions remain <strong>experimental</strong> &mdash; worth saying out loud, because names can still change and your instrumentation should sit behind a thin layer.</p>
+
+  <div class="pick">
+    <div class="lbl">Why this matters more than it sounds</div>
+    <p>Adopting the standard names is what stops your observability being locked to one vendor. Span attributes are the schema of your operational data, and inventing your own is the same category of decision as inventing your own date format.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">11.11</span> <span>What a good span carries</span></h2>
+  <ul>
+    <li><strong>One trace id across the whole run</strong>, and across every agent in a multi-agent system &mdash; otherwise attribution collapses (Lesson 8).</li>
+    <li><strong>Tokens and duration per span</strong>, not per run. A run costing &#8377;40 is not actionable; one tool call accounting for 60% of the tokens is.</li>
+    <li><strong>Versions</strong>: model, prompt version, tool-schema version, dataset version. A trace you cannot attribute to a configuration is a story without a date.</li>
+    <li><strong>The stop reason</strong>, always &mdash; "finished" and "hit the step limit" look identical otherwise.</li>
+    <li><strong>Inputs and outputs, sampled.</strong> Full content on every span is expensive and a privacy exposure; sample it, and redact before it leaves your process.</li>
+    <li><strong>Errors with their classification</strong> &mdash; transient or terminal, retried or not. This makes retry behaviour auditable rather than folklore.</li>
+  </ul>
+
+  <div class="warn">
+    <div class="lbl">Content capture is a privacy decision, not a logging decision</div>
+    <p>Prompts and completions contain whatever your users typed. Capturing them wholesale means your observability backend is now a system holding personal data, with everything that implies for retention and access.</p>
+    <p>Default to capturing structure &mdash; which tools, how many tokens, what finish reason &mdash; and sample content deliberately, redacted. "We log everything" should be a decision someone made on purpose.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">11.12</span> <span>The numbers worth a dashboard</span></h2>
+  <p>A dashboard nobody reads is a dashboard nobody built well. Three numbers, one screen:</p>
+  <ol>
+    <li><strong>Quality</strong> &mdash; the eval score, or an online proxy for it</li>
+    <li><strong>Cost per successful task</strong> &mdash; not per call (Lesson 9)</li>
+    <li><strong>p95 latency</strong> &mdash; not the average</li>
+  </ol>
+  <p>Then a second tier you consult when one of those moves: steps per run, tool error rate, retry rate, cache hit rate, escalation rate, abstention rate, and the distribution of stop reasons.</p>
+
+  <div class="analogy">
+    <div class="lbl">In plain words</div>
+    <p>A car dashboard shows speed, fuel and temperature &mdash; not every sensor in the engine. The diagnostics exist, and you read them when a light comes on. A dashboard with forty gauges is one nobody looks at, which is functionally the same as having none.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">11.13</span> <span>Online evaluation and drift</span></h2>
+  <p>Offline evals tell you whether a change broke something you already knew about. They cannot tell you that the world moved. Three things change under you with no deploy on your side:</p>
+  <ul>
+    <li><strong>The model.</strong> Providers update them. Behaviour shifts without a line of your code changing.</li>
+    <li><strong>The data.</strong> Users start asking different things than when you built the golden set.</li>
+    <li><strong>The dependencies.</strong> An API changes a field; your parsing quietly degrades.</li>
+  </ul>
+  <p>The practical pattern is the same two-tier shape as grading in Lesson 3: <strong>cheap programmatic checks on 100% of traffic</strong> &mdash; schema validity, tool error rate, abstention rate, step counts &mdash; plus <strong>an expensive judge on a small sample</strong>. Alert on the cheap signals; investigate with the expensive one.</p>
+  <p>And watch <em>distributions</em>, not only averages. A rise in steps per run, a fall in cache hit rate, or a change in the mix of stop reasons are early warnings, and they show up before quality scores do.</p>
+</section>
+
+<section>
+  <h2><span class="num">11.14</span> <span>How both halves go wrong</span></h2>
+  <div class="scroll">
+  <table>
+    <thead><tr><th>Mistake</th><th>What happens</th></tr></thead>
+    <tbody>
+      <tr><td>Retries before idempotency</td><td>Occasional failures become occasional duplicate actions. Strictly worse.</td></tr>
+      <tr><td>Backoff without jitter</td><td>Synchronised retries rebuild the stampede one second later.</td></tr>
+      <tr><td>Random idempotency keys</td><td>The mechanism is present and does nothing &mdash; the worst of both worlds.</td></tr>
+      <tr><td>Guardrail fails open</td><td>The safety check is unavailable, so the action proceeds. It failed when it mattered most.</td></tr>
+      <tr><td>Silent degradation</td><td>A worse answer, indistinguishable from a good one. Nobody learns anything.</td></tr>
+      <tr><td>Logging instead of tracing</td><td>Thousands of disconnected lines and no way to reconstruct one run.</td></tr>
+      <tr><td>Averages on the dashboard</td><td>p99 quietly triples and the average barely moves.</td></tr>
+      <tr><td>Traces with no versions</td><td>A regression you cannot attribute to any change.</td></tr>
+      <tr><td>Capturing all content by default</td><td>Your observability stack becomes an unplanned store of personal data.</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">11.15</span> <span>Vocabulary you now own</span></h2>
+  <dl class="vocab">
+    <div><dt>transient vs terminal</dt><dd>Will retrying help? Decides who handles the failure.</dd></div>
+    <div><dt>idempotency key</dt><dd>A deterministic key making a repeated write do the work once.</dd></div>
+    <div><dt>exponential backoff</dt><dd>Doubling waits between retries.</dd></div>
+    <div><dt>jitter</dt><dd>Randomised delay so clients do not retry in unison.</dd></div>
+    <div><dt>retry budget</dt><dd>A global cap, not just per call.</dd></div>
+    <div><dt>circuit breaker</dt><dd>Stop calling a failing dependency; probe periodically.</dd></div>
+    <div><dt>bulkhead</dt><dd>Separate resource pools so one failure cannot drain another.</dd></div>
+    <div><dt>durable execution</dt><dd>Checkpoint each step so a crash resumes rather than restarts.</dd></div>
+    <div><dt>at-least-once</dt><dd>What delivery actually guarantees. Pair with idempotency.</dd></div>
+    <div><dt>exactly-once effects</dt><dd>What the pairing gives you, and what people meant all along.</dd></div>
+    <div><dt>graceful degradation</dt><dd>A smaller correct answer instead of a failure - never across a safety boundary.</dd></div>
+    <div><dt>span</dt><dd>One timed unit of work in a trace.</dd></div>
+    <div><dt>trace id</dt><dd>The thread tying every span of a run together.</dd></div>
+    <div><dt>gen_ai.* conventions</dt><dd>OpenTelemetry's standard attribute names for AI telemetry.</dd></div>
+    <div><dt>content capture</dt><dd>Recording prompts and completions. A privacy decision.</dd></div>
+    <div><dt>drift</dt><dd>Model, data or dependencies changing under you with no deploy.</dd></div>
+  </dl>
+</section>
+
+<section>
+  <h2><span class="num">11.16</span> <span>Interview answers, out loud</span></h2>
+  <div class="ask">
+    <div class="q">"How do you make an agent reliable?"</div>
+    <div class="a">In a fixed order, because each layer depends on the one before. Idempotency on every write first &mdash; deterministic keys derived from the run and step, so a resume generates the same key. Then retries with exponential backoff and jitter, and a global budget, only on transient failures. Then durable execution, so a crash resumes from the last checkpoint instead of replaying every side effect. Built the other way round, each layer amplifies the previous one's bug.</div>
+  </div>
+  <div class="ask">
+    <div class="q">"A tool call times out. Did it happen?"</div>
+    <div class="a">You can't know, and that's the point. It's the ambiguous case &mdash; retry and you might do it twice, don't and you might not do it at all. The answer isn't better detection, it's idempotency: make the repeat harmless and stop needing to know. That's also why exactly-once delivery isn't something you can buy &mdash; at-least-once plus idempotent handlers gives you exactly-once <em>effects</em>, which is what anyone actually wanted.</div>
+  </div>
+  <div class="ask">
+    <div class="q">"Why does jitter matter?"</div>
+    <div class="a">Because without it, everyone who failed at the same moment retries at the same moment. A thousand clients backing off exactly one second rebuild the stampede one second later. Jitter spreads them. It's the same reason utilities stagger reconnection after a power cut &mdash; synchronised recovery is how a short outage becomes a long one.</div>
+  </div>
+  <div class="ask">
+    <div class="q">"How do you debug an agent in production?"</div>
+    <div class="a">From the trace, because there's no stack trace &mdash; the bug is a decision, and decisions don't raise exceptions. One trace id across the run, a span per LLM call and per tool call, tokens and duration on each, plus model and prompt versions so it's attributable. Then find the <em>first</em> wrong step, not the last, because errors cascade. And I'd use the OpenTelemetry gen_ai conventions rather than invent attribute names, so the traces aren't locked to one vendor.</div>
+  </div>
+  <div class="ask">
+    <div class="q">"What would you put on the dashboard?"</div>
+    <div class="a">Three things: quality score, cost per successful task, and p95 latency &mdash; not averages, because the tail is what users remember. Second tier when one of those moves: steps per run, tool error rate, retry rate, cache hit rate and the distribution of stop reasons. A dashboard with forty gauges is one nobody reads, which is the same as not having one.</div>
+  </div>
+  <div class="ask">
+    <div class="q">"Your quality score dropped and nothing was deployed. What happened?"</div>
+    <div class="a">Drift &mdash; three candidates. The provider updated the model. The traffic mix changed, so the golden set no longer represents what users ask. Or a dependency changed a field and parsing degraded quietly. I'd look at distributions first, because steps per run, tool error rate and stop-reason mix all move before the quality score does. That's what online eval is for: cheap checks on all traffic, an expensive judge on a sample.</div>
+  </div>
+  <div class="ask">
+    <div class="q">"The approval service is down. Should the agent proceed?"</div>
+    <div class="a">No. That's a guardrail failing open, and a guardrail that fails open under load fails precisely when it was most needed. Graceful degradation means a smaller correct answer &mdash; queue the action and report it as pending &mdash; never crossing a safety boundary. And whatever we degrade to, the output has to say so, or a degraded answer is indistinguishable from a good one.</div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">11.17</span> <span>What this means for our project</span></h2>
+  <div class="pick">
+    <div class="lbl">Decisions</div>
+    <ul>
+      <li><strong>Idempotency keys before anything else.</strong> Derived from run id and step index, so a resumed run produces the same key. Every write tool takes one.</li>
+      <li><strong>Our tool errors already classify themselves.</strong> A broken tool returns "temporarily unavailable, continue without it if you can" &mdash; a transient failure told plainly. Terminal errors name the recovery path instead. That distinction is already in the text.</li>
+      <li><strong>Checkpoint to Postgres per step</strong>, not a workflow engine. Runs are short; the property matters, and the engine is a choice we do not need yet.</li>
+      <li><strong>Crash-and-resume is a demo, not just a feature.</strong> Kill the process mid-tool-call, resume, prove no duplicate action. Hard to fake, and it shows the whole stack working at once.</li>
+      <li><strong>Instrument with the gen_ai conventions</strong> from the first traced run &mdash; standard names, behind a thin layer since they are still experimental.</li>
+      <li><strong>The trajectory already has the fields.</strong> Tokens, timing, prompt version and stop reason are in the recorder; they need populating, and populating them later makes every earlier run unattributable.</li>
+      <li><strong>Degradation never crosses the approval gate.</strong> If approval is unavailable the action queues &mdash; and that is a property the process grader should check.</li>
+    </ul>
+  </div>
+</section>
+
+<div class="next">
+  <div class="lbl">Next</div>
+  <p><strong>Lesson 12 &mdash; Guardrails and Governance.</strong> The last module: prompt injection, least privilege, PII, approval gates as architecture, audit trails, and what "responsible agent" means when it has to be engineered rather than asserted.</p>
+</div>
+
+<div class="sources">
+  <h2>Sources</h2>
+  <ol>
+    <li>OpenTelemetry, <em>Inside the LLM Call: GenAI Observability with OpenTelemetry</em> &mdash; the GenAI SIG formed April 2024 under the Semantic Conventions SIG, the <em>invoke_agent</em> / <em>chat</em> / <em>execute_tool</em> span tree, and the expansion across agent orchestration, MCP tool calling, content capture and evaluation. <a href="https://opentelemetry.io/blog/2026/genai-observability/">opentelemetry.io/blog</a></li>
+    <li>OpenTelemetry, <em>Semantic Conventions for Generative AI</em> &mdash; the <em>gen_ai.*</em> attributes for operation name, request model, provider, token usage and finish reasons, and their experimental status. <a href="https://opentelemetry.io/docs/specs/semconv/gen-ai/">opentelemetry.io/docs/specs/semconv/gen-ai</a></li>
+    <li>AWS, <em>From Agent Loop to Durable Execution: An Architecture Guide for Production Agents</em> &mdash; per-step checkpointing and resuming from the last completed step rather than restarting. <a href="https://builder.aws.com/content/3FFJUX44Z2uzDxEYdmu7XEwTmS4/from-agent-loop-to-durable-execution-an-architecture-guide-for-production-agents">builder.aws.com</a></li>
+    <li>AWS Well-Architected, <em>Agentic AI Lens &mdash; state management and checkpoint-based recovery</em>. <a href="https://docs.aws.amazon.com/wellarchitected/latest/agentic-ai-lens/agentrel03-bp03.html">docs.aws.amazon.com</a></li>
+    <li>Temporal, <em>Error handling in distributed systems: a guide to resilience patterns</em> &mdash; declarative retry policies, idempotency keys on external calls, and why non-idempotent operations must never be retried. <a href="https://temporal.io/blog/error-handling-in-distributed-systems">temporal.io/blog</a></li>
+    <li>Amazon Builders' Library, <em>Timeouts, retries and backoff with jitter</em> &mdash; why synchronised retries rebuild the stampede, and what jitter fixes. <a href="https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/">aws.amazon.com/builders-library</a></li>
+    <li>Nygard, <em>Release It! Design and Deploy Production-Ready Software</em> &mdash; the origin of the circuit breaker and bulkhead patterns.</li>
+  </ol>
+</div>
+
+</div>
