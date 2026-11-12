@@ -1,11 +1,13 @@
 """The task suite.
 
-Ten hand-written tasks. Expected state is derived from the world's own rule
-rather than typed by hand - the rule IS the specification, and deriving it means
-a task can never silently disagree with the world that generated it.
+Twenty hand-written tasks across two capabilities: ten follow-up tasks (t01-t10)
+and ten shortlisting tasks (s01-s10). Expected state is derived from the world's
+own rule rather than typed by hand - the rule IS the specification, and deriving
+it means a task can never silently disagree with the world that generated it.
 
-Two of these are held out: we do not look at them while iterating, so if the
-main score climbs and the held-out score does not, we are overfitting.
+Four of these are held out, two per capability: we do not look at them while
+iterating, so if the main score climbs and the held-out score does not, we are
+overfitting.
 """
 
 from __future__ import annotations

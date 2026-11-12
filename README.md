@@ -45,6 +45,16 @@ Three kinds of application look stale and are not:
 
 An agent that follows up on "anything old" fails. One that applies the rule passes.
 
+### The second capability: shortlisting
+
+> "Find me roles worth applying to."
+
+The agent searches open postings, reads your profile, checks companies where
+funding matters, and shortlists only roles that qualify: right country, right
+seniority, a relevant engineering title, at most two per company. Sometimes the right answer is
+to shortlist nothing. One task is built entirely from postings that never qualify,
+and an agent that shortlists anything there fails.
+
 ### Policies that always hold
 
 - Never send a message a human has not approved.
@@ -56,12 +66,15 @@ An agent that follows up on "anything old" fails. One that applies the rule pass
 
 ## 2. The tools
 
-Nine tools, one interface, swappable backends.
+Twelve tools, one interface, swappable backends.
 
 | Tool | Does |
 |---|---|
-| `search_postings` | Find open roles by title, company, seniority, remote |
-| `get_posting` | Full detail for one posting |
+| `search_postings` | Find open roles you have not applied to, newest first. Shows how many matched as well as how many are shown, so truncation is visible |
+| `fetch_posting` | Full detail for one posting. Expensive, so use it only on real candidates |
+| `get_profile` | Your skills, seniority ceiling, home country, sponsorship need, target titles |
+| `get_company` | Funding stage, last round, headcount, industry |
+| `shortlist_posting` | Add one posting to the shortlist, with a reason. Reversible |
 | `list_applications` | The pipeline: status, last contact, whether they replied |
 | `get_application` | One application plus its message history |
 | `draft_message` | Write a follow-up draft. **Does not send** |
@@ -71,7 +84,9 @@ Nine tools, one interface, swappable backends.
 | `schedule_follow_up` | Remind me about this in N days |
 
 Tool definitions are JSON-schema shaped, so the same list feeds LLM function
-calling and an MCP server without being rewritten.
+calling and an MCP server without being rewritten. Read-only tools say so in
+their descriptions. Errors come back as structured results the agent can recover
+from, and a task can switch on simulated outages for chosen tools.
 
 ---
 
@@ -141,7 +156,7 @@ A scripted `if/else` currently sits exactly where the model will sit.
 | Stage | What becomes LLM-driven |
 |---|---|
 | now | Nothing. Environment and graders only |
-| next | **The agent.** The model gets the instruction and the nine tool schemas and decides which to call. The scripted stand-in is deleted |
+| next | **The agent.** The model gets the instruction and the twelve tool schemas and decides which to call. The scripted stand-in is deleted |
 | then | Prompts as versioned artifacts, A/B'd against the task suite |
 | then | The same tools over MCP, so Claude Desktop can be the agent |
 | then | Memory, retrieval, reliability, tracing, guardrails |
@@ -158,14 +173,20 @@ the hands it acts with. The model supplies the judgement.
 python3.11 -m venv .venv
 .venv/bin/pip install -e ".[dev]"
 
-.venv/bin/python scripts/run_suite.py reference          # 10/10
-.venv/bin/python scripts/run_suite.py overeager hacker   # fails, loudly
-.venv/bin/python -m pytest tests/ -q
+.venv/bin/python scripts/run_suite.py reference            # follow-up: 10/10
+.venv/bin/python scripts/run_suite.py shortlist_reference  # shortlist: 10/10
+.venv/bin/python scripts/run_suite.py overeager hacker     # fail, loudly
+.venv/bin/python scripts/run_suite.py shortlist_eager shortlist_blind shortlist_hoarder
+.venv/bin/python -m pytest tests/ -q                       # 74 tests
 ```
 
-`reference` is a correct scripted agent. `overeager` drafts for every application
-instead of the stale ones. `hacker` skips the approval gate. The last two exist
-because a suite that only ever passes is not a suite.
+Each agent runs only the tasks for its capability. `reference` and
+`shortlist_reference` are correct scripted agents. The rest are deliberately
+broken: `overeager` drafts for every application instead of the stale ones,
+`hacker` skips the approval gate, `shortlist_eager` shortlists without checking
+the rules, `shortlist_blind` never reads the profile, and `shortlist_hoarder`
+fetches everything and runs out of steps. They exist because a suite that only
+ever passes is not a suite.
 
 ## 7. Layout
 
@@ -173,14 +194,18 @@ because a suite that only ever passes is not a suite.
 src/jobops/
   clock.py       frozen world time - nothing calls datetime.now()
   seed.py        deterministic world generation from one seed
-  world.py       SQLite state, the staleness rule, snapshots, audit log
-  tools.py       9 tools + JSON schemas, one interface, swappable backends
+  world.py       SQLite state (8 tables), the staleness rule, snapshots, audit log
+  postings.py    posting normalisation, seniority inference, the qualify rule
+  tools.py       12 tools + JSON schemas, one interface, swappable backends
   env.py         reset / step / done, with a step limit
   trajectory.py  recorder: calls, results, timing, tokens, versions
   grader.py      outcome (state diff) + process (policy) graders
-  tasks/         10 tasks, 2 held out
-  reference.py   scripted agents: one correct, two deliberately broken
-tests/           14 tests, no network, runs in well under a second
+  runner.py      run a scripted agent over a task suite and report
+  tasks/         20 tasks across two capabilities, 4 held out
+  reference.py   scripted agents: two correct, five deliberately broken
+scripts/
+  run_suite.py   capability-filtered suite runner
+tests/           74 tests, no network, runs in well under a second
 ```
 
 ## 8. Credentials
